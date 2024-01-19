@@ -1,4 +1,5 @@
 import sys
+import os
 import logging
 import configparser
 import time
@@ -14,38 +15,65 @@ try:
     logging.basicConfig()
     logger = logging.getLogger("SeplosBMS")
 
-    # Create a ConfigParser object
+    # Cast config vars to requested type
+    def cast_value(value, return_type):
+        try:
+            if return_type == int:
+                return int(value)
+            elif return_type == float:
+                return float(value)
+            elif return_type == bool:
+                return value.lower() in ['true', '1', 'yes', 'on']
+            else:
+                return str(value)
+        except ValueError:
+            return None
 
-    config = configparser.ConfigParser()
-    config.read('config.ini')
+    # Get config vars either from env-var (1st) or config.ini (2nd)
+    def get_config_value(var_name, return_type=str):
+        # First, try to get the value from environment variables
+        value = os.environ.get(var_name)
+        if value is not None:
+            return cast_value(value, return_type)
+
+        # If the variable is not in the environment, try the config file
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+
+        for section in config.sections():
+            if var_name in config[section]:
+                return cast_value(config[section][var_name], return_type)
+
+        # Return None if the variable is not found
+        return None
 
     # BMS config
     # When ONLY_MASTER is True, data will only be fetched for one pack (0) 
-    ONLY_MASTER = config.getboolean('BMS', 'ONLY_MASTER')
+    ONLY_MASTER = get_config_value("ONLY_MASTER", return_type=bool)
     # When ONLY_MASTER is False, data will be fetched for NUMBER_OF_PACKS (1-n)
-    NUMBER_OF_PACKS = config.getint('BMS', 'NUMBER_OF_PACKS')
+    NUMBER_OF_PACKS = get_config_value("NUMBER_OF_PACKS", return_type=int)
     # Set min and max cell-voltage as this cannot be read from the BMS
-    MIN_CELL_VOLTAGE = config.getfloat('BMS', 'MIN_CELL_VOLTAGE')
-    MAX_CELL_VOLTAGE = config.getfloat('BMS', 'MAX_CELL_VOLTAGE')
+    MIN_CELL_VOLTAGE = get_config_value("MIN_CELL_VOLTAGE", return_type=float)
+    MAX_CELL_VOLTAGE = get_config_value("MAX_CELL_VOLTAGE", return_type=float)
 
     # Logging config
-    if config.get("LOGGING", "LEVEL").upper() == "ERROR":
+    if get_config_value("LOGGING_LEVEL").upper() == "ERROR":
         logger.setLevel(logging.ERROR)
-    elif config.get("LOGGING", "LEVEL").upper() == "WARNING":
+    elif get_config_value("LOGGING_LEVEL").upper() == "WARNING":
         logger.setLevel(logging.WARNING)
-    elif config.get("LOGGING", "LEVEL").upper() == "DEBUG":
+    elif get_config_value("LOGGING_LEVEL").upper() == "DEBUG":
         logger.setLevel(logging.DEBUG)
     else:
         logger.setLevel(logging.INFO)
 
     # MQTT config
 
-    MQTT_HOST = config.get('MQTT', 'HOST')
-    MQTT_PORT = config.getint('MQTT', 'PORT')
-    MQTT_USERNAME = config.get('MQTT', 'USERNAME')
-    MQTT_PASSWORD = config.get('MQTT', 'PASSWORD')
-    MQTT_TOPIC = config.get('MQTT', 'TOPIC')
-    MQTT_UPDATE_INTERVAL = config.getint('MQTT', 'UPDATE_INTERVAL')
+    MQTT_HOST = get_config_value("MQTT_HOST")
+    MQTT_PORT = get_config_value("MQTT_PORT", return_type=int)
+    MQTT_USERNAME = get_config_value("MQTT_USERNAME")
+    MQTT_PASSWORD = get_config_value("MQTT_PASSWORD")
+    MQTT_TOPIC = get_config_value("MQTT_TOPIC")
+    MQTT_UPDATE_INTERVAL = get_config_value("MQTT_UPDATE_INTERVAL", return_type=int)
 
     # Setup MQTT client
     mqtt_client = mqtt.Client()
@@ -54,8 +82,8 @@ try:
 
     # Serial Interface config, set to 9600 for Master and 19200 for Slaves
 
-    SERIAL_INTERFACE = config.get('SERIAL', 'INTERFACE')
-    SERIAL_BAUD_RATE = config.getint('SERIAL', 'BAUD_RATE')
+    SERIAL_INTERFACE = get_config_value("SERIAL_INTERFACE")
+    SERIAL_BAUD_RATE = get_config_value("SERIAL_BAUD_RATE", return_type=int)
 
     # Variable for global serial instance
     serial_instance = None

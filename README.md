@@ -16,7 +16,7 @@ This is a python script that reads data from one or multiple Seplos (while using
 ## Installation and configuration
 
 1. Configure and setup an MQTT broker with a user and password
-2. Configure your remote RS485 device, for the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs) ** or** `Baud Rate: 19200` (for Slaves)
+2. Configure your (remote) RS485 device, for the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs) ** or** `Baud Rate: 19200` (for Slaves)
 3. Modify the `config.ini` and edit its settings to your needs
 4. Run the Docker Image, for example like this:
 
@@ -24,7 +24,32 @@ This is a python script that reads data from one or multiple Seplos (while using
 
 - For the slaves: `docker run -itd -e RS485_REMOTE_IP="192.168.1.201" -e RS485_REMOTE_PORT="4196" -v $(pwd)/config-slaves.ini:/usr/src/app/config.ini --name seplos-mqtt-slaves privatecoder/seplos-mqtt-remote-rs485:v1.0.0`
 
-MQTT messages will look like this:
+Available ENV-vars are:
+
+`RS485_REMOTE_IP`
+`RS485_REMOTE_PORT`
+
+`MQTT_HOST`
+`MQTT_PORT`
+`MQTT_USERNAME`
+`MQTT_PASSWORD`
+`MQTT_TOPIC`
+`MQTT_UPDATE_INTERVAL`
+
+`ONLY_MASTER`
+`NUMBER_OF_PACKS`
+`MIN_CELL_VOLTAGE`
+`MAX_CELL_VOLTAGE`
+
+`SERIAL_INTERFACE`
+`SERIAL_BAUD_RATE`
+
+`LOGGING_LEVEL`
+
+Set `RS485_REMOTE_IP` and `RS485_REMOTE_PORT` to start the docker image with socat and `vcom0` (used by default).
+Not defining them will just start the script (`SERIAL_INTERFACE` must match your existing and passed serial-device).
+
+MQTT messages published by the script will look like this:
 ```
 {
     "status": {
@@ -58,7 +83,9 @@ MQTT messages will look like this:
         "capacity": 280.0,
         "capacity_remain": 100.28,
         "soc": 35.8,
-        "cycles": 6
+        "cycles": 6,
+        "soh": 100.0,
+        "port_voltage": 47.52
     },
     "alarm": {
         "voltage_cell_low": 1,
@@ -110,11 +137,13 @@ INFO:SeplosBMS:Temp Cell[1]=7.7°C
 INFO:SeplosBMS:Temp Cell[2]=7.6°C
 INFO:SeplosBMS:Temp Cell[3]=8.4°C
 INFO:SeplosBMS:Current = -0.49A
-INFO:SeplosBMS:Voltage = 48.44V
+INFO:SeplosBMS:Voltage = 47.48V
+INFO:SeplosBMS:Port Voltage = 47.51V
 INFO:SeplosBMS:Rated Capacity = 280.0Ah
 INFO:SeplosBMS:Capacity = 280.0Ah
 INFO:SeplosBMS:Remaining Capacity = 60.85Ah
 INFO:SeplosBMS:SOC = 21.7%
+INFO:SeplosBMS:SOH = 100.0%
 INFO:SeplosBMS:Cycles = 6
 INFO:SeplosBMS:Environment temp = 12.4°C
 INFO:SeplosBMS:Power temp = 8.9°C
