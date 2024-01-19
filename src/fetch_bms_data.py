@@ -20,9 +20,9 @@ try:
     config.read('config.ini')
 
     # BMS config
-    # When ONLY_MASTER is enabled, data will only be fetched for one pack (0) 
+    # When ONLY_MASTER is True, data will only be fetched for one pack (0) 
     ONLY_MASTER = config.getboolean('BMS', 'ONLY_MASTER')
-    # When ONLY_MASTER is disabled, data will be fetched for NUMBER_OF_PACKS
+    # When ONLY_MASTER is False, data will be fetched for NUMBER_OF_PACKS (1-n)
     NUMBER_OF_PACKS = config.getint('BMS', 'NUMBER_OF_PACKS')
     # Set min and max cell-voltage as this cannot be read from the BMS
     MIN_CELL_VOLTAGE = config.getfloat('BMS', 'MIN_CELL_VOLTAGE')
@@ -130,8 +130,8 @@ try:
             
             self.cell_count = None
             self.cells: List[Cell] = []
-            self.min_cell_voltage = None
-            self.max_cell_voltage = None
+            self.min_pack_voltage = None
+            self.max_pack_voltage = None
             self.lowest_cell = None
             self.highest_cell = None
             
@@ -397,8 +397,8 @@ try:
             # Set the current limits, populate cell count, etc.
             # Return True if success, False for failure
 
-            self.min_cell_voltage = MIN_CELL_VOLTAGE * self.cell_count
-            self.max_cell_voltage = MAX_CELL_VOLTAGE * self.cell_count
+            self.min_pack_voltage = MIN_CELL_VOLTAGE * self.cell_count
+            self.max_pack_voltage = MAX_CELL_VOLTAGE * self.cell_count
 
             # init the cell array
             for _ in range(self.cell_count):
@@ -533,7 +533,7 @@ try:
 
             # calculate request command for the current battery_pack_address
             command = self.encode_cmd(self.battery_pack_address)
-            logger.debug("Send info-request command to serial interface {}".format(command))
+            logger.debug("info-request command: {}".format(command))
 
             # loop over responses until a valid frame is received, then decode and return it
             iteration_a = 1
@@ -544,8 +544,7 @@ try:
                 
                 # set EOL to \r
                 raw_data = serial_instance.read_until(b'\r')
-                length_pos = 10
-                data = raw_data[length_pos + 3 : -5]
+                data = raw_data[13 : -5]
 
                 # check if data is valid frame
                 if self.is_valid_length(data, expected_length=150) and self.is_valid_hex_string and self.is_valid_frame(raw_data):
@@ -556,7 +555,7 @@ try:
 
             # calculate request command for the current battery_pack_address
             command = self.encode_cmd(self.battery_pack_address, cid2=0x44)
-            logger.debug("Send alert-request command to serial interface {}".format(command))
+            logger.debug("alert-request command: {}".format(command))
 
             # loop over responses until a valid frame is received, then decode and return it
             iteration_b = 1
@@ -567,8 +566,7 @@ try:
                 
                 # set EOL to \r
                 raw_data = serial_instance.read_until(b'\r')
-                length_pos = 10
-                data = raw_data[length_pos + 3 : -5]
+                data = raw_data[13 : -5]
 
                 # check if data is valid frame
                 if self.is_valid_length(data, expected_length=98) and self.is_valid_hex_string and self.is_valid_frame(raw_data):
@@ -604,7 +602,7 @@ try:
     # array of battery-pack objects
     battery_packs = []
 
-    # fill battery_packs array with one (ONLYMASTER = True) or multiple pack(s)
+    # fill battery_packs array with one (ONLY_MASTER = true) or multiple pack(s)
     if ONLY_MASTER:
         battery_packs.append({"address": 0, "instance": SeplosBatteryPack(0)})
     else:
@@ -634,11 +632,9 @@ try:
             time.sleep(MQTT_UPDATE_INTERVAL)
             i = 0
 
-# handle keyboard interrupt
 except KeyboardInterrupt:
     logger.info("Interrupt received! Cleaning up...")
 
-# close all serial and mqtt connections before exiting
 finally:
     # close mqtt client if connected
     if mqtt_client.is_connected:
