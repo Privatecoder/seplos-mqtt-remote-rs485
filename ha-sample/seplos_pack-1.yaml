@@ -158,6 +158,12 @@
     unit_of_measurement: 'V'
     value_template: "{{ value_json.status.voltage }}"
     unique_id: "seplos_pack_1_voltage"
+  
+  - name: "Seplos Pack-1 Port Voltage"
+    state_topic: "seplos/pack-1/sensors"
+    unit_of_measurement: 'V'
+    value_template: "{{ value_json.status.port_voltage }}"
+    unique_id: "seplos_pack_1_port_voltage"
 
   # Capacity Sensors
   - name: "Seplos Pack-1 Capacity Rated"
@@ -178,7 +184,7 @@
     value_template: "{{ value_json.status.capacity_remain }}"
     unique_id: "seplos_pack_1_capacity_remain"
 
-  # SOC and Cycles Sensors
+  # SOC, SOH and Cycles Sensors
   - name: "Seplos Pack-1 SOC"
     state_topic: "seplos/pack-1/sensors"
     unit_of_measurement: '%'
@@ -189,6 +195,12 @@
     state_topic: "seplos/pack-1/sensors"
     value_template: "{{ value_json.status.cycles }}"
     unique_id: "seplos_pack_1_cycles"
+  
+  - name: "Seplos Pack-1 SOH"
+    state_topic: "seplos/pack-1/sensors"
+    unit_of_measurement: '%'
+    value_template: "{{ value_json.status.soh }}"
+    unique_id: "seplos_pack_1_soh"
 
   # Alarm Cell Voltage Sensors
   - name: "Seplos Pack-1 Alarm Voltage Cell Low"

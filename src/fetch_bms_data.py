@@ -117,11 +117,13 @@ try:
             
             self.voltage = None
             self.current = None
+            self.port_voltage = None
 
             self.capacity_rated = None
             self.capacity = None
             self.capacity_remain = None
             self.soc = None
+            self.soh = None
             
             self.cycles = None
             
@@ -421,6 +423,8 @@ try:
                 soc_offset = 114
                 capacity_rated_offset = 118
                 cycles_offset = 122
+                soh_offset = 126
+                port_voltage_offset = 130
 
                 # fetch cell count
                 self.cell_count = self.int_from_1byte_hex_ascii(
@@ -500,15 +504,25 @@ try:
                 # fetch cycles
                 self.cycles = self.int_from_2byte_hex_ascii(data, cycles_offset)
                 status_data["cycles"] = self.cycles
+
+                # fetch soh
+                self.soh = self.int_from_2byte_hex_ascii(data, soh_offset) / 10
+                status_data["soh"] = self.soh
+
+                # fetch port voltage
+                self.port_voltage = self.int_from_2byte_hex_ascii(data, port_voltage_offset) / 100
+                status_data["port_voltage"] = self.port_voltage
                 
                 logger.info("Current = {}A".format(self.current))
                 logger.info("Voltage = {}V".format(self.voltage))
+                logger.info("Port Voltage = {}V".format(self.port_voltage))
 
                 logger.info("Rated Capacity = {}Ah".format(self.capacity_rated))
                 logger.info("Capacity = {}Ah".format(self.capacity))
                 logger.info("Remaining Capacity = {}Ah".format(self.capacity_remain))
 
                 logger.info("SOC = {}%".format(self.soc))
+                logger.info("SOH = {}%".format(self.soh))
 
                 logger.info("Cycles = {}".format(self.cycles))
 
