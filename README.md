@@ -11,7 +11,7 @@ This is a python script that reads data from one or multiple Seplos (while using
 
 ## Connecting serial devices to multiple battery packs
 
-![293281298-295d06a6-5b9f-47a3-82e7-0cbc17bbaf2e-2](https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/bbf51f50-a898-4c64-b8b5-93811509b02e)
+![sample](https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/de37d398-7580-452a-b942-3c374a8b86b6)
 
 ## Installation and configuration
 
