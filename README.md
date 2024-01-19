@@ -118,7 +118,7 @@ Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
 
 - The provided `ha/seplos_pack-1.yaml` might be helpful
 - The provided sample yaml is depended on a setting like `mqtt: !include_dir_merge_named mqtt` in `configuration.yaml`.
-- If you are putting sensor directly int your `configuration.yaml` add `platform: mqtt`, i.e. this
+- If you are putting sensor directly int your `configuration.yaml`, add `platform: mqtt`, i.e. this
 
 ```
   - name: "Seplos Pack-1 Cell 0 Voltage"
