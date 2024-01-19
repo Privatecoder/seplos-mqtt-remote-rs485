@@ -25,4 +25,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: privatecoder/flashmq:${{github.ref_name}}
+          tags: privatecoder/seplos-mqtt-remote-rs485:${{github.ref_name}}
