@@ -4,7 +4,7 @@ This is a python script that reads data from one or multiple Seplos (while using
 ## Hardware requirements:
 
 1. (Remote) RS485 device [Waveshare 2-CH RS485 to ETH has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm)
-2. For multiple packs using CAN, you need a splitter to split the CAN port and two RS485 connections – [this splitter works for me](https://www.amazon.de/gp/product/B00D3KIQXC)
+2. For multiple packs while using CAN to connect to your Inverter, you need a splitter ([this splitter works for me](https://www.amazon.de/gp/product/B00D3KIQXC)) to split the CAN port into CAN+RS485 and two separate RS485 connections (the Waveshare 2-CH RS485 to ETH has two RS485 ports)
 3. Something that can run a Docker-Container
 4. Seplos BMS [V2 / V16 has been tested](https://www.seplos.com/bms-2.0.html)
 5. An MQTT broker
@@ -116,10 +116,7 @@ INFO:SeplosBMS:Power temp = 8.9°C
 
 Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
 
-The provided `ha/seplos_pack-1.yaml` might be helpful
-
-# Info:
-
+- The provided `ha/seplos_pack-1.yaml` might be helpful
 - The provided sample yaml is depended on a setting like `mqtt: !include_dir_merge_named mqtt` in `configuration.yaml`.
 - If you are putting sensor directly int your `configuration.yaml` add `platform: mqtt`, i.e. this
 
