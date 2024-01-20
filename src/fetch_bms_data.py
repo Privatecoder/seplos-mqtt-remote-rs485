@@ -16,7 +16,7 @@ try:
     logger = logging.getLogger("SeplosBMS")
 
     # Cast config vars to requested type
-    def cast_value(value, return_type):
+    def cast_value(value, return_type) -> int | float | bool | str | None:
         try:
             if return_type == int:
                 return int(value)
@@ -30,7 +30,7 @@ try:
             return None
 
     # Get config vars either from env-var (1st) or config.ini (2nd)
-    def get_config_value(var_name, return_type=str):
+    def get_config_value(var_name, return_type=str) -> int | float | bool | str | None:
         # First, try to get the value from environment variables
         value = os.environ.get(var_name)
         if value is not None:
@@ -145,6 +145,7 @@ try:
             
             self.voltage = None
             self.current = None
+            self.power = None
             self.port_voltage = None
 
             self.capacity_rated = None
@@ -156,14 +157,22 @@ try:
             self.cycles = None
             
             self.env_temp = None
-            self.pwr_temp = None
+            self.mosfet_temp = None
+            self.cells_temp = [None] * 4
             
             self.cell_count = None
             self.cells: List[Cell] = []
+            self.average_cell_voltage = None
+            self.delta_cell_voltage = None
+
             self.min_pack_voltage = None
             self.max_pack_voltage = None
+            
             self.lowest_cell = None
+            self.lowest_cell_voltage = None
+
             self.highest_cell = None
+            self.highest_cell_voltage = None
             
             self.protection = Protection()
             self.alarm_status = None
@@ -172,7 +181,7 @@ try:
 
         # return integer from given 1 byte ascii hex data
         @staticmethod
-        def int_from_1byte_hex_ascii(data: bytes, offset: int, signed=False):
+        def int_from_1byte_hex_ascii(data: bytes, offset: int, signed=False) -> int:
             return int.from_bytes(
                 bytes.fromhex(data[offset : offset + 2].decode("ascii")),
                 byteorder="big",
@@ -181,7 +190,7 @@ try:
 
         # return integer from given 2 byte ascii hex data
         @staticmethod
-        def int_from_2byte_hex_ascii(data: bytes, offset: int, signed=False):
+        def int_from_2byte_hex_ascii(data: bytes, offset: int, signed=False) -> int:
             return int.from_bytes(
                 bytes.fromhex(data[offset : offset + 4].decode("ascii")),
                 byteorder="big",
@@ -224,14 +233,14 @@ try:
             return True
         
         @staticmethod
-        def decode_alarm_byte(data_byte: int, alarm_bit: int, warn_bit: int):
+        def decode_alarm_byte(data_byte: int, alarm_bit: int, warn_bit: int) -> Protection.ALARM | Protection.WARNING | Protection.OK:
             if data_byte & (1 << alarm_bit) != 0:
                 return Protection.ALARM
             if data_byte & (1 << warn_bit) != 0:
                 return Protection.WARNING
             return Protection.OK
 
-        def decode_alarm_data(self, data: bytes):
+        def decode_alarm_data(self, data: bytes) -> dict:
             alarm_data = {}
             
             voltage_alarm_byte = bytes.fromhex(data.decode("ascii"))[30]
@@ -390,8 +399,8 @@ try:
             return encoded
         
         # get cell with the lowest voltage
-        def get_min_cell(self) -> int:
-            min_voltage = 9999
+        def get_min_cell(self) -> dict:
+            min_cell_voltage = 9999
             min_cell = None
             if len(self.cells) == 0 and hasattr(self, "cell_min_no"):
                 return self.cell_min_no
@@ -399,15 +408,15 @@ try:
             for c in range(min(len(self.cells), self.cell_count)):
                 if (
                     self.cells[c].voltage is not None
-                    and min_voltage > self.cells[c].voltage
+                    and min_cell_voltage > self.cells[c].voltage
                 ):
-                    min_voltage = self.cells[c].voltage
+                    min_cell_voltage = self.cells[c].voltage
                     min_cell = c
-            return min_cell
+            return { "min_cell": min_cell, "min_cell_voltage": min_cell_voltage }
 
         # get cell with the highest voltage
-        def get_max_cell(self) -> int:
-            max_voltage = 0
+        def get_max_cell(self) -> dict:
+            max_cell_voltage = 0
             max_cell = None
             if len(self.cells) == 0 and hasattr(self, "cell_max_no"):
                 return self.cell_max_no
@@ -415,14 +424,14 @@ try:
             for c in range(min(len(self.cells), self.cell_count)):
                 if (
                     self.cells[c].voltage is not None
-                    and max_voltage < self.cells[c].voltage
+                    and max_cell_voltage < self.cells[c].voltage
                 ):
-                    max_voltage = self.cells[c].voltage
+                    max_cell_voltage = self.cells[c].voltage
                     max_cell = c
-            return max_cell
+            return { "max_cell": max_cell, "max_cell_voltage": max_cell_voltage }
 
         # init cells array for the battery
-        def init_battery(self):
+        def init_battery(self) -> bool:
             # After successful connection init_battery will be called to set up the battery.
             # Set the current limits, populate cell count, etc.
             # Return True if success, False for failure
@@ -437,7 +446,7 @@ try:
             return True
         
         # decode battery_pack data
-        def decode_status_data(self, data):
+        def decode_status_data(self, data) -> dict:
                 status_data = {}
 
                 # data offsets
@@ -464,6 +473,10 @@ try:
                     self.init_battery()
                     self.initialized = True
 
+                # set min and max pack voltage
+                status_data["min_pack_voltage"] = self.min_pack_voltage
+                status_data["max_pack_voltage"] = self.max_pack_voltage
+
                 # fetch cell-voltages and temps
                 if self.cell_count == len(self.cells):
                     # get voltages for each cell
@@ -472,38 +485,49 @@ try:
                             self.int_from_2byte_hex_ascii(data, cell_voltage_offset + i * 4) / 1000
                         )
                         self.cells[i].voltage = voltage
-                        tmp_key = f"cell_{i}_voltage"
+                        # shift cell-index on return List by 1
+                        tmp_key = f"cell_{i + 1}_voltage"
                         status_data[tmp_key] = voltage
-                        
-                        logger.info("Voltage Cell[{}]={}V".format(i, voltage))
-                    
-                    # get highest and lowest cell
-                    self.lowest_cell = self.get_min_cell()
-                    self.highest_cell = self.get_max_cell()
-                    status_data["lowest_cell"] = self.lowest_cell
-                    status_data["highest_cell"] = self.highest_cell
 
-                    logger.info("Lowest Cell[{}]".format(self.lowest_cell ))
-                    logger.info("Highest Cell[{}]".format(self.highest_cell))
+                    # calculate average cell voltage
+                    self.average_cell_voltage = round((sum(cell.voltage for cell in self.cells) / len(self.cells)), 3)
+                    status_data["average_cell_voltage"] = self.average_cell_voltage
+
+                    # get lowest cell and its voltage
+                    lowest_cell_data = self.get_min_cell()
+                    self.lowest_cell = lowest_cell_data['min_cell']
+                    # shift cell-index on return List by 1
+                    status_data["lowest_cell"] = self.lowest_cell + 1
+                    self.lowest_cell_voltage = lowest_cell_data['min_cell_voltage']
+                    status_data["lowest_cell_voltage"] = self.lowest_cell_voltage
+                    
+                    # get lowest cell and its voltage
+                    highest_cell_data = self.get_max_cell()
+                    self.highest_cell = highest_cell_data["max_cell"]
+                    # shift cell-index on return List by 1
+                    status_data["highest_cell"] = self.highest_cell + 1
+                    self.highest_cell_voltage = highest_cell_data["max_cell_voltage"]
+                    status_data["highest_cell_voltage"] = self.highest_cell_voltage
+
+                    # calculate delta cell voltage
+                    self.delta_cell_voltage = round((self.highest_cell_voltage - self.lowest_cell_voltage), 3)
+                    status_data["delta_cell_voltage"] = self.delta_cell_voltage
 
                     # get values for the 4 existing cell-temperature sensors
                     for i in range(0, 4):
-                        temp = (
-                            self.int_from_2byte_hex_ascii(data, temps_offset + i * 4) - 2731
-                        ) / 10
-                        self.cells[i].temp = temp
-                        tmp_key = f"cell_temp_{i}"
+                        temp = (self.int_from_2byte_hex_ascii(data, temps_offset + i * 4) - 2731) / 10
+                        self.cells_temp[i] = temp
+                        # shift cell-index on return List by 1
+                        tmp_key = f"cells_temp_{i + 1}"
                         status_data[tmp_key] = temp
-
-                        logger.info("Temp Cell[{}]={}°C".format(i, temp))
                 
                 # fetch env-temp
                 self.env_temp = (self.int_from_2byte_hex_ascii(data, temps_offset + 4 * 4) - 2731) / 10
                 status_data["env_temp"] = self.env_temp
 
                 # fetch pwr-temp
-                self.pwr_temp = (self.int_from_2byte_hex_ascii(data, temps_offset + 5 * 4) - 2731) / 10
-                status_data["pwr_temp"] = self.pwr_temp
+                self.mosfet_temp = (self.int_from_2byte_hex_ascii(data, temps_offset + 5 * 4) - 2731) / 10
+                status_data["mosfet_temp"] = self.mosfet_temp
 
                 # fetch current
                 self.current = self.int_from_2byte_hex_ascii(data, current_offset, signed=True) / 100
@@ -512,6 +536,10 @@ try:
                 # fetch voltage
                 self.voltage = self.int_from_2byte_hex_ascii(data, voltage_offset) / 100
                 status_data["voltage"] = self.voltage
+
+                # calculate power
+                self.power = round((self.current * self.voltage), 3)
+                status_data["power"] = self.power
                 
                 # fetch rated capacity
                 self.capacity_rated = self.int_from_2byte_hex_ascii(data, capacity_rated_offset) / 100
@@ -541,8 +569,35 @@ try:
                 self.port_voltage = self.int_from_2byte_hex_ascii(data, port_voltage_offset) / 100
                 status_data["port_voltage"] = self.port_voltage
                 
-                logger.info("Current = {}A".format(self.current))
+                logger.info("Voltage Cell[1] = {}V".format(self.cells[0].voltage))
+                logger.info("Voltage Cell[2] = {}V".format(self.cells[1].voltage))
+                logger.info("Voltage Cell[3] = {}V".format(self.cells[2].voltage))
+                logger.info("Voltage Cell[4] = {}V".format(self.cells[3].voltage))
+                logger.info("Voltage Cell[5] = {}V".format(self.cells[4].voltage))
+                logger.info("Voltage Cell[6] = {}V".format(self.cells[5].voltage))
+                logger.info("Voltage Cell[7] = {}V".format(self.cells[6].voltage))
+                logger.info("Voltage Cell[8] = {}V".format(self.cells[7].voltage))
+                logger.info("Voltage Cell[9] = {}V".format(self.cells[8].voltage))
+                logger.info("Voltage Cell[10] = {}V".format(self.cells[9].voltage))
+                logger.info("Voltage Cell[11] = {}V".format(self.cells[10].voltage))
+                logger.info("Voltage Cell[12] = {}V".format(self.cells[11].voltage))
+                logger.info("Voltage Cell[13] = {}V".format(self.cells[12].voltage))
+                logger.info("Voltage Cell[14] = {}V".format(self.cells[13].voltage))
+                logger.info("Voltage Cell[15] = {}V".format(self.cells[14].voltage))
+                logger.info("Voltage Cell[16] = {}V".format(self.cells[15].voltage))
+                
+                logger.info("Average Cell Voltage = {}V".format(self.average_cell_voltage ))
+                logger.info("Lowest Cell = [{}]".format(self.lowest_cell + 1))
+                logger.info("Lowest Cell Voltage = {}V".format(self.lowest_cell_voltage ))
+                logger.info("Highest Cell = [{}]".format(self.highest_cell + 1))
+                logger.info("Highest Cell Voltage = {}V".format(self.lowest_cell_voltage ))
+                logger.info("Delta Cell Voltage = {}V".format(self.delta_cell_voltage ))
+                
                 logger.info("Voltage = {}V".format(self.voltage))
+                logger.info("Min Pack Voltage = {}V".format(self.min_pack_voltage))
+                logger.info("Max Pack Voltage = {}V".format(self.max_pack_voltage))
+                logger.info("Current = {}A".format(self.current))
+                logger.info("Power = {}W".format(self.power))
                 logger.info("Port Voltage = {}V".format(self.port_voltage))
 
                 logger.info("Rated Capacity = {}Ah".format(self.capacity_rated))
@@ -554,8 +609,13 @@ try:
 
                 logger.info("Cycles = {}".format(self.cycles))
 
-                logger.info("Environment temp = {}°C".format(self.env_temp))
-                logger.info("Power temp = {}°C".format(self.pwr_temp))
+                logger.info("Environment Temp = {}°C".format(self.env_temp))
+                logger.info("Mosfet Temp = {}°C".format(self.mosfet_temp))
+
+                logger.info("Cells Temp 1 = {}°C".format(self.cells_temp[0]))
+                logger.info("Cells Temp 2 = {}°C".format(self.cells_temp[1]))
+                logger.info("Cells Temp 3 = {}°C".format(self.cells_temp[2]))
+                logger.info("Cells Temp 4 = {}°C".format(self.cells_temp[3]))
 
                 return status_data
 
