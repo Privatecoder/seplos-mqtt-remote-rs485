@@ -20,9 +20,9 @@ This is a python script that reads data from one or multiple Seplos (while using
 3. Modify the `config.ini` and edit its settings to your needs (**alternatively**: configure everything via ENV-vars)
 4. Run the Docker Image, for example like this:
 
-- For the master pack: `docker run -itd -e RS485_REMOTE_IP="192.168.1.200" -e RS485_REMOTE_PORT="4196" -v $(pwd)/config-master.ini:/usr/src/app/config.ini --name seplos-mqtt-master privatecoder/seplos-mqtt-remote-rs485:v1.0.0`
+- For the master pack: `docker run -itd -e RS485_REMOTE_IP="192.168.1.200" -e RS485_REMOTE_PORT="4196" -v $(pwd)/config-master.ini:/usr/src/app/config.ini --name seplos-mqtt-master privatecoder/seplos-mqtt-remote-rs485:v1.1.2`
 
-- For the slaves: `docker run -itd -e RS485_REMOTE_IP="192.168.1.201" -e RS485_REMOTE_PORT="4196" -v $(pwd)/config-slaves.ini:/usr/src/app/config.ini --name seplos-mqtt-slaves privatecoder/seplos-mqtt-remote-rs485:v1.0.0`
+- For the slaves: `docker run -itd -e RS485_REMOTE_IP="192.168.1.201" -e RS485_REMOTE_PORT="4196" -v $(pwd)/config-slaves.ini:/usr/src/app/config.ini --name seplos-mqtt-slaves privatecoder/seplos-mqtt-remote-rs485:v1.1.2`
 
 Available ENV-vars are:
 
@@ -116,7 +116,7 @@ MQTT messages published by the script will look like this:
 
 1. Clone the project
 2. Make sure to have Python v3.10 or later installed
-3. Edit `config.ini` in `src` to your needs (to connect your remote RS485 device, bind it for example to `/tmp/vcom0` using socat like `socat pty,link=/tmp/vcom0,raw tcp:192.168.1.200:4196,retry,interval=.2,forever` or something similar)
+3. Edit `config.ini` in `src` to your needs (to connect your remote RS485 device, bind it for example to `/tmp/vcom0` using socat like `socat pty,link=/tmp/vcom0,raw tcp:192.168.1.200:4196,retry,interval=.2,forever &` or something similar)
 4. Run the script, i.e. `python fetch_bms_data.py`
 
 Its output will look like this (`LOGGING` `LEVEL` set to `info`):
@@ -181,25 +181,25 @@ INFO:SeplosBMS:Discharge MOSFET enabled = True
 
 Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
 
-- The provided `ha/seplos_pack-1.yaml` might be helpful
+- The provided `ha/seplos_pack-1.yaml` might be helpful for guidance
 - The provided sample yaml is depended on a setting like `mqtt: !include_dir_merge_named mqtt` in `configuration.yaml`.
 - If you are putting sensor directly int your `configuration.yaml`, add `platform: mqtt`, i.e. this
 
 ```
-  - name: "Seplos Pack-1 Cell 0 Voltage"
+  - name: "Seplos Pack-1 Cell 1 Voltage"
     state_topic: "seplos/pack-1/sensors"
     unit_of_measurement: 'V'
-    value_template: "{{ value_json.status.cell_0_voltage }}"
-    unique_id: "seplos_pack_1_cell_0_voltage"
+    value_template: "{{ value_json.status.cell_1_voltage }}"
+    unique_id: "seplos_pack_1_cell_1_voltage"
 ```
 
 becomes this
 
 ```
   - platform: mqtt
-    name: "Seplos Pack-1 Cell 0 Voltage"
+    name: "Seplos Pack-1 Cell 1 Voltage"
     state_topic: "seplos/pack-1/sensors"
     unit_of_measurement: 'V'
-    value_template: "{{ value_json.status.cell_0_voltage }}"
-    unique_id: "seplos_pack_1_cell_0_voltage"
+    value_template: "{{ value_json.status.cell_1_voltage }}"
+    unique_id: "seplos_pack_1_cell_1_voltage"
 ```
