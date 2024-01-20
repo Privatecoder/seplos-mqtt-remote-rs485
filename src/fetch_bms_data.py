@@ -176,8 +176,8 @@ try:
             
             self.protection = Protection()
             self.alarm_status = None
-            self.discharge_fet_enabled = None
-            self.charge_fet_enabled = None
+            self.discharge_mosfet_enabled = None
+            self.charge_mosfet_enabled = None
 
         # return integer from given 1 byte ascii hex data
         @staticmethod
@@ -304,11 +304,11 @@ try:
             )
             alarm_data["soc_low"] = self.protection.soc_low
 
-            self.discharge_fet_enabled = True if switch_byte & 0b01 != 0 else False
-            alarm_data["discharge_fet_enabled"] = self.discharge_fet_enabled
+            self.discharge_mosfet_enabled = True if switch_byte & 0b01 != 0 else False
+            alarm_data["discharge_mosfet_enabled"] = self.discharge_mosfet_enabled
 
-            self.charge_fet_enabled = True if switch_byte & 0b10 != 0 else False
-            alarm_data["charge_fet_enabled"] = self.charge_fet_enabled
+            self.charge_mosfet_enabled = True if switch_byte & 0b10 != 0 else False
+            alarm_data["charge_mosfet_enabled"] = self.charge_mosfet_enabled
 
             logger.info("Alarm Voltage Cell low = {}".format(self.protection.voltage_cell_low))
             logger.info("Alarm Voltage Cell high = {}".format(self.protection.voltage_cell_high))
@@ -327,8 +327,8 @@ try:
                 
             logger.info("Alarm SoC low = {}".format(self.protection.soc_low))
 
-            logger.info("Discharge FET enabled = {}".format(self.discharge_fet_enabled))
-            logger.info("Discharge FET enabled = {}".format(self.charge_fet_enabled))
+            logger.info("Discharge MOSFET enabled = {}".format(self.discharge_mosfet_enabled))
+            logger.info("Discharge MOSFET enabled = {}".format(self.charge_mosfet_enabled))
 
             return alarm_data
 
