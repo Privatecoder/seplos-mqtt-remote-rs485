@@ -17,7 +17,7 @@ This is a python script that reads data from one or multiple Seplos (while using
 
 1. Configure and setup an MQTT broker with a user and password
 2. Configure your (remote) RS485 device, for the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs) **or** `Baud Rate: 19200` (for Slaves)
-3. Modify the `config.ini` and edit its settings to your needs (alternatively: configure everything via ENV-vars)
+3. Modify the `config.ini` and edit its settings to your needs (**alternatively**: configure everything via ENV-vars)
 4. Run the Docker Image, for example like this:
 
 - For the master pack: `docker run -itd -e RS485_REMOTE_IP="192.168.1.200" -e RS485_REMOTE_PORT="4196" -v $(pwd)/config-master.ini:/usr/src/app/config.ini --name seplos-mqtt-master privatecoder/seplos-mqtt-remote-rs485:v1.0.0`
