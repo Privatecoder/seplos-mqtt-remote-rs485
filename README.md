@@ -52,62 +52,150 @@ Not defining them will just start the script (`SERIAL_INTERFACE` must match your
 MQTT messages published by the script will look like this:
 ```
 {
-    "status": {
+    "telemetry_feedback": {
         "min_pack_voltage": 46.4,
         "max_pack_voltage": 55.2,
-        "cell_1_voltage": 3.239,
-        "cell_2_voltage": 3.238,
-        "cell_3_voltage": 3.241,
-        "cell_4_voltage": 3.24,
-        "cell_5_voltage": 3.24,
-        "cell_6_voltage": 3.238,
-        "cell_7_voltage": 3.242,
-        "cell_8_voltage": 3.243,
-        "cell_9_voltage": 3.24,
-        "cell_10_voltage": 3.242,
-        "cell_11_voltage": 3.241,
-        "cell_12_voltage": 3.238,
-        "cell_13_voltage": 3.241,
-        "cell_14_voltage": 3.244,
-        "cell_15_voltage": 3.241,
-        "cell_16_voltage": 3.239,
-        "average_cell_voltage": 3.24,
-        "lowest_cell": 2,
-        "lowest_cell_voltage": 3.238,
+        "voltage_cell_1": 3.255,
+        "voltage_cell_2": 3.255,
+        "voltage_cell_3": 3.256,
+        "voltage_cell_4": 3.255,
+        "voltage_cell_5": 3.253,
+        "voltage_cell_6": 3.258,
+        "voltage_cell_7": 3.259,
+        "voltage_cell_8": 3.256,
+        "voltage_cell_9": 3.258,
+        "voltage_cell_10": 3.26,
+        "voltage_cell_11": 3.255,
+        "voltage_cell_12": 3.259,
+        "voltage_cell_13": 3.257,
+        "voltage_cell_14": 3.263,
+        "voltage_cell_15": 3.261,
+        "voltage_cell_16": 3.258,
+        "average_cell_voltage": 3.257,
+        "lowest_cell": 5,
+        "lowest_cell_voltage": 3.253,
         "highest_cell": 14,
-        "highest_cell_voltage": 3.244,
-        "delta_cell_voltage": 0.006,
-        "cells_temp_1": 8.1,
-        "cells_temp_2": 7.2,
-        "cells_temp_3": 7.2,
-        "cells_temp_4": 7.8,
-        "env_temp": 13.2,
-        "mosfet_temp": 8.9,
-        "current": 2.96,
-        "voltage": 51.85,
-        "power": 153.476,
-        "capacity_rated": 280.0,
-        "capacity": 280.0,
-        "capacity_remain": 18.99,
-        "soc": 6.7,
-        "cycles": 6,
+        "highest_cell_voltage": 3.263,
+        "delta_cell_voltage": 0.01,
+        "cell_temperature_1": 9.7,
+        "cell_temperature_2": 9.1,
+        "cell_temperature_3": 9.1,
+        "cell_temperature_4": 9.8,
+        "ambient_temperature": 14.8,
+        "components_temperature": 10.8,
+        "dis_charge_current": 0.0,
+        "total_pack_voltage": 52.12,
+        "dis_charge_power": 0.0,
+        "rated_capacity": 280.0,
+        "battery_capacity": 280.0,
+        "residual_capacity": 44.46,
+        "soc": 15.8,
+        "cycles": 7,
         "soh": 100.0,
-        "port_voltage": 51.88
+        "port_voltage": 52.14
     },
-    "alarm": {
-        "voltage_cell_low": 0,
-        "voltage_cell_high": 0,
-        "voltage_low": 0,
-        "voltage_high": 0,
-        "temp_low_charge": 0,
-        "temp_high_charge": 0,
-        "temp_low_discharge": 0,
-        "temp_high_discharge": 0,
-        "current_over": 0,
-        "current_under": 0,
-        "soc_low": 1,
-        "discharge_mosfet_enabled": true,
-        "charge_mosfet_enabled": true
+    "telesignalization_feedback": {
+        "voltage_warning_cell_1": "normal",
+        "voltage_warning_cell_2": "normal",
+        "voltage_warning_cell_3": "normal",
+        "voltage_warning_cell_4": "normal",
+        "voltage_warning_cell_5": "normal",
+        "voltage_warning_cell_6": "normal",
+        "voltage_warning_cell_7": "normal",
+        "voltage_warning_cell_8": "normal",
+        "voltage_warning_cell_9": "normal",
+        "voltage_warning_cell_10": "normal",
+        "voltage_warning_cell_11": "normal",
+        "voltage_warning_cell_12": "normal",
+        "voltage_warning_cell_13": "normal",
+        "voltage_warning_cell_14": "normal",
+        "voltage_warning_cell_15": "normal",
+        "voltage_warning_cell_16": "normal",
+        "cell_temperature_warning_1": "normal",
+        "cell_temperature_warning_2": "normal",
+        "cell_temperature_warning_3": "normal",
+        "cell_temperature_warning_4": "normal",
+        "ambient_temperature_warning": "normal",
+        "component_temperature_warning": "normal",
+        "dis_charging_current_warning": "normal",
+        "pack_voltage_warning": "normal",
+        "voltage_sensing_failure": "normal",
+        "temp_sensing_failure": "normal",
+        "current_sensing_failure": "normal",
+        "power_switch_failure": "normal",
+        "cell_voltage_difference_sensing_failure": "normal",
+        "charging_switch_failure": "normal",
+        "discharging_switch_failure": "normal",
+        "current_limit_switch_failure": "normal",
+        "cell_overvoltage": "normal",
+        "cell_voltage_low": "normal",
+        "pack_overvoltage": "normal",
+        "pack_voltage_low": "normal",
+        "charging_temp_high": "normal",
+        "charging_temp_low": "normal",
+        "discharging_temp_high": "normal",
+        "discharging_temp_low": "normal",
+        "ambient_temp_high": "normal",
+        "component_temp_high": "normal",
+        "charging_overcurrent": "normal",
+        "discharging_overcurrent": "normal",
+        "transient_overcurrent": "normal",
+        "output_short_circuit": "normal",
+        "transient_overcurrent_lock": "normal",
+        "charging_high_voltage": "normal",
+        "intermittent_power_supplement": "normal",
+        "soc_low": "normal",
+        "cell_low_voltage_forbidden_charging": "normal",
+        "output_reverse_protection": "normal",
+        "output_connection_failure": "normal",
+        "discharge_switch": "on",
+        "charge_switch": "on",
+        "current_limit_switch": "off",
+        "heating_limit_switch": "off",
+        "equalization_cell_1": "off",
+        "equalization_cell_2": "off",
+        "equalization_cell_3": "off",
+        "equalization_cell_4": "off",
+        "equalization_cell_5": "off",
+        "equalization_cell_6": "off",
+        "equalization_cell_7": "off",
+        "equalization_cell_8": "off",
+        "equalization_cell_9": "off",
+        "equalization_cell_10": "off",
+        "equalization_cell_11": "off",
+        "equalization_cell_12": "off",
+        "equalization_cell_13": "off",
+        "equalization_cell_14": "off",
+        "equalization_cell_15": "off",
+        "equalization_cell_16": "off",
+        "discharge": "off",
+        "charge": "off",
+        "floating_charge": "off",
+        "standby": "on",
+        "power_off": "off",
+        "disconnection_cell_1": "normal",
+        "disconnection_cell_2": "normal",
+        "disconnection_cell_3": "normal",
+        "disconnection_cell_4": "normal",
+        "disconnection_cell_5": "normal",
+        "disconnection_cell_6": "normal",
+        "disconnection_cell_7": "normal",
+        "disconnection_cell_8": "normal",
+        "disconnection_cell_9": "normal",
+        "disconnection_cell_10": "normal",
+        "disconnection_cell_11": "normal",
+        "disconnection_cell_12": "normal",
+        "disconnection_cell_13": "normal",
+        "disconnection_cell_14": "normal",
+        "disconnection_cell_15": "normal",
+        "disconnection_cell_16": "normal",
+        "auto_charging_wait": "normal",
+        "manual_charging_wait": "normal",
+        "eep_storage_failure": "normal",
+        "rtc_clock_failure": "normal",
+        "no_calibration_of_voltage": "normal",
+        "no_calibration_of_current": "normal",
+        "no_calibration_of_null_point": "normal"
     }
 }
 ```
@@ -121,68 +209,160 @@ MQTT messages published by the script will look like this:
 
 Its output will look like this (`LOGGING` `LEVEL` set to `info`):
 ```
-INFO:SeplosBMS:Voltage Cell[1] = 3.243V
-INFO:SeplosBMS:Voltage Cell[2] = 3.24V
-INFO:SeplosBMS:Voltage Cell[3] = 3.241V
-INFO:SeplosBMS:Voltage Cell[4] = 3.241V
-INFO:SeplosBMS:Voltage Cell[5] = 3.242V
-INFO:SeplosBMS:Voltage Cell[6] = 3.239V
-INFO:SeplosBMS:Voltage Cell[7] = 3.239V
-INFO:SeplosBMS:Voltage Cell[8] = 3.24V
-INFO:SeplosBMS:Voltage Cell[9] = 3.243V
-INFO:SeplosBMS:Voltage Cell[10] = 3.242V
-INFO:SeplosBMS:Voltage Cell[11] = 3.242V
-INFO:SeplosBMS:Voltage Cell[12] = 3.245V
-INFO:SeplosBMS:Voltage Cell[13] = 3.242V
-INFO:SeplosBMS:Voltage Cell[14] = 3.244V
-INFO:SeplosBMS:Voltage Cell[15] = 3.242V
-INFO:SeplosBMS:Voltage Cell[16] = 3.245V
-INFO:SeplosBMS:Average Cell Voltage = 3.242V
-INFO:SeplosBMS:Lowest Cell = [6]
-INFO:SeplosBMS:Lowest Cell Voltage = 3.239V
-INFO:SeplosBMS:Highest Cell = [12]
-INFO:SeplosBMS:Highest Cell Voltage = 3.239V
-INFO:SeplosBMS:Delta Cell Voltage = 0.006V
-INFO:SeplosBMS:Voltage = 51.87V
-INFO:SeplosBMS:Min Pack Voltage = 46.4V
-INFO:SeplosBMS:Max Pack Voltage = 55.2V
-INFO:SeplosBMS:Current = 3.29A
-INFO:SeplosBMS:Power = 170.652W
-INFO:SeplosBMS:Port Voltage = 51.87V
-INFO:SeplosBMS:Rated Capacity = 280.0Ah
-INFO:SeplosBMS:Capacity = 280.0Ah
-INFO:SeplosBMS:Remaining Capacity = 19.85Ah
-INFO:SeplosBMS:SOC = 7.0%
-INFO:SeplosBMS:SOH = 100.0%
-INFO:SeplosBMS:Cycles = 7
-INFO:SeplosBMS:Environment Temp = 10.6°C
-INFO:SeplosBMS:Mosfet Temp = 6.7°C
-INFO:SeplosBMS:Cells Temp 1 = 5.8°C
-INFO:SeplosBMS:Cells Temp 2 = 5.1°C
-INFO:SeplosBMS:Cells Temp 3 = 5.1°C
-INFO:SeplosBMS:Cells Temp 4 = 5.8°C
-INFO:SeplosBMS:Battery-Pack 4 alarm status:
-INFO:SeplosBMS:Alarm Voltage Cell low = 0
-INFO:SeplosBMS:Alarm Voltage Cell high = 0
-INFO:SeplosBMS:Alarm Voltage low = 0
-INFO:SeplosBMS:Alarm Voltage high = 0
-INFO:SeplosBMS:Alarm Temp low charge = 0
-INFO:SeplosBMS:Alarm Temp high charge = 0
-INFO:SeplosBMS:Alarm Temp low discharge = 0
-INFO:SeplosBMS:Alarm Temp high discharge = 0
-INFO:SeplosBMS:Alarm Current over = 0
-INFO:SeplosBMS:Alarm Current under = 0
-INFO:SeplosBMS:Alarm SoC low = 1
-INFO:SeplosBMS:Discharge MOSFET enabled = True
-INFO:SeplosBMS:Discharge MOSFET enabled = True
+INFO:SeplosBMS:Battery-Pack 1 Telemetry Feedback: {
+    "min_pack_voltage": 46.4,
+    "max_pack_voltage": 55.2,
+    "voltage_cell_1": 3.255,
+    "voltage_cell_2": 3.255,
+    "voltage_cell_3": 3.255,
+    "voltage_cell_4": 3.255,
+    "voltage_cell_5": 3.253,
+    "voltage_cell_6": 3.258,
+    "voltage_cell_7": 3.259,
+    "voltage_cell_8": 3.256,
+    "voltage_cell_9": 3.258,
+    "voltage_cell_10": 3.261,
+    "voltage_cell_11": 3.255,
+    "voltage_cell_12": 3.26,
+    "voltage_cell_13": 3.257,
+    "voltage_cell_14": 3.264,
+    "voltage_cell_15": 3.262,
+    "voltage_cell_16": 3.259,
+    "average_cell_voltage": 3.258,
+    "lowest_cell": 5,
+    "lowest_cell_voltage": 3.253,
+    "highest_cell": 14,
+    "highest_cell_voltage": 3.264,
+    "delta_cell_voltage": 0.011,
+    "cell_temperature_1": 9.7,
+    "cell_temperature_2": 9.1,
+    "cell_temperature_3": 9.1,
+    "cell_temperature_4": 9.8,
+    "ambient_temperature": 14.8,
+    "components_temperature": 10.8,
+    "dis_charge_current": 0.0,
+    "total_pack_voltage": 52.12,
+    "dis_charge_power": 0.0,
+    "rated_capacity": 280.0,
+    "battery_capacity": 280.0,
+    "residual_capacity": 44.46,
+    "soc": 15.8,
+    "cycles": 7,
+    "soh": 100.0,
+    "port_voltage": 52.15
+}
+INFO:SeplosBMS:Battery-Pack 1 Telesignalization feedback: {
+    "warning_cell_1": "normal",
+    "warning_cell_2": "normal",
+    "warning_cell_3": "normal",
+    "warning_cell_4": "normal",
+    "warning_cell_5": "normal",
+    "warning_cell_6": "normal",
+    "warning_cell_7": "normal",
+    "warning_cell_8": "normal",
+    "warning_cell_9": "normal",
+    "warning_cell_10": "normal",
+    "warning_cell_11": "normal",
+    "warning_cell_12": "normal",
+    "warning_cell_13": "normal",
+    "warning_cell_14": "normal",
+    "warning_cell_15": "normal",
+    "warning_cell_16": "normal",
+    "warning_cell_temperature_1": "normal",
+    "warning_cell_temperature_2": "normal",
+    "warning_cell_temperature_3": "normal",
+    "warning_cell_temperature_4": "normal",
+    "ambient_temperature_warnings": "normal",
+    "component_temperature_warnings": "normal",
+    "dis_charging_current_warnings": "normal",
+    "pack_voltage_warnings": "normal",
+    "voltage_sensing_failure": "normal",
+    "temp_sensing_failure": "normal",
+    "current_sensing_failure": "normal",
+    "power_switch_failure": "normal",
+    "cell_voltage_difference_sensing_failure": "normal",
+    "charging_switch_failure": "normal",
+    "discharging_switch_failure": "normal",
+    "current_limit_switch_failure": "normal",
+    "cell_overvoltage": "normal",
+    "cell_voltage_low": "normal",
+    "pack_overvoltage": "normal",
+    "pack_voltage_low": "normal",
+    "charging_temp_high": "normal",
+    "charging_temp_low": "normal",
+    "discharging_temp_high": "normal",
+    "discharging_temp_low": "normal",
+    "ambient_temp_high": "normal",
+    "component_temp_high": "normal",
+    "charging_overcurrent": "normal",
+    "discharging_overcurrent": "normal",
+    "transient_overcurrent": "normal",
+    "output_short_circuit": "normal",
+    "transient_overcurrent_lock": "normal",
+    "charging_high_voltage": "normal",
+    "intermittent_power_supplement": "normal",
+    "soc_low": "normal",
+    "cell_low_voltage_forbidden_charging": "normal",
+    "output_reverse_protection": "normal",
+    "output_connection_failure": "normal",
+    "discharge_switch": "on",
+    "charge_switch": "on",
+    "current_limit_switch": "off",
+    "heating_limit_switch": "off",
+    "equalization_cell_1": "off",
+    "equalization_cell_2": "off",
+    "equalization_cell_3": "off",
+    "equalization_cell_4": "off",
+    "equalization_cell_5": "off",
+    "equalization_cell_6": "off",
+    "equalization_cell_7": "off",
+    "equalization_cell_8": "off",
+    "equalization_cell_9": "off",
+    "equalization_cell_10": "off",
+    "equalization_cell_11": "off",
+    "equalization_cell_12": "off",
+    "equalization_cell_13": "off",
+    "equalization_cell_14": "off",
+    "equalization_cell_15": "off",
+    "equalization_cell_16": "off",
+    "discharge": "off",
+    "charge": "off",
+    "floating_charge": "off",
+    "standby": "on",
+    "power_off": "off",
+    "disconnection_cell_1": "normal",
+    "disconnection_cell_2": "normal",
+    "disconnection_cell_3": "normal",
+    "disconnection_cell_4": "normal",
+    "disconnection_cell_5": "normal",
+    "disconnection_cell_6": "normal",
+    "disconnection_cell_7": "normal",
+    "disconnection_cell_8": "normal",
+    "disconnection_cell_9": "normal",
+    "disconnection_cell_10": "normal",
+    "disconnection_cell_11": "normal",
+    "disconnection_cell_12": "normal",
+    "disconnection_cell_13": "normal",
+    "disconnection_cell_14": "normal",
+    "disconnection_cell_15": "normal",
+    "disconnection_cell_16": "normal",
+    "auto_charging_wait": "normal",
+    "manual_charging_wait": "normal",
+    "eep_storage_failure": "normal",
+    "rtc_clock_failure": "normal",
+    "no_calibration_of_voltage": "normal",
+    "no_calibration_of_current": "normal",
+    "no_calibration_of_null_point": "normal"
+}
 ```
 
 ## Configuring Home Assistant
 
 Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
 
-- The provided `ha/seplos_pack-1.yaml` might be helpful for guidance
-- The provided sample yaml is depended on a setting like `mqtt: !include_dir_merge_named mqtt` in `configuration.yaml`.
+- The provided `ha/create_ha_sensors.py` will create a yaml-file for each pack/all sensors for a given mqtt-topic and number of packs.
+- Example: `python create_ha_sensors.py --mqtt_topic test/123 --number_of_packs 3` will create 6 yaml-files (3 telemetry and 3 telesignalization).
+- The generated yaml is depended on a setting like `mqtt: !include_dir_merge_named mqtt` in `configuration.yaml`.
 - If you are putting sensor directly int your `configuration.yaml`, add `platform: mqtt`, i.e. this
 
 ```

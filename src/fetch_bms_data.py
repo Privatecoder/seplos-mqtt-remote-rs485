@@ -11,11 +11,7 @@ from paho.mqtt import MQTTException
 from typing import List
 
 try:
-    # Logging
-    logging.basicConfig()
-    logger = logging.getLogger("SeplosBMS")
-
-    # Cast config vars to requested type
+    # cast config vars to requested type
     def cast_value(value, return_type) -> int | float | bool | str | None:
         try:
             if return_type == int:
@@ -29,14 +25,14 @@ try:
         except ValueError:
             return None
 
-    # Get config vars either from env-var (1st) or config.ini (2nd)
+    # get config vars either from env-var (1st) or config.ini (2nd)
     def get_config_value(var_name, return_type=str) -> int | float | bool | str | None:
-        # First, try to get the value from environment variables
+        # first, try to get the value from environment variables
         value = os.environ.get(var_name)
         if value is not None:
             return cast_value(value, return_type)
 
-        # If the variable is not in the environment, try the config file
+        # if the variable is not in the environment, try the config file
         config = configparser.ConfigParser()
         config.read("config.ini")
 
@@ -44,19 +40,24 @@ try:
             if var_name in config[section]:
                 return cast_value(config[section][var_name], return_type)
 
-        # Return None if the variable is not found
+        # return None if the variable is not found
         return None
 
     # BMS config
-    # When ONLY_MASTER is True, data will only be fetched for one pack (0) 
+    
+    # when ONLY_MASTER is True, data will only be fetched for one pack (0) 
     ONLY_MASTER = get_config_value("ONLY_MASTER", return_type=bool)
-    # When ONLY_MASTER is False, data will be fetched for NUMBER_OF_PACKS (1-n)
+    # when ONLY_MASTER is False, data will be fetched for NUMBER_OF_PACKS (1-n)
     NUMBER_OF_PACKS = get_config_value("NUMBER_OF_PACKS", return_type=int)
-    # Set min and max cell-voltage as this cannot be read from the BMS
+    # set min and max cell-voltage as this cannot be read from the BMS
     MIN_CELL_VOLTAGE = get_config_value("MIN_CELL_VOLTAGE", return_type=float)
     MAX_CELL_VOLTAGE = get_config_value("MAX_CELL_VOLTAGE", return_type=float)
 
-    # Logging config
+    # Logging setup and config 
+    
+    logging.basicConfig()
+    logger = logging.getLogger("SeplosBMS")
+    
     if get_config_value("LOGGING_LEVEL").upper() == "ERROR":
         logger.setLevel(logging.ERROR)
     elif get_config_value("LOGGING_LEVEL").upper() == "WARNING":
@@ -66,7 +67,7 @@ try:
     else:
         logger.setLevel(logging.INFO)
 
-    # MQTT config
+    # MQTT config and setuo
 
     MQTT_HOST = get_config_value("MQTT_HOST")
     MQTT_PORT = get_config_value("MQTT_PORT", return_type=int)
@@ -75,20 +76,19 @@ try:
     MQTT_TOPIC = get_config_value("MQTT_TOPIC")
     MQTT_UPDATE_INTERVAL = get_config_value("MQTT_UPDATE_INTERVAL", return_type=int)
 
-    # Setup MQTT client
     mqtt_client = mqtt.Client()
     mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
     mqtt_client.on_connect = logger.info("mqtt connected ({}:{}, user: {})".format(MQTT_HOST, MQTT_PORT, MQTT_USERNAME))
 
-    # Serial Interface config, set to 9600 for Master and 19200 for Slaves
+    # Serial Interface config and setup (set to 9600 for Master and 19200 for Slaves)
 
     SERIAL_INTERFACE = get_config_value("SERIAL_INTERFACE")
     SERIAL_BAUD_RATE = get_config_value("SERIAL_BAUD_RATE", return_type=int)
 
-    # Variable for global serial instance
     serial_instance = None
 
-    # Now you can use these variables in your code
+    # Debug output of env-var settings
+    
     logger.debug(f"SERIAL_INTERFACE: {SERIAL_INTERFACE}")
     logger.debug(f"SERIAL_BAUD_RATE: {SERIAL_BAUD_RATE}")
 
@@ -97,6 +97,7 @@ try:
     logger.debug(f"MQTT_USERNAME: {MQTT_USERNAME}")
     logger.debug(f"MQTT_PASSWORD: {MQTT_PASSWORD}")
     logger.debug(f"MQTT_TOPIC: {MQTT_TOPIC}")
+    logger.debug(f"MQTT_UPDATE_INTERVAL: {MQTT_UPDATE_INTERVAL}")
 
     logger.debug(f"ONLY_MASTER: {ONLY_MASTER}")
     logger.debug(f"NUMBER_OF_PACKS: {NUMBER_OF_PACKS}")
@@ -104,81 +105,191 @@ try:
     logger.debug(f"MIN_CELL_VOLTAGE: {MIN_CELL_VOLTAGE}")
     logger.debug(f"MAX_CELL_VOLTAGE: {MAX_CELL_VOLTAGE}")
 
-    class Protection(object):
+    # Telesignalization Class
+    class Telesignalization(object):
         """
         This class holds Warning and alarm states for different types of Checks
-        They are of type integer, 2 represents an Alarm, 1 a Warning, 0 if everything is fine
+        They are of type integer, 2 represents a Telesignalization event, 1 a Warning event, 0 if everything is fine
         """
 
-        ALARM = 2
-        WARNING = 1
-        OK = 0
+        def __init__(self):
+
+            # equalization status
+
+            self.cell_voltage_warning = [None] * 16
+            self.cell_temperature_warning = [None] * 4
+            self.ambient_temperature_warning: str = None
+            self.component_temperature_warning: str = None
+            self.dis_charging_current_warning: str = None
+            self.pack_voltage_warning: str = None
+            
+            # warning 1
+
+            self.voltage_sensing_failure: str = None
+            self.temp_sensing_failure: str = None
+            self.current_sensing_failure: str = None
+            self.power_switch_failure: str = None
+            self.cell_voltage_difference_sensing_failure: str = None
+            self.charging_switch_failure: str = None
+            self.discharging_switch_failure: str = None
+            self.current_limit_switch_failure: str = None
+
+            # warning 2
+
+            self.cell_overvoltage: str = None
+            self.cell_voltage_low: str = None
+            self.pack_overvoltage: str = None
+            self.pack_voltage_low: str = None
+
+            # warning 3
+
+            self.charging_temp_high: str = None
+            self.charging_temp_low: str = None
+            self.discharging_temp_high: str = None
+            self.discharging_temp_low: str = None
+            
+            # warning 4
+
+            self.ambient_temp_high: str = None
+            self.ambient_temp_low: str = None
+            self.component_temp_high: str = None
+
+            # warning 5
+
+            self.charging_overcurrent: str = None
+            self.discharging_overcurrent: str = None
+            self.transient_overcurrent: str = None
+            self.output_short_circuit: str = None
+            self.transient_overcurrent_lock: str = None
+            self.output_short_circuit_lock: str = None
+
+            # warning 6
+
+            self.charging_high_voltage: str = None
+            self.intermittent_power_supplement: str = None
+            self.soc_low: str = None
+            self.cell_low_voltage_forbidden_charging: str = None
+            self.output_reverse_protection: str = None
+            self.output_connection_failure: str = None
+            
+            # power status
+            
+            self.discharge_switch: str = None
+            self.charge_switch: str = None
+            self.current_limit_switch: str = None
+            self.heating_limit_switch: str = None
+
+            # equalization status
+            
+            self.cell_equalization = [None] * 16
+
+            # system status
+            
+            self.discharge: str = None
+            self.charge: str = None
+            self.floating_charge: str = None
+            self.standby: str = None
+            self.power_off: str = None
+
+            # disconnection status
+
+            self.cell_disconnection = [None] * 16
+
+            # warning 7
+            
+            self.auto_charging_wait: str = None
+            self.manual_charging_wait: str = None
+
+            # warning 8
+            
+            self.eep_storage_failure: str = None
+            self.rtc_clock_failure: str = None
+            self.no_calibration_of_voltage: str = None
+            self.no_calibration_of_current: str = None
+            self.no_calibration_of_null_point: str = None
+
+    # Telemetry Class
+    class Telemetry(object):
+        """
+        This class holds Warning, Protection, Normal, On and Off states for different types of Checks
+        """
 
         def __init__(self):
-            self.voltage_high: int = None
-            self.voltage_low: int = None
-            
-            self.voltage_cell_low: int = None
-            self.voltage_cell_high: int = None
 
-            self.soc_low: int = None
-            
-            self.current_over: int = None
-            self.current_under: int = None
-            
-            self.temp_high_charge: int = None
-            self.temp_low_charge: int = None
-            
-            self.temp_high_discharge: int = None
-            self.temp_low_discharge: int = None
+            # from pack
 
-    class Cell:
-        def __init__(self, voltage):
-            self.voltage = voltage
+            self.cell_voltage = [None] * 16
+            self.cell_temperature: float = [None] * 4
+            self.ambient_temperature: float = None
+            self.components_temperature: float = None
+            self.dis_charge_current: float = None
+            self.total_pack_voltage: float = None
+            self.residual_capacity: float = None
+            self.battery_capacity: float = None
+            self.soc: float = None
+            self.rated_capacity: float = None
+            self.cycles: int = None
+            self.soh: float = None
+            self.port_voltage: float = None
 
+            # calculated
+
+            self.average_cell_voltage: float = None
+            self.delta_cell_voltage: float = None
+            self.lowest_cell: int = None
+            self.lowest_cell_voltage: float = None
+            self.highest_cell: int = None
+            self.highest_cell_voltage: float = None
+            self.min_pack_voltage: float = None
+            self.max_pack_voltage: float = None
+            self.dis_charge_power: float = None
+
+    # Battery-Pack Class
     class SeplosBatteryPack():
-        def __init__(self, battery_pack_address):
-            self.initialized = False
+        def __init__(self, pack_address):
+
+            # pack address (0 for Master, 1-n for Slaves)
+            self.pack_address = pack_address
+            
+            # last status (update mqtt only on changed data)
             self.last_status = None
+            
+            # Telemetry and Telesignalization store
+            self.telemetry = Telemetry()           
+            self.telesignalization = Telesignalization()
 
-            self.battery_pack_address = battery_pack_address
-            
-            self.voltage = None
-            self.current = None
-            self.power = None
-            self.port_voltage = None
+        # calculate given frame checksum
+        @staticmethod
+        def calculate_frame_checksum(frame: bytes) -> int:
+            checksum = 0
+            for b in frame:
+                checksum += b
+            checksum %= 0xFFFF
+            checksum ^= 0xFFFF
+            checksum += 1
+            return checksum
 
-            self.capacity_rated = None
-            self.capacity = None
-            self.capacity_remain = None
-            self.soc = None
-            self.soh = None
-            
-            self.cycles = None
-            
-            self.env_temp = None
-            self.mosfet_temp = None
-            self.cells_temp = [None] * 4
-            
-            self.cell_count = None
-            self.cells: List[Cell] = []
-            self.average_cell_voltage = None
-            self.delta_cell_voltage = None
+        # check if ascii data is hex only
+        @staticmethod
+        def is_valid_hex_string(data) -> bool:
+            try:
+                bytes.fromhex(data.decode("ascii"))
+                logger.debug("frame has hex only: ok")
+                return True
+            except ValueError:
+                logger.debug("frame includes non-hexadecimal characters, got: {}".format(data))
+                return False
 
-            self.min_pack_voltage = None
-            self.max_pack_voltage = None
-            
-            self.lowest_cell = None
-            self.lowest_cell_voltage = None
-
-            self.highest_cell = None
-            self.highest_cell_voltage = None
-            
-            self.protection = Protection()
-            self.alarm_status = None
-            self.discharge_mosfet_enabled = None
-            self.charge_mosfet_enabled = None
-
+        # check data has requested length (alarm: 98, stats: 168)
+        @staticmethod
+        def is_valid_length(data, expected_length: int) -> bool:
+            datalength = len(data)
+            if datalength < expected_length:
+                logger.debug("frame length too short, expected {}, got: {}".format(expected_length, datalength))
+                return False
+            logger.debug("frame length (expected: {}): ok".format(expected_length))
+            return True
+        
         # return integer from given 1 byte ascii hex data
         @staticmethod
         def int_from_1byte_hex_ascii(data: bytes, offset: int, signed=False) -> int:
@@ -196,141 +307,365 @@ try:
                 byteorder="big",
                 signed=signed,
             )
-
-        # calculate given frame checksum
-        @staticmethod
-        def get_checksum(frame: bytes) -> int:
-            """implements the Seplos checksum algorithm, returns 4 bytes"""
-            checksum = 0
-            for b in frame:
-                checksum += b
-            checksum %= 0xFFFF
-            checksum ^= 0xFFFF
-            checksum += 1
-            return checksum
-
-        # check ascii data is hex only
-        @staticmethod
-        def is_valid_hex_string(data) -> bool:
-            try:
-                bytes.fromhex(data.decode("ascii"))
-                logger.debug("frame has hex only ok")
-                return True
-            except ValueError:
-                logger.debug("frame includes non-hexadecimal characters, got {}".format(data))
-                return False
         
-        # check data has requested length
+        # return normal/trigger_low/trigger_high/trigger_other status
         @staticmethod
-        def is_valid_length(data, expected_length: int) -> bool:
-            # check frame length (alarm: 98, stats: 168)
-            datalength = len(data)
-            if datalength < expected_length:
-                logger.debug("frame length too short, got {}, data {}".format(datalength, data))
-                return False
-            logger.debug("frame length ok, got {}".format(datalength))
-            
-            return True
+        def status_from_24_byte_alarm(data: bytes, offset: int) -> str:
+            alarm_type = bytes.fromhex(data.decode("ascii"))[offset]
+            if alarm_type == 0:
+                return "normal"
+            elif alarm_type == 1:
+                return "trigger_low"
+            elif alarm_type == 2:
+                return "trigger_high"
+            else:
+                return "trigger_other"
         
+        # return either on/off or normal/warning/protection status
         @staticmethod
-        def decode_alarm_byte(data_byte: int, alarm_bit: int, warn_bit: int) -> Protection.ALARM | Protection.WARNING | Protection.OK:
-            if data_byte & (1 << alarm_bit) != 0:
-                return Protection.ALARM
-            if data_byte & (1 << warn_bit) != 0:
-                return Protection.WARNING
-            return Protection.OK
+        def status_from_20_bit_alarm(data: bytes, offset: int, on_off_bit: int=None, warn_bit: int=None, protection_bit: int=None) -> str:
+            data_byte = bytes.fromhex(data.decode("ascii"))[offset]
+            if on_off_bit is not None:
+                return "on" if data_byte & (1 << on_off_bit) != 0 else "off"
+            elif warn_bit is not None:
+                if data_byte & (1 << warn_bit) != 0:
+                    return "warning"
+                if protection_bit is not None and data_byte & (1 << protection_bit) != 0:
+                    return "protection"
+                return "normal"
 
-        def decode_alarm_data(self, data: bytes) -> dict:
-            alarm_data = {}
+        # decode battery pack telesignalization feedback frame
+        def decode_telesignalization_feedback_frame(self, data: bytes) -> dict:
+            telesignalization_feedback = {}
             
-            voltage_alarm_byte = bytes.fromhex(data.decode("ascii"))[30]
-            temperature_alarm_byte = bytes.fromhex(data.decode("ascii"))[31]
-            current_alarm_byte = bytes.fromhex(data.decode("ascii"))[33]
-            soc_alarm_byte = bytes.fromhex(data.decode("ascii"))[34]
-            switch_byte = bytes.fromhex(data.decode("ascii"))[35]
-
-            self.protection.voltage_cell_low = self.decode_alarm_byte(
-                data_byte=voltage_alarm_byte, alarm_bit=3, warn_bit=2
-            )
-            alarm_data["voltage_cell_low"] = self.protection.voltage_cell_low
-
-            self.protection.voltage_cell_high = self.decode_alarm_byte(
-                data_byte=voltage_alarm_byte, alarm_bit=1, warn_bit=0
-            )
-            alarm_data["voltage_cell_high"] = self.protection.voltage_cell_high
-
-            self.protection.voltage_low = self.decode_alarm_byte(
-                data_byte=voltage_alarm_byte, alarm_bit=7, warn_bit=6
-            )
-            alarm_data["voltage_low"] = self.protection.voltage_low
-
-            self.protection.voltage_high = self.decode_alarm_byte(
-                data_byte=voltage_alarm_byte, alarm_bit=5, warn_bit=4
-            )
-            alarm_data["voltage_high"] = self.protection.voltage_high
+            # number of cells
             
-            self.protection.temp_low_charge = self.decode_alarm_byte(
-                data_byte=temperature_alarm_byte, alarm_bit=3, warn_bit=2
+            number_of_cells = bytes.fromhex(data.decode("ascii"))[2]
+
+            # info 24 byte alarm offsets
+            
+            cell_warning_byte_offset = 3
+            cell_temperature_warning_byte_offset = 20
+            ambient_temperature_warning_byte_offset = 24
+            component_temperature_warning_byte_offset = 25
+            dis_charging_current_warning_byte_offset = 26
+            pack_voltage_warning_byte_offset = 27
+
+            # info 20 bit alarm offsets
+            
+            warning_1_alarm_byte_offset = 29
+            warning_2_alarm_byte_offset = 30
+            warning_3_alarm_byte_offset = 31
+            warning_4_alarm_byte_offset = 32
+            warning_5_alarm_byte_offset = 33
+            warning_6_alarm_byte_offset = 34
+            power_status_byte_offset = 35
+            equalization_status1_byte_offset = 36
+            equalization_status2_byte_offset = 37
+            system_status_byte_offset = 38
+            disconnection_status1_byte_offset = 39
+            disconnection_status2_byte_offset = 40
+            warning_7_alarm_byte_offset = 41
+            warning_8_alarm_byte_offset = 42
+
+            # info data
+            
+            for i in range(number_of_cells):  # 0 to 15, for 16 cells
+                self.telesignalization.cell_voltage_warning[i] = self.status_from_24_byte_alarm(data=data, offset=cell_warning_byte_offset + i)
+                telesignalization_feedback[f"voltage_warning_cell_{i + 1}"] = self.telesignalization.cell_voltage_warning[i]
+
+            for i in range(4):  # 0 to 3, for 4 temperature sensors
+                self.telesignalization.cell_temperature_warning[i] = self.status_from_24_byte_alarm(data=data, offset=cell_temperature_warning_byte_offset + i)
+                telesignalization_feedback[f"cell_temperature_warning_{i + 1}"] = self.telesignalization.cell_temperature_warning[i]
+
+            self.telesignalization.ambient_temperature_warning = self.status_from_24_byte_alarm(data=data, offset=ambient_temperature_warning_byte_offset)
+            telesignalization_feedback[f"ambient_temperature_warning"] = self.telesignalization.ambient_temperature_warning
+
+            self.telesignalization.component_temperature_warning = self.status_from_24_byte_alarm(data=data, offset=component_temperature_warning_byte_offset)
+            telesignalization_feedback[f"component_temperature_warning"] = self.telesignalization.component_temperature_warning
+
+            self.telesignalization.dis_charging_current_warning = self.status_from_24_byte_alarm(data=data, offset=dis_charging_current_warning_byte_offset)
+            telesignalization_feedback[f"dis_charging_current_warning"] = self.telesignalization.dis_charging_current_warning
+
+            self.telesignalization.pack_voltage_warning = self.status_from_24_byte_alarm(data=data, offset=pack_voltage_warning_byte_offset)
+            telesignalization_feedback[f"pack_voltage_warning"] = self.telesignalization.pack_voltage_warning
+
+            # warning 1
+
+            self.telesignalization.voltage_sensing_failure = self.status_from_20_bit_alarm(
+                data=data, offset=warning_1_alarm_byte_offset, warn_bit=0
             )
-            alarm_data["temp_low_charge"] = self.protection.temp_low_charge
+            telesignalization_feedback["voltage_sensing_failure"] = self.telesignalization.voltage_sensing_failure
 
-            self.protection.temp_high_charge = self.decode_alarm_byte(
-                data_byte=temperature_alarm_byte, alarm_bit=1, warn_bit=0
+            self.telesignalization.temp_sensing_failure = self.status_from_20_bit_alarm(
+                data=data, offset=warning_1_alarm_byte_offset, warn_bit=1
             )
-            alarm_data["temp_high_charge"] = self.protection.temp_high_charge
+            telesignalization_feedback["temp_sensing_failure"] = self.telesignalization.temp_sensing_failure
 
-            self.protection.temp_low_discharge = self.decode_alarm_byte(
-                data_byte=temperature_alarm_byte, alarm_bit=7, warn_bit=6
+            self.telesignalization.current_sensing_failure = self.status_from_20_bit_alarm(
+                data=data, offset=warning_1_alarm_byte_offset, warn_bit=2
             )
-            alarm_data["temp_low_discharge"] = self.protection.temp_low_discharge
+            telesignalization_feedback["current_sensing_failure"] = self.telesignalization.current_sensing_failure
 
-            self.protection.temp_high_discharge = self.decode_alarm_byte(
-                data_byte=temperature_alarm_byte, alarm_bit=5, warn_bit=4
+            self.telesignalization.power_switch_failure = self.status_from_20_bit_alarm(
+                data=data, offset=warning_1_alarm_byte_offset, warn_bit=3
             )
-            alarm_data["temp_high_discharge"] = self.protection.temp_high_discharge
+            telesignalization_feedback["power_switch_failure"] = self.telesignalization.power_switch_failure
 
-            self.protection.current_over = self.decode_alarm_byte(
-                data_byte=current_alarm_byte, alarm_bit=1, warn_bit=0
+            self.telesignalization.cell_voltage_difference_sensing_failure = self.status_from_20_bit_alarm(
+                data=data, offset=warning_1_alarm_byte_offset, warn_bit=4
             )
-            alarm_data["current_over"] = self.protection.current_over
+            telesignalization_feedback["cell_voltage_difference_sensing_failure"] = self.telesignalization.cell_voltage_difference_sensing_failure
 
-            self.protection.current_under = self.decode_alarm_byte(
-                data_byte=current_alarm_byte, alarm_bit=3, warn_bit=2
+            self.telesignalization.charging_switch_failure = self.status_from_20_bit_alarm(
+                data=data, offset=warning_1_alarm_byte_offset, warn_bit=5
             )
-            alarm_data["current_under"] = self.protection.current_under
+            telesignalization_feedback["charging_switch_failure"] = self.telesignalization.charging_switch_failure
 
-            self.protection.soc_low = self.decode_alarm_byte(
-                data_byte=soc_alarm_byte, alarm_bit=3, warn_bit=2
+            self.telesignalization.discharging_switch_failure = self.status_from_20_bit_alarm(
+                data=data, offset=warning_1_alarm_byte_offset, warn_bit=6
             )
-            alarm_data["soc_low"] = self.protection.soc_low
+            telesignalization_feedback["discharging_switch_failure"] = self.telesignalization.discharging_switch_failure
 
-            self.discharge_mosfet_enabled = True if switch_byte & 0b01 != 0 else False
-            alarm_data["discharge_mosfet_enabled"] = self.discharge_mosfet_enabled
+            self.telesignalization.current_limit_switch_failure = self.status_from_20_bit_alarm(
+                data=data, offset=warning_1_alarm_byte_offset, warn_bit=7
+            )
+            telesignalization_feedback["current_limit_switch_failure"] = self.telesignalization.current_limit_switch_failure
 
-            self.charge_mosfet_enabled = True if switch_byte & 0b10 != 0 else False
-            alarm_data["charge_mosfet_enabled"] = self.charge_mosfet_enabled
+            # warning 2
 
-            logger.info("Alarm Voltage Cell low = {}".format(self.protection.voltage_cell_low))
-            logger.info("Alarm Voltage Cell high = {}".format(self.protection.voltage_cell_high))
-                
-            logger.info("Alarm Voltage low = {}".format(self.protection.voltage_low))
-            logger.info("Alarm Voltage high = {}".format(self.protection.voltage_high))
-                
-            logger.info("Alarm Temp low charge = {}".format(self.protection.temp_low_charge))
-            logger.info("Alarm Temp high charge = {}".format(self.protection.temp_high_charge))
+            self.telesignalization.cell_overvoltage = self.status_from_20_bit_alarm(
+                data=data, offset=warning_2_alarm_byte_offset, warn_bit=0, protection_bit=1
+            )
+            telesignalization_feedback["cell_overvoltage"] = self.telesignalization.cell_overvoltage
 
-            logger.info("Alarm Temp low discharge = {}".format(self.protection.temp_low_discharge))
-            logger.info("Alarm Temp high discharge = {}".format(self.protection.temp_high_discharge))
-                
-            logger.info("Alarm Current over = {}".format(self.protection.current_over))
-            logger.info("Alarm Current under = {}".format(self.protection.current_under))
-                
-            logger.info("Alarm SoC low = {}".format(self.protection.soc_low))
+            self.telesignalization.cell_voltage_low = self.status_from_20_bit_alarm(
+                data=data, offset=warning_2_alarm_byte_offset, warn_bit=2, protection_bit=3
+            )
+            telesignalization_feedback["cell_voltage_low"] = self.telesignalization.cell_voltage_low
 
-            logger.info("Discharge MOSFET enabled = {}".format(self.discharge_mosfet_enabled))
-            logger.info("Discharge MOSFET enabled = {}".format(self.charge_mosfet_enabled))
+            self.telesignalization.pack_overvoltage = self.status_from_20_bit_alarm(
+                data=data, offset=warning_2_alarm_byte_offset, warn_bit=4, protection_bit=5
+            )
+            telesignalization_feedback["pack_overvoltage"] = self.telesignalization.pack_overvoltage
 
-            return alarm_data
+            self.telesignalization.pack_voltage_low = self.status_from_20_bit_alarm(
+                data=data, offset=warning_2_alarm_byte_offset, warn_bit=6, protection_bit=7
+            )
+            telesignalization_feedback["pack_voltage_low"] = self.telesignalization.pack_voltage_low
+
+            # warning 3
+
+            self.telesignalization.charging_temp_high = self.status_from_20_bit_alarm(
+                data=data, offset=warning_3_alarm_byte_offset, warn_bit=0, protection_bit=1
+            )
+            telesignalization_feedback["charging_temp_high"] = self.telesignalization.charging_temp_high
+
+            self.telesignalization.charging_temp_low = self.status_from_20_bit_alarm(
+                data=data, offset=warning_3_alarm_byte_offset, warn_bit=2, protection_bit=3
+            )
+            telesignalization_feedback["charging_temp_low"] = self.telesignalization.charging_temp_low
+
+            self.telesignalization.discharging_temp_high = self.status_from_20_bit_alarm(
+                data=data, offset=warning_3_alarm_byte_offset, warn_bit=4, protection_bit=5
+            )
+            telesignalization_feedback["discharging_temp_high"] = self.telesignalization.discharging_temp_high
+
+            self.telesignalization.discharging_temp_low = self.status_from_20_bit_alarm(
+                data=data, offset=warning_3_alarm_byte_offset, warn_bit=6, protection_bit=7
+            )
+            telesignalization_feedback["discharging_temp_low"] = self.telesignalization.discharging_temp_low
+
+            # warning 4
+
+            self.telesignalization.ambient_temp_high = self.status_from_20_bit_alarm(
+                data=data, offset=warning_4_alarm_byte_offset, warn_bit=0, protection_bit=1
+            )
+            telesignalization_feedback["ambient_temp_high"] = self.telesignalization.ambient_temp_high
+
+            self.telesignalization.ambient_temp_low = self.status_from_20_bit_alarm(
+                data=data, offset=warning_4_alarm_byte_offset, warn_bit=2, protection_bit=3
+            )
+            telesignalization_feedback["ambient_temp_high"] = self.telesignalization.ambient_temp_high
+
+            self.telesignalization.component_temp_high = self.status_from_20_bit_alarm(
+                data=data, offset=warning_4_alarm_byte_offset, warn_bit=4, protection_bit=5
+            )
+            telesignalization_feedback["component_temp_high"] = self.telesignalization.component_temp_high
+
+            # warning 5
+
+            self.telesignalization.charging_overcurrent = self.status_from_20_bit_alarm(
+                data=data, offset=warning_5_alarm_byte_offset, warn_bit=0, protection_bit=1
+            )
+            telesignalization_feedback["charging_overcurrent"] = self.telesignalization.charging_overcurrent
+
+            self.telesignalization.discharging_overcurrent = self.status_from_20_bit_alarm(
+                data=data, offset=warning_5_alarm_byte_offset, warn_bit=2, protection_bit=3
+            )
+            telesignalization_feedback["discharging_overcurrent"] = self.telesignalization.discharging_overcurrent
+
+            self.telesignalization.transient_overcurrent = self.status_from_20_bit_alarm(
+                data=data, offset=warning_5_alarm_byte_offset, warn_bit=4
+            )
+            telesignalization_feedback["transient_overcurrent"] = self.telesignalization.transient_overcurrent
+
+            self.telesignalization.output_short_circuit = self.status_from_20_bit_alarm(
+                data=data, offset=warning_5_alarm_byte_offset, warn_bit=5
+            )
+            telesignalization_feedback["output_short_circuit"] = self.telesignalization.output_short_circuit
+
+            self.telesignalization.transient_overcurrent_lock = self.status_from_20_bit_alarm(
+                data=data, offset=warning_5_alarm_byte_offset, warn_bit=6
+            )
+            telesignalization_feedback["transient_overcurrent_lock"] = self.telesignalization.transient_overcurrent_lock
+
+            self.telesignalization.output_short_circuit_lock = self.status_from_20_bit_alarm(
+                data=data, offset=warning_5_alarm_byte_offset, warn_bit=7
+            )
+            telesignalization_feedback["transient_overcurrent_lock"] = self.telesignalization.output_short_circuit_lock
+
+            # warning 6
+
+            self.telesignalization.charging_high_voltage = self.status_from_20_bit_alarm(
+                data=data, offset=warning_6_alarm_byte_offset, warn_bit=0
+            )
+            telesignalization_feedback["charging_high_voltage"] = self.telesignalization.charging_high_voltage
+
+            self.telesignalization.intermittent_power_supplement = self.status_from_20_bit_alarm(
+                data=data, offset=warning_6_alarm_byte_offset, warn_bit=1
+            )
+            telesignalization_feedback["intermittent_power_supplement"] = self.telesignalization.intermittent_power_supplement
+
+            self.telesignalization.soc_low = self.status_from_20_bit_alarm(
+                data=data, offset=warning_6_alarm_byte_offset, warn_bit=2, protection_bit=3
+            )
+            telesignalization_feedback["soc_low"] = self.telesignalization.soc_low
+
+            self.telesignalization.cell_low_voltage_forbidden_charging = self.status_from_20_bit_alarm(
+                data=data, offset=warning_6_alarm_byte_offset, warn_bit=4
+            )
+            telesignalization_feedback["cell_low_voltage_forbidden_charging"] = self.telesignalization.cell_low_voltage_forbidden_charging
+
+            self.telesignalization.output_reverse_protection = self.status_from_20_bit_alarm(
+                data=data, offset=warning_6_alarm_byte_offset, warn_bit=5
+            )
+            telesignalization_feedback["output_reverse_protection"] = self.telesignalization.output_reverse_protection
+
+            self.telesignalization.output_connection_failure = self.status_from_20_bit_alarm(
+                data=data, offset=warning_6_alarm_byte_offset, warn_bit=6
+            )
+            telesignalization_feedback["output_connection_failure"] = self.telesignalization.output_connection_failure
+
+            # power status
+
+            self.telesignalization.discharge_switch = self.status_from_20_bit_alarm(
+                data=data, offset=power_status_byte_offset, on_off_bit=0
+            )
+            telesignalization_feedback["discharge_switch"] = self.telesignalization.discharge_switch
+
+            self.telesignalization.charge_switch = self.status_from_20_bit_alarm(
+                data=data, offset=power_status_byte_offset, on_off_bit=1
+            )
+            telesignalization_feedback["charge_switch"] = self.telesignalization.charge_switch
+
+            self.telesignalization.current_limit_switch = self.status_from_20_bit_alarm(
+                data=data, offset=power_status_byte_offset, on_off_bit=2
+            )
+            telesignalization_feedback["current_limit_switch"] = self.telesignalization.current_limit_switch
+
+            self.telesignalization.heating_limit_switch = self.status_from_20_bit_alarm(
+                data=data, offset=power_status_byte_offset, on_off_bit=3
+            )
+            telesignalization_feedback["heating_limit_switch"] = self.telesignalization.heating_limit_switch
+
+            # equalization status 1 + 2
+
+            for i in range(number_of_cells):
+                on_off_bit = i % 8
+                offset = equalization_status1_byte_offset if i < 8 else equalization_status2_byte_offset
+
+                self.telesignalization.cell_equalization[i] = self.status_from_20_bit_alarm(data=data, offset=offset, on_off_bit=on_off_bit)
+                # shift cell-index on return List by 1
+                telesignalization_feedback[f"equalization_cell_{i + 1}"] = self.telesignalization.cell_equalization[i]
+
+            # system status
+
+            self.telesignalization.discharge = self.status_from_20_bit_alarm(
+                data=data, offset=system_status_byte_offset, on_off_bit=0
+            )
+            telesignalization_feedback["discharge"] = self.telesignalization.discharge
+
+            self.telesignalization.charge = self.status_from_20_bit_alarm(
+                data=data, offset=system_status_byte_offset, on_off_bit=1
+            )
+            telesignalization_feedback["charge"] = self.telesignalization.charge
+
+            self.telesignalization.floating_charge = self.status_from_20_bit_alarm(
+                data=data, offset=system_status_byte_offset, on_off_bit=2
+            )
+            telesignalization_feedback["floating_charge"] = self.telesignalization.floating_charge
+
+            self.telesignalization.standby = self.status_from_20_bit_alarm(
+                data=data, offset=system_status_byte_offset, on_off_bit=4
+            )
+            telesignalization_feedback["standby"] = self.telesignalization.standby
+
+            self.telesignalization.power_off = self.status_from_20_bit_alarm(
+                data=data, offset=system_status_byte_offset, on_off_bit=5
+            )
+            telesignalization_feedback["power_off"] = self.telesignalization.power_off
+
+            # disconnection status 1 + 2
+
+            for i in range(number_of_cells):
+                warn_bit = i % 8
+                offset = disconnection_status1_byte_offset if i < 8 else disconnection_status2_byte_offset
+
+                self.telesignalization.cell_disconnection[i] = self.status_from_20_bit_alarm(data=data, offset=offset, warn_bit=warn_bit)
+                # shift cell-index on return List by 1
+                telesignalization_feedback[f"disconnection_cell_{i + 1}"] = self.telesignalization.cell_disconnection[i]
+
+            # warning 7
+
+            self.telesignalization.auto_charging_wait = self.status_from_20_bit_alarm(
+                data=data, offset=warning_7_alarm_byte_offset, warn_bit=4
+            )
+            telesignalization_feedback["auto_charging_wait"] = self.telesignalization.auto_charging_wait
+
+            self.telesignalization.manual_charging_wait = self.status_from_20_bit_alarm(
+                data=data, offset=warning_7_alarm_byte_offset, warn_bit=5
+            )
+            telesignalization_feedback["manual_charging_wait"] = self.telesignalization.manual_charging_wait
+
+            # warning 8
+
+            self.telesignalization.eep_storage_failure = self.status_from_20_bit_alarm(
+                data=data, offset=warning_8_alarm_byte_offset, warn_bit=0
+            )
+            telesignalization_feedback["eep_storage_failure"] = self.telesignalization.eep_storage_failure
+
+            self.telesignalization.rtc_clock_failure = self.status_from_20_bit_alarm(
+                data=data, offset=warning_8_alarm_byte_offset, warn_bit=1
+            )
+            telesignalization_feedback["rtc_clock_failure"] = self.telesignalization.rtc_clock_failure
+
+            self.telesignalization.no_calibration_of_voltage = self.status_from_20_bit_alarm(
+                data=data, offset=warning_8_alarm_byte_offset, warn_bit=2
+            )
+            telesignalization_feedback["no_calibration_of_voltage"] = self.telesignalization.no_calibration_of_voltage
+
+            self.telesignalization.no_calibration_of_current = self.status_from_20_bit_alarm(
+                data=data, offset=warning_8_alarm_byte_offset, warn_bit=3
+            )
+            telesignalization_feedback["no_calibration_of_current"] = self.telesignalization.no_calibration_of_current
+
+            self.telesignalization.no_calibration_of_null_point = self.status_from_20_bit_alarm(
+                data=data, offset=warning_8_alarm_byte_offset, warn_bit=4
+            )
+            telesignalization_feedback["no_calibration_of_null_point"] = self.telesignalization.no_calibration_of_null_point
+
+            return telesignalization_feedback
 
         # check validity of given frame, i.e. lenght, checksum and error flag
         def is_valid_frame(self, data: bytes) -> bool:
@@ -342,7 +677,7 @@ try:
             """
             try:
                 # check frame checksum
-                chksum = self.get_checksum(data[1:-5])
+                chksum = self.calculate_frame_checksum(data[1:-5])
                 compare = self.int_from_2byte_hex_ascii(data, -5)
                 if chksum != compare:
                     logger.debug("frame has wrong checksum, got {}, expected {}".format(chksum, compare))
@@ -352,25 +687,24 @@ try:
                 # check frame cid2 flag
                 cid2 = data[7:9]
                 if cid2 != b"00":
-                    logger.debug("frame error flag (cid2) set, got {}, expected b'00'".format(cid2))
+                    logger.debug("frame error flag (cid2) set, expected expected b'00', got: {}, ".format(cid2))
                     return False
-                logger.debug("frame error flag (cid2) ok, got {}".format(cid2))
+                logger.debug("frame error flag (cid2) ok, got: {}".format(cid2))
 
                 return True
 
             # catch corrupted frames
             except UnicodeError:
-                logger.debug("frame corrupted, got {}".format(data))
+                logger.debug("frame corrupted, got: {}".format(data))
                 return False
             # catch non-hexadecimal numbers
             except ValueError:
-                logger.debug("frame has non-hexadecimal number, got {}".format(data))
+                logger.debug("frame has non-hexadecimal number, got: {}".format(data))
                 return False
 
         # calculate info length checksum
         @staticmethod
         def get_info_length(info: bytes) -> int:
-            """implements the Seplos checksum for the info length"""
             lenid = len(info)
             if lenid == 0:
                 return 0
@@ -383,7 +717,7 @@ try:
             return (lchksum << 12) + lenid
 
         # calculate command to send for each battery_pack using its address
-        def encode_cmd(self, address: int, cid2: int = 0x42, info: bytes = b"01") -> bytes:
+        def encode_cmd(self, address: int, cid2: int = None, info: bytes = b"01") -> bytes:
             """encodes a command sent to a battery (cid1=0x46)"""
             cid1 = 0x46
 
@@ -394,289 +728,200 @@ try:
             ).encode()
             frame += info
 
-            checksum = self.get_checksum(frame)
+            checksum = self.calculate_frame_checksum(frame)
             encoded = b"~" + frame + "{:04X}".format(checksum).encode() + b"\r"
             return encoded
-        
+
         # get cell with the lowest voltage
         def get_min_cell(self) -> dict:
-            min_cell_voltage = 9999
-            min_cell = None
-            if len(self.cells) == 0 and hasattr(self, "cell_min_no"):
-                return self.cell_min_no
-
-            for c in range(min(len(self.cells), self.cell_count)):
-                if (
-                    self.cells[c].voltage is not None
-                    and min_cell_voltage > self.cells[c].voltage
-                ):
-                    min_cell_voltage = self.cells[c].voltage
-                    min_cell = c
+            min_cell = self.telemetry.cell_voltage.index(min(self.telemetry.cell_voltage))
+            min_cell_voltage = self.telemetry.cell_voltage[min_cell]
             return { "min_cell": min_cell, "min_cell_voltage": min_cell_voltage }
 
         # get cell with the highest voltage
         def get_max_cell(self) -> dict:
-            max_cell_voltage = 0
-            max_cell = None
-            if len(self.cells) == 0 and hasattr(self, "cell_max_no"):
-                return self.cell_max_no
-
-            for c in range(min(len(self.cells), self.cell_count)):
-                if (
-                    self.cells[c].voltage is not None
-                    and max_cell_voltage < self.cells[c].voltage
-                ):
-                    max_cell_voltage = self.cells[c].voltage
-                    max_cell = c
+            max_cell = self.telemetry.cell_voltage.index(max(self.telemetry.cell_voltage))
+            max_cell_voltage = self.telemetry.cell_voltage[max_cell]
             return { "max_cell": max_cell, "max_cell_voltage": max_cell_voltage }
 
-        # init cells array for the battery
-        def init_battery(self) -> bool:
-            # After successful connection init_battery will be called to set up the battery.
-            # Set the current limits, populate cell count, etc.
-            # Return True if success, False for failure
+        # decode battery pack telemetry feedback frame
+        def decode_telemetry_feedback_frame(self, data) -> dict:
+                telemetry_feedback = {}
 
-            self.min_pack_voltage = MIN_CELL_VOLTAGE * self.cell_count
-            self.max_pack_voltage = MAX_CELL_VOLTAGE * self.cell_count
-
-            # init the cell array
-            for _ in range(self.cell_count):
-                self.cells.append(Cell(False))
-
-            return True
-        
-        # decode battery_pack data
-        def decode_status_data(self, data) -> dict:
-                status_data = {}
+                # number of cells
+                number_of_cells = self.int_from_1byte_hex_ascii(data=data, offset=4)
 
                 # data offsets
-                cell_count_offset = 4
                 cell_voltage_offset = 6
                 temps_offset = 72
-                current_offset = 96
-                voltage_offset = 100
-                capacity_remain_offset = 104
-                capacity_offset = 110
+                dis_charge_current_offset = 96
+                total_pack_voltage_offset = 100
+                residual_capacity_offset = 104
+                battery_capacity_offset = 110
                 soc_offset = 114
-                capacity_rated_offset = 118
+                rated_capacity_offset = 118
                 cycles_offset = 122
                 soh_offset = 126
                 port_voltage_offset = 130
 
-                # fetch cell count
-                self.cell_count = self.int_from_1byte_hex_ascii(
-                    data=data, offset=cell_count_offset
-                )
-
-                # setup the battery on first run after cell count is known
-                if not self.initialized:
-                    self.init_battery()
-                    self.initialized = True
+                self.telemetry.min_pack_voltage = MIN_CELL_VOLTAGE * number_of_cells
+                self.telemetry.max_pack_voltage = MAX_CELL_VOLTAGE * number_of_cells
 
                 # set min and max pack voltage
-                status_data["min_pack_voltage"] = self.min_pack_voltage
-                status_data["max_pack_voltage"] = self.max_pack_voltage
+                telemetry_feedback["min_pack_voltage"] = self.telemetry.min_pack_voltage
+                telemetry_feedback["max_pack_voltage"] = self.telemetry.max_pack_voltage
 
-                # fetch cell-voltages and temps
-                if self.cell_count == len(self.cells):
-                    # get voltages for each cell
-                    for i in range(self.cell_count):
-                        voltage = (
-                            self.int_from_2byte_hex_ascii(data, cell_voltage_offset + i * 4) / 1000
-                        )
-                        self.cells[i].voltage = voltage
-                        # shift cell-index on return List by 1
-                        tmp_key = f"cell_{i + 1}_voltage"
-                        status_data[tmp_key] = voltage
 
-                    # calculate average cell voltage
-                    self.average_cell_voltage = round((sum(cell.voltage for cell in self.cells) / len(self.cells)), 3)
-                    status_data["average_cell_voltage"] = self.average_cell_voltage
-
-                    # get lowest cell and its voltage
-                    lowest_cell_data = self.get_min_cell()
-                    self.lowest_cell = lowest_cell_data['min_cell']
+                # get voltages for each cell
+                for i in range(number_of_cells):
+                    voltage = (
+                        self.int_from_2byte_hex_ascii(data, cell_voltage_offset + i * 4) / 1000
+                    )
+                    self.telemetry.cell_voltage[i] = voltage
                     # shift cell-index on return List by 1
-                    status_data["lowest_cell"] = self.lowest_cell + 1
-                    self.lowest_cell_voltage = lowest_cell_data['min_cell_voltage']
-                    status_data["lowest_cell_voltage"] = self.lowest_cell_voltage
-                    
-                    # get lowest cell and its voltage
-                    highest_cell_data = self.get_max_cell()
-                    self.highest_cell = highest_cell_data["max_cell"]
+                    tmp_key = f"voltage_cell_{i + 1}"
+                    telemetry_feedback[tmp_key] = voltage
+
+                # calculate average cell voltage
+                self.telemetry.average_cell_voltage = round((sum(self.telemetry.cell_voltage) / len(self.telemetry.cell_voltage)), 3)
+                telemetry_feedback["average_cell_voltage"] = self.telemetry.average_cell_voltage
+
+                # get lowest cell and its voltage
+                lowest_cell_data = self.get_min_cell()
+                self.telemetry.lowest_cell = lowest_cell_data['min_cell']
+                # shift cell-index on return List by 1
+                telemetry_feedback["lowest_cell"] = self.telemetry.lowest_cell + 1
+                self.telemetry.lowest_cell_voltage = lowest_cell_data['min_cell_voltage']
+                telemetry_feedback["lowest_cell_voltage"] = self.telemetry.lowest_cell_voltage
+
+                # get lowest cell and its voltage
+                highest_cell_data = self.get_max_cell()
+                self.telemetry.highest_cell = highest_cell_data["max_cell"]
+                # shift cell-index on return List by 1
+                telemetry_feedback["highest_cell"] = self.telemetry.highest_cell + 1
+                self.telemetry.highest_cell_voltage = highest_cell_data["max_cell_voltage"]
+                telemetry_feedback["highest_cell_voltage"] = self.telemetry.highest_cell_voltage
+
+                # calculate delta cell voltage
+                self.telemetry.delta_cell_voltage = round((self.telemetry.highest_cell_voltage - self.telemetry.lowest_cell_voltage), 3)
+                telemetry_feedback["delta_cell_voltage"] = self.telemetry.delta_cell_voltage
+
+                # get values for the 4 existing cell-temperature sensors
+                for i in range(0, 4):
+                    temp = (self.int_from_2byte_hex_ascii(data, temps_offset + i * 4) - 2731) / 10
+                    self.telemetry.cell_temperature[i] = temp
                     # shift cell-index on return List by 1
-                    status_data["highest_cell"] = self.highest_cell + 1
-                    self.highest_cell_voltage = highest_cell_data["max_cell_voltage"]
-                    status_data["highest_cell_voltage"] = self.highest_cell_voltage
+                    tmp_key = f"cell_temperature_{i + 1}"
+                    telemetry_feedback[tmp_key] = temp
 
-                    # calculate delta cell voltage
-                    self.delta_cell_voltage = round((self.highest_cell_voltage - self.lowest_cell_voltage), 3)
-                    status_data["delta_cell_voltage"] = self.delta_cell_voltage
+                # get ambient temperature
+                self.telemetry.ambient_temperature = (self.int_from_2byte_hex_ascii(data, temps_offset + 4 * 4) - 2731) / 10
+                telemetry_feedback["ambient_temperature"] = self.telemetry.ambient_temperature
 
-                    # get values for the 4 existing cell-temperature sensors
-                    for i in range(0, 4):
-                        temp = (self.int_from_2byte_hex_ascii(data, temps_offset + i * 4) - 2731) / 10
-                        self.cells_temp[i] = temp
-                        # shift cell-index on return List by 1
-                        tmp_key = f"cells_temp_{i + 1}"
-                        status_data[tmp_key] = temp
-                
-                # fetch env-temp
-                self.env_temp = (self.int_from_2byte_hex_ascii(data, temps_offset + 4 * 4) - 2731) / 10
-                status_data["env_temp"] = self.env_temp
+                # get components temperature
+                self.telemetry.components_temperature = (self.int_from_2byte_hex_ascii(data, temps_offset + 5 * 4) - 2731) / 10
+                telemetry_feedback["components_temperature"] = self.telemetry.components_temperature
 
-                # fetch pwr-temp
-                self.mosfet_temp = (self.int_from_2byte_hex_ascii(data, temps_offset + 5 * 4) - 2731) / 10
-                status_data["mosfet_temp"] = self.mosfet_temp
+                # get dis-/charge current
+                self.telemetry.dis_charge_current = self.int_from_2byte_hex_ascii(data, dis_charge_current_offset, signed=True) / 100
+                telemetry_feedback["dis_charge_current"] = self.telemetry.dis_charge_current
 
-                # fetch current
-                self.current = self.int_from_2byte_hex_ascii(data, current_offset, signed=True) / 100
-                status_data["current"] = self.current
+                # get total pack-voltage
+                self.telemetry.total_pack_voltage = self.int_from_2byte_hex_ascii(data, total_pack_voltage_offset) / 100
+                telemetry_feedback["total_pack_voltage"] = self.telemetry.total_pack_voltage
 
-                # fetch voltage
-                self.voltage = self.int_from_2byte_hex_ascii(data, voltage_offset) / 100
-                status_data["voltage"] = self.voltage
+                # calculate dis-/charge_power
+                self.telemetry.dis_charge_power = round((self.telemetry.dis_charge_current * self.telemetry.total_pack_voltage), 3)
+                telemetry_feedback["dis_charge_power"] = self.telemetry.dis_charge_power
 
-                # calculate power
-                self.power = round((self.current * self.voltage), 3)
-                status_data["power"] = self.power
-                
-                # fetch rated capacity
-                self.capacity_rated = self.int_from_2byte_hex_ascii(data, capacity_rated_offset) / 100
-                status_data["capacity_rated"] = self.capacity_rated
+                # get rated capacity
+                self.telemetry.rated_capacity = self.int_from_2byte_hex_ascii(data, rated_capacity_offset) / 100
+                telemetry_feedback["rated_capacity"] = self.telemetry.rated_capacity
 
-                # fetch capacity
-                self.capacity = self.int_from_2byte_hex_ascii(data, capacity_offset) / 100
-                status_data["capacity"] = self.capacity
+                # get battery capacity
+                self.telemetry.battery_capacity = self.int_from_2byte_hex_ascii(data, battery_capacity_offset) / 100
+                telemetry_feedback["battery_capacity"] = self.telemetry.battery_capacity
 
-                # fetch remaining capacity
-                self.capacity_remain = self.int_from_2byte_hex_ascii(data, capacity_remain_offset) / 100
-                status_data["capacity_remain"] = self.capacity_remain
-                
-                # fetch soc
-                self.soc = self.int_from_2byte_hex_ascii(data, soc_offset) / 10
-                status_data["soc"] = self.soc
-                
-                # fetch cycles
-                self.cycles = self.int_from_2byte_hex_ascii(data, cycles_offset)
-                status_data["cycles"] = self.cycles
+                # get remaining capacity
+                self.telemetry.residual_capacity = self.int_from_2byte_hex_ascii(data, residual_capacity_offset) / 100
+                telemetry_feedback["residual_capacity"] = self.telemetry.residual_capacity
 
-                # fetch soh
-                self.soh = self.int_from_2byte_hex_ascii(data, soh_offset) / 10
-                status_data["soh"] = self.soh
+                # get soc
+                self.telemetry.soc = self.int_from_2byte_hex_ascii(data, soc_offset) / 10
+                telemetry_feedback["soc"] = self.telemetry.soc
 
-                # fetch port voltage
-                self.port_voltage = self.int_from_2byte_hex_ascii(data, port_voltage_offset) / 100
-                status_data["port_voltage"] = self.port_voltage
-                
-                logger.info("Voltage Cell[1] = {}V".format(self.cells[0].voltage))
-                logger.info("Voltage Cell[2] = {}V".format(self.cells[1].voltage))
-                logger.info("Voltage Cell[3] = {}V".format(self.cells[2].voltage))
-                logger.info("Voltage Cell[4] = {}V".format(self.cells[3].voltage))
-                logger.info("Voltage Cell[5] = {}V".format(self.cells[4].voltage))
-                logger.info("Voltage Cell[6] = {}V".format(self.cells[5].voltage))
-                logger.info("Voltage Cell[7] = {}V".format(self.cells[6].voltage))
-                logger.info("Voltage Cell[8] = {}V".format(self.cells[7].voltage))
-                logger.info("Voltage Cell[9] = {}V".format(self.cells[8].voltage))
-                logger.info("Voltage Cell[10] = {}V".format(self.cells[9].voltage))
-                logger.info("Voltage Cell[11] = {}V".format(self.cells[10].voltage))
-                logger.info("Voltage Cell[12] = {}V".format(self.cells[11].voltage))
-                logger.info("Voltage Cell[13] = {}V".format(self.cells[12].voltage))
-                logger.info("Voltage Cell[14] = {}V".format(self.cells[13].voltage))
-                logger.info("Voltage Cell[15] = {}V".format(self.cells[14].voltage))
-                logger.info("Voltage Cell[16] = {}V".format(self.cells[15].voltage))
-                
-                logger.info("Average Cell Voltage = {}V".format(self.average_cell_voltage ))
-                logger.info("Lowest Cell = [{}]".format(self.lowest_cell + 1))
-                logger.info("Lowest Cell Voltage = {}V".format(self.lowest_cell_voltage ))
-                logger.info("Highest Cell = [{}]".format(self.highest_cell + 1))
-                logger.info("Highest Cell Voltage = {}V".format(self.lowest_cell_voltage ))
-                logger.info("Delta Cell Voltage = {}V".format(self.delta_cell_voltage ))
-                
-                logger.info("Voltage = {}V".format(self.voltage))
-                logger.info("Min Pack Voltage = {}V".format(self.min_pack_voltage))
-                logger.info("Max Pack Voltage = {}V".format(self.max_pack_voltage))
-                logger.info("Current = {}A".format(self.current))
-                logger.info("Power = {}W".format(self.power))
-                logger.info("Port Voltage = {}V".format(self.port_voltage))
+                # get cycles
+                self.telemetry.cycles = self.int_from_2byte_hex_ascii(data, cycles_offset)
+                telemetry_feedback["cycles"] = self.telemetry.cycles
 
-                logger.info("Rated Capacity = {}Ah".format(self.capacity_rated))
-                logger.info("Capacity = {}Ah".format(self.capacity))
-                logger.info("Remaining Capacity = {}Ah".format(self.capacity_remain))
+                # get soh
+                self.telemetry.soh = self.int_from_2byte_hex_ascii(data, soh_offset) / 10
+                telemetry_feedback["soh"] = self.telemetry.soh
 
-                logger.info("SOC = {}%".format(self.soc))
-                logger.info("SOH = {}%".format(self.soh))
+                # get port voltage
+                self.telemetry.port_voltage = self.int_from_2byte_hex_ascii(data, port_voltage_offset) / 100
+                telemetry_feedback["port_voltage"] = self.telemetry.port_voltage
 
-                logger.info("Cycles = {}".format(self.cycles))
-
-                logger.info("Environment Temp = {}°C".format(self.env_temp))
-                logger.info("Mosfet Temp = {}°C".format(self.mosfet_temp))
-
-                logger.info("Cells Temp 1 = {}°C".format(self.cells_temp[0]))
-                logger.info("Cells Temp 2 = {}°C".format(self.cells_temp[1]))
-                logger.info("Cells Temp 3 = {}°C".format(self.cells_temp[2]))
-                logger.info("Cells Temp 4 = {}°C".format(self.cells_temp[3]))
-
-                return status_data
+                return telemetry_feedback
 
         # read data for given battery_pack address from serial interface
         def read_serial_data(self, serial_instance):
-            logger.info("Fetch data for battery_pack {}".format(self.battery_pack_address))
+            logger.info("Fetch data for Battery Pack {}".format(self.pack_address))
 
             # json object to store status and alarm response values
             battery_pack_data = {
-                "status": {},
-                "alarm": {}
+                "telemetry": {},
+                "telesignalization": {}
             }
-            
+
             # flush interface in- and output
             serial_instance.flushOutput()
             serial_instance.flushInput()
 
-            # calculate request command for the current battery_pack_address
-            command = self.encode_cmd(self.battery_pack_address)
-            logger.debug("info-request command: {}".format(command))
+            # calculate request telemetry command (0x42) for the current pack_address
+            telemetry_command = self.encode_cmd(address=self.pack_address, cid2=0x42)
+            logger.debug("telemetry_command: {}".format(telemetry_command))
 
-            # loop over responses until a valid frame is received, then decode and return it
-            iteration_a = 1
+            # loop over responses until a valid frame is received, then decode and return it as json
+            telemetry_command_iteration = 1
             while True:
-                # send the command to the serial port until a response is received
-                if iteration_a == 1 or iteration_a % 5 == 0:
-                    serial_instance.write(command)
-                
+                # (re-)send telemetry_command to the serial port until a response is received
+                if telemetry_command_iteration == 1 or telemetry_command_iteration % 5 == 0:
+                    serial_instance.write(telemetry_command)
+
                 # set EOL to \r
                 raw_data = serial_instance.read_until(b'\r')
                 data = raw_data[13 : -5]
 
                 # check if data is valid frame
                 if self.is_valid_length(data, expected_length=150) and self.is_valid_hex_string and self.is_valid_frame(raw_data):
-                    logger.info("Battery-Pack {} stats:".format(self.battery_pack_address))
-                    status_data = self.decode_status_data(data)
-                    battery_pack_data["status"] = status_data
+                    telemetry_feedback = self.decode_telemetry_feedback_frame(data)
+                    battery_pack_data["telemetry"] = telemetry_feedback
+                    logger.info("Battery-Pack {} Telemetry Feedback: {}".format(self.pack_address, json.dumps(telemetry_feedback, indent=4)))
                     break
 
-            # calculate request command for the current battery_pack_address
-            command = self.encode_cmd(self.battery_pack_address, cid2=0x44)
-            logger.debug("alert-request command: {}".format(command))
+            # calculate request telesignalization command (0x44) for the current pack_address
+            telesignalization_command = self.encode_cmd(address=self.pack_address, cid2=0x44)
+            logger.debug("telesignalization_command: {}".format(telesignalization_command))
 
-            # loop over responses until a valid frame is received, then decode and return it
-            iteration_b = 1
+            # loop over responses until a valid frame is received, then decode and return it as json
+            telesignalization_command_iteration = 1
             while True:
-                # send the command to the serial port until a response is received
-                if iteration_b == 1 or iteration_b % 5 == 0:
-                    serial_instance.write(command)
-                
+                # (re-)send telesignalization_command to the serial port until a response is received
+                if telesignalization_command_iteration == 1 or telesignalization_command_iteration % 5 == 0:
+                    serial_instance.write(telesignalization_command)
+
                 # set EOL to \r
                 raw_data = serial_instance.read_until(b'\r')
                 data = raw_data[13 : -5]
 
                 # check if data is valid frame
                 if self.is_valid_length(data, expected_length=98) and self.is_valid_hex_string and self.is_valid_frame(raw_data):
-                    logger.info("Battery-Pack {} alarm status:".format(self.battery_pack_address))
-                    alarm_data = self.decode_alarm_data(data)
-                    battery_pack_data["alarm"] = alarm_data
+                    telesignalization_feedback = self.decode_telesignalization_feedback_frame(data)
+                    battery_pack_data["telesignalization"] = telesignalization_feedback
+                    logger.info("Battery-Pack {} Telesignalization feedback: {}".format(self.pack_address, json.dumps(telesignalization_feedback, indent=4)))
                     break
-            
+
             # keep current stats to check if they changed before returning
             if not self.last_status:
                 self.last_status = battery_pack_data
@@ -713,15 +958,13 @@ try:
             instance = SeplosBatteryPack(address)
             battery_packs.append({"address": address, "instance": instance})
 
-    # fetch battery-pack stats and alarm data
+    # fetch battery-pack Telemetry and Telesignalization data
     i = 0
     while True:
         current_battery_pack = battery_packs[i]["instance"]
         stats = current_battery_pack.read_serial_data(serial_instance)
-        
-        if stats:
-            logger.debug("JSON stats: {}".format(stats))
 
+        if stats:
             logger.info("Sending stats to MQTT")
             topic = f"{MQTT_TOPIC}/pack-{i + 1 if not ONLY_MASTER else 0}/sensors"
             mqtt_client.publish(topic, json.dumps(stats, indent=4))
@@ -734,6 +977,7 @@ try:
             time.sleep(MQTT_UPDATE_INTERVAL)
             i = 0
 
+# handle keyboard-interruption
 except KeyboardInterrupt:
     logger.info("Interrupt received! Cleaning up...")
 
