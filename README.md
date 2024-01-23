@@ -52,7 +52,7 @@ Not defining them will just start the script (`SERIAL_INTERFACE` must match your
 MQTT messages published by the script will look like this:
 ```
 {
-    "telemetry_feedback": {
+    "telemetry": {
         "min_pack_voltage": 46.4,
         "max_pack_voltage": 55.2,
         "voltage_cell_1": 3.255,
@@ -94,7 +94,7 @@ MQTT messages published by the script will look like this:
         "soh": 100.0,
         "port_voltage": 52.14
     },
-    "telesignalization_feedback": {
+    "telesignalization": {
         "voltage_warning_cell_1": "normal",
         "voltage_warning_cell_2": "normal",
         "voltage_warning_cell_3": "normal",
