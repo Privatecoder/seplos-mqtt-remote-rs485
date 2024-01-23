@@ -366,20 +366,28 @@ Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
 - If you are putting sensor directly int your `configuration.yaml`, add `platform: mqtt`, i.e. this
 
 ```
-  - name: "Seplos Pack-1 Cell 1 Voltage"
-    state_topic: "seplos/pack-1/sensors"
-    unit_of_measurement: 'V'
-    value_template: "{{ value_json.status.cell_1_voltage }}"
-    unique_id: "seplos_pack_1_cell_1_voltage"
+- name: Seplos Pack-0 Voltage Cell 1
+  unique_id: seplos_pack_0_voltage_cell_1
+  state_topic: seplos/pack-0/sensors
+  value_template: '{{ value_json.telemetry.voltage_cell_1 }}'
+  state_class: measurement
+  unit_of_measurement: V
+  suggested_display_precision: 3
+  icon: mdi:battery
+  device_class: voltage
 ```
 
 becomes this
 
 ```
-  - platform: mqtt
-    name: "Seplos Pack-1 Cell 1 Voltage"
-    state_topic: "seplos/pack-1/sensors"
-    unit_of_measurement: 'V'
-    value_template: "{{ value_json.status.cell_1_voltage }}"
-    unique_id: "seplos_pack_1_cell_1_voltage"
+- platform: mqtt
+  name: Seplos Pack-0 Voltage Cell 1
+  unique_id: seplos_pack_0_voltage_cell_1
+  state_topic: seplos/pack-0/sensors
+  value_template: '{{ value_json.telemetry.voltage_cell_1 }}'
+  state_class: measurement
+  unit_of_measurement: V
+  suggested_display_precision: 3
+  icon: mdi:battery
+  device_class: voltage
 ```
