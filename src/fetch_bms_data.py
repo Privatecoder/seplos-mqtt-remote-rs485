@@ -733,16 +733,16 @@ try:
             return encoded
 
         # get cell with the lowest voltage
-        def get_min_cell(self) -> dict:
-            min_cell = self.telemetry.cell_voltage.index(min(self.telemetry.cell_voltage))
-            min_cell_voltage = self.telemetry.cell_voltage[min_cell]
-            return { "min_cell": min_cell, "min_cell_voltage": min_cell_voltage }
+        def get_lowest_cell(self) -> dict:
+            lowest_cell = self.telemetry.cell_voltage.index(min(self.telemetry.cell_voltage))
+            lowest_cell_voltage = self.telemetry.cell_voltage[lowest_cell]
+            return { "lowest_cell": lowest_cell, "lowest_cell_voltage": lowest_cell_voltage }
 
         # get cell with the highest voltage
-        def get_max_cell(self) -> dict:
-            max_cell = self.telemetry.cell_voltage.index(max(self.telemetry.cell_voltage))
-            max_cell_voltage = self.telemetry.cell_voltage[max_cell]
-            return { "max_cell": max_cell, "max_cell_voltage": max_cell_voltage }
+        def get_highest_cell(self) -> dict:
+            highest_cell = self.telemetry.cell_voltage.index(max(self.telemetry.cell_voltage))
+            highest_cell_voltage = self.telemetry.cell_voltage[highest_cell]
+            return { "highest_cell": highest_cell, "highest_cell_voltage": highest_cell_voltage }
 
         # decode battery pack telemetry feedback frame
         def decode_telemetry_feedback_frame(self, data) -> dict:
@@ -763,6 +763,10 @@ try:
                 cycles_offset = 122
                 soh_offset = 126
                 port_voltage_offset = 130
+
+                # set min and max pack voltage
+                telemetry_feedback["min_cell_voltage"] = MIN_CELL_VOLTAGE
+                telemetry_feedback["max_cell_voltage"] = MAX_CELL_VOLTAGE
 
                 self.telemetry.min_pack_voltage = MIN_CELL_VOLTAGE * number_of_cells
                 self.telemetry.max_pack_voltage = MAX_CELL_VOLTAGE * number_of_cells
@@ -787,19 +791,19 @@ try:
                 telemetry_feedback["average_cell_voltage"] = self.telemetry.average_cell_voltage
 
                 # get lowest cell and its voltage
-                lowest_cell_data = self.get_min_cell()
-                self.telemetry.lowest_cell = lowest_cell_data['min_cell']
+                lowest_cell_data = self.get_lowest_cell()
+                self.telemetry.lowest_cell = lowest_cell_data['lowest_cell']
                 # shift cell-index on return List by 1
                 telemetry_feedback["lowest_cell"] = self.telemetry.lowest_cell + 1
-                self.telemetry.lowest_cell_voltage = lowest_cell_data['min_cell_voltage']
+                self.telemetry.lowest_cell_voltage = lowest_cell_data['lowest_cell_voltage']
                 telemetry_feedback["lowest_cell_voltage"] = self.telemetry.lowest_cell_voltage
 
                 # get lowest cell and its voltage
-                highest_cell_data = self.get_max_cell()
-                self.telemetry.highest_cell = highest_cell_data["max_cell"]
+                highest_cell_data = self.get_highest_cell()
+                self.telemetry.highest_cell = highest_cell_data["highest_cell"]
                 # shift cell-index on return List by 1
                 telemetry_feedback["highest_cell"] = self.telemetry.highest_cell + 1
-                self.telemetry.highest_cell_voltage = highest_cell_data["max_cell_voltage"]
+                self.telemetry.highest_cell_voltage = highest_cell_data["highest_cell_voltage"]
                 telemetry_feedback["highest_cell_voltage"] = self.telemetry.highest_cell_voltage
 
                 # calculate delta cell voltage

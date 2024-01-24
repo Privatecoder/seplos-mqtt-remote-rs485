@@ -31,15 +31,31 @@ def main():
             "value_template_key": "min_pack_voltage",
             "device_class": "voltage",
             "unit_of_measurement": "V",
-            "suggested_display_precision": 1,
-            "icon": "mdi:battery"
+            "suggested_display_precision": 2,
+            "icon": "mdi:server"
         },
         {
             "name": "Max Pack Voltage",
             "value_template_key": "max_pack_voltage",
             "device_class": "voltage",
             "unit_of_measurement": "V",
-            "suggested_display_precision": 1,
+            "suggested_display_precision": 2,
+            "icon": "mdi:server"
+        },
+        {
+            "name": "Min Cell Voltage",
+            "value_template_key": "min_cell_voltage",
+            "device_class": "voltage",
+            "unit_of_measurement": "V",
+            "suggested_display_precision": 3,
+            "icon": "mdi:battery"
+        },
+        {
+            "name": "Max Cell Voltage",
+            "value_template_key": "max_cell_voltage",
+            "device_class": "voltage",
+            "unit_of_measurement": "V",
+            "suggested_display_precision": 3,
             "icon": "mdi:battery"
         },
         {
@@ -82,7 +98,7 @@ def main():
             "device_class": "voltage",
             "unit_of_measurement": "V",
             "suggested_display_precision": 3,
-            "icon": "mdi:battery"
+            "icon": "mdi:delta"
         },
         {
             "name": "Ambient Temperature",
@@ -122,7 +138,7 @@ def main():
             "device_class": "voltage",
             "unit_of_measurement": "V",
             "suggested_display_precision": 2,
-            "icon": "mdi:battery"
+            "icon": "mdi:server"
         },
         {
             "name": "Rated Capacity",
@@ -594,7 +610,7 @@ def main():
             file.write(f"\n# End Telemetry Sensors Seplos Pack-{pack_no}")
         print(f"{filename} created successfully.")
 
-    for pack_no in range(1, number_of_packs + 1):
+    for pack_no in range(0, number_of_packs):
         # create multiple cell-voltage-warning sensors
         cell_voltage_warning_sensors = create_similar_sensors(
             num_sensors=16,
