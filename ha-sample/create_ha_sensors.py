@@ -21,7 +21,6 @@ def main():
         "unique_id": "",
         "state_topic": "",
         "value_template": "",
-        "state_class": "",
         # 'unit_of_measurement', 'icon', and 'suggested_display_precision' are optional
     }
 
@@ -182,393 +181,295 @@ def main():
             "name": "Ambient Temperature Warning",
             "value_template_key": "ambient_temperature_warning",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Component Temperature Warning",
             "value_template_key": "component_temperature_warning",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Dis-/Charging Current Warning",
             "value_template_key": "dis_charging_current_warning",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Pack Voltage Warning",
             "value_template_key": "pack_voltage_warning",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Voltage Sensing Failure",
             "value_template_key": "voltage_sensing_failure",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Temp Sensing Failure",
             "value_template_key": "temp_sensing_failure",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Current Sensing Failure",
             "value_template_key": "current_sensing_failure",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Power Switch Failure",
             "value_template_key": "power_switch_failure",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Cell Voltage Difference Sensing Failure",
             "value_template_key": "cell_voltage_difference_sensing_failure",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Charging Switch Failure",
             "value_template_key": "charging_switch_failure",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Discharging Switch Failure",
             "value_template_key": "discharging_switch_failure",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Current Limit Switch Failure",
             "value_template_key": "current_limit_switch_failure",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Cell Overvoltage",
             "value_template_key": "cell_overvoltage",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Cell Voltage Low",
             "value_template_key": "cell_voltage_low",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Pack Overvoltage",
             "value_template_key": "pack_overvoltage",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Pack Voltage Low",
             "value_template_key": "pack_voltage_low",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Charging Temp High",
             "value_template_key": "charging_temp_high",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Charging Temp Low",
             "value_template_key": "charging_temp_low",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Discharging Temp High",
             "value_template_key": "discharging_temp_high",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Discharging Temp Low",
             "value_template_key": "discharging_temp_low",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Ambient Temp High",
             "value_template_key": "ambient_temp_high",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Component Temp High",
             "value_template_key": "component_temp_high",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Charging Overcurrent",
             "value_template_key": "charging_overcurrent",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Discharging Overcurrent",
             "value_template_key": "discharging_overcurrent",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Transient Overcurrent",
             "value_template_key": "transient_overcurrent",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Output Short Circuit",
             "value_template_key": "output_short_circuit",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Transient Overcurrent Lock",
             "value_template_key": "transient_overcurrent_lock",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Charging High Voltage",
             "value_template_key": "charging_high_voltage",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Intermittent Power Supplement",
             "value_template_key": "intermittent_power_supplement",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Soc Low",
             "value_template_key": "soc_low",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Cell Low Voltage Forbidden Charging",
             "value_template_key": "cell_low_voltage_forbidden_charging",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Output Reverse Protection",
             "value_template_key": "output_reverse_protection",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Output Connection Failure",
             "value_template_key": "output_connection_failure",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Discharge Switch",
             "value_template_key": "discharge_switch",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Charge Switch",
             "value_template_key": "charge_switch",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Current Limit Switch",
             "value_template_key": "current_limit_switch",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Heating Limit Switch",
             "value_template_key": "heating_limit_switch",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Discharge",
             "value_template_key": "discharge",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Charge",
             "value_template_key": "charge",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Floating Charge",
             "value_template_key": "floating_charge",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Standby",
             "value_template_key": "standby",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Power Off",
             "value_template_key": "power_off",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "true",
-            "entity_registry_visible_default": "true"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Auto Charging Wait",
             "value_template_key": "auto_charging_wait",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Manual Charging Wait",
             "value_template_key": "manual_charging_wait",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Eep Storage Failure",
             "value_template_key": "eep_storage_failure",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "Rtc Clock Failure",
             "value_template_key": "rtc_clock_failure",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "No Calibration Of Voltage",
             "value_template_key": "no_calibration_of_voltage",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "No Calibration Of Current",
             "value_template_key": "no_calibration_of_current",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         },
         {
             "name": "No Calibration Of Null Point",
             "value_template_key": "no_calibration_of_null_point",
             "icon": "mdi:alert-circle-outline",
-            "entity_category": "diagnostic",
-            "entity_registry_enabled_default": "false",
-            "entity_registry_visible_default": "false"
+            "entity_category": "diagnostic"
         }
     ]
 
@@ -581,9 +482,8 @@ def main():
             suggested_display_precision=None,
             icon=None,
             device_class=None,
-            entity_category=None,
-            entity_registry_enabled_default=None,
-            entity_registry_visible_default=None
+            state_class=None,
+            entity_category=None
         ):
         
         sensor = base_sensor.copy()
@@ -593,9 +493,10 @@ def main():
         sensor["unique_id"] = f"seplos_pack_{pack_no} {name}".replace(" ", "_").lower()
         sensor["state_topic"] = f"{mqtt_topic}/pack-{pack_no}/sensors"
         sensor["value_template"] = f"{{{{ value_json.{value_template_group}.{value_template_key} }}}}"
-        sensor["state_class"] = "measurement"
 
         # optional keys
+        if state_class is not None:
+            sensor["state_class"] = state_class
         if unit_of_measurement is not None:
             sensor["unit_of_measurement"] = unit_of_measurement
         if suggested_display_precision is not None:
@@ -604,10 +505,6 @@ def main():
             sensor["icon"] = icon
         if entity_category is not None:
             sensor["entity_category"] = entity_category
-        if entity_registry_enabled_default is not None:
-            sensor["entity_registry_enabled_default"] = entity_registry_enabled_default
-        if entity_registry_visible_default is not None:
-            sensor["entity_registry_visible_default"] = entity_registry_visible_default
         if device_class is not None:
             sensor["device_class"] = device_class
 
@@ -621,9 +518,8 @@ def main():
             base_value_template_key,
             base_name,
             entity_category=None,
-            entity_registry_enabled_default=None,
-            entity_registry_visible_default=None,
             device_class=None,
+            state_class=None,
             unit_of_measurement=None,
             suggested_display_precision=None,
             icon=None
@@ -641,9 +537,8 @@ def main():
 
                 # optional keys
                 entity_category=entity_category if entity_category is not None else None,
-                entity_registry_enabled_default=entity_registry_enabled_default if entity_registry_enabled_default is not None else None,
-                entity_registry_visible_default=entity_registry_visible_default if entity_registry_visible_default is not None else None,
                 device_class=device_class if device_class is not None else None,
+                state_class=state_class if state_class is not None else None,
                 unit_of_measurement=unit_of_measurement if unit_of_measurement is not None else None,
                 suggested_display_precision=suggested_display_precision if suggested_display_precision is not None else None,
                 icon=icon if icon is not None else None,
@@ -665,6 +560,7 @@ def main():
             base_value_template_key="voltage_cell",
             base_name="Voltage Cell",
             device_class="voltage",
+            state_class="measurement",
             unit_of_measurement="V",
             suggested_display_precision=3,
             icon="mdi:battery"
@@ -679,6 +575,7 @@ def main():
             base_value_template_key="cells_temp",
             base_name="Cells Temperature",
             device_class="temperature",
+            state_class="measurement",
             unit_of_measurement="°C",
             suggested_display_precision=1,
             icon="mdi:thermometer"
@@ -686,7 +583,7 @@ def main():
         telemetry_sensors = telemetry_sensors + temperature_sensors
 
         # create all other sensors
-        all_other_sensors = [create_sensor(pack_no, "telemetry", **config) for config in telemetry_sensor_templates]
+        all_other_sensors = [create_sensor(pack_no=pack_no, value_template_group="telemetry", state_class="measurement", **config) for config in telemetry_sensor_templates]
         telemetry_sensors = telemetry_sensors + all_other_sensors
 
         # write yaml file for this pack
@@ -706,9 +603,7 @@ def main():
             base_value_template_key="voltage_warning_cell",
             base_name="Voltage Warning Cell",
             icon="mdi:alert-circle-outline",
-            entity_category="diagnostic",
-            entity_registry_enabled_default="true",
-            entity_registry_visible_default="true"
+            entity_category="diagnostic"
         )
         telesignalization_sensors = telesignalization_sensors + cell_voltage_warning_sensors
 
@@ -720,9 +615,7 @@ def main():
             base_value_template_key="disconnection_cell",
             base_name="Disconnection Cell",
             icon="mdi:alert-circle-outline",
-            entity_category="diagnostic",
-            entity_registry_enabled_default="false",
-            entity_registry_visible_default="false"
+            entity_category="diagnostic"
         )
         telesignalization_sensors = telesignalization_sensors + cell_disconnection_sensors
 
@@ -734,9 +627,7 @@ def main():
             base_value_template_key="equalization_cell",
             base_name="Equalization Cell",
             icon="mdi:alert-circle-outline",
-            entity_category="diagnostic",
-            entity_registry_enabled_default="true",
-            entity_registry_visible_default="true"
+            entity_category="diagnostic"
         )
         telesignalization_sensors = telesignalization_sensors + cell_equalization_sensors
 
@@ -748,14 +639,12 @@ def main():
             base_value_template_key="cell_temperature_warning",
             base_name="Cell Temperature Warning",
             icon="mdi:alert-circle-outline",
-            entity_category="diagnostic",
-            entity_registry_enabled_default="true",
-            entity_registry_visible_default="true"
+            entity_category="diagnostic"
         )
         telesignalization_sensors = telesignalization_sensors + cell_temperature_warning_sensors
 
         # create all other sensors
-        all_other_sensors = [create_sensor(pack_no, "telesignalization", **config) for config in telesignalization_sensor_templates]
+        all_other_sensors = [create_sensor(pack_no=pack_no, value_template_group="telesignalization", **config) for config in telesignalization_sensor_templates]
         telesignalization_sensors = telesignalization_sensors + all_other_sensors
 
         # write yaml file for this pack
