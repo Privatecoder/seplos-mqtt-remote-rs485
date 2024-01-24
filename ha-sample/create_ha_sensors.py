@@ -129,7 +129,7 @@ def main():
             "value_template_key": "rated_capacity",
             "unit_of_measurement": "Ah",
             "suggested_display_precision": 2,
-            "icon": "mdi:battery-100"
+            "icon": "mdi:battery"
         },
         {
             "name": "Battery Capacity",
