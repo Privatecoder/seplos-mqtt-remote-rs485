@@ -1,0 +1,4 @@
+ha-sample/*.yaml
+.vscode/
+.vscode/settings.jso
+.DS_Store
