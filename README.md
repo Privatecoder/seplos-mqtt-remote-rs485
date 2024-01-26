@@ -402,4 +402,5 @@ becomes this
 - The provided `lovelace.yaml` (in `ha-lovelace`) is using `custom:button-card`, `custom:bar-card` and `custom:apexcharts-card` and allows for a first start (value-based colors are based on [these number](https://docs.google.com/spreadsheets/d/1fkVZQvyQA_7x2OT59Ho25ul2QzdEgoV9M35y5uj6tsk/edit#gid=52730408)). `lovelace-plotly-graphs.yaml` is almost the same but uses `custom:plotly-graph` instead of `custom:apexcharts-card` for the graphs-section.
 
 <img width="385" alt="image" src="https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/fdc215d2-96b7-4f16-a1a7-842b63f21a61">
-<img width="495" alt="image" src="https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/933efe57-a800-4b66-a776-0d13ac087c39">
+<img width="381" alt="image" src="https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/2eff45a0-9a10-4fec-ba83-607b8941fbb6">
+
