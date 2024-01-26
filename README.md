@@ -9,11 +9,11 @@ This is a python script that reads data from one or multiple Seplos battery pack
 4. Seplos BMS [V2 / V16 has been tested](https://www.seplos.com/bms-2.0.html)
 5. An MQTT broker
 
-## Connecting serial devices to multiple battery packs
+## Connecting serial devices to multiple battery packs:
 
 ![sample](https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/de37d398-7580-452a-b942-3c374a8b86b6)
 
-## Installation and configuration
+## Installation and configuration (Docker):
 
 1. Configure and setup an MQTT broker with a user and password
 2. Configure your (remote) RS485 device. For the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs) **or** `Baud Rate: 19200` (for Slaves)
@@ -202,7 +202,7 @@ MQTT messages published by the script will look like this:
 }
 ```
 
-## Manual execution
+## Manual execution:
 
 1. Clone the project
 2. Make sure to have Python v3.10 or later installed
@@ -360,7 +360,7 @@ INFO:SeplosBMS:Battery-Pack 1 Telesignalization feedback: {
 
 ## Configuring Home Assistant
 
-### Add MQTT Sensors
+### Add MQTT Sensors:
 
 Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
 
@@ -397,7 +397,7 @@ becomes this
   device_class: voltage
 ```
 
-### Add Sensors to lovelace
+### Add Sensors to lovelace:
 
 - The provided `lovelace.yaml` (in `ha-lovelace`) is using `custom:button-card`, `custom:bar-card` and `custom:apexcharts-card` and allows for a first start (value-based colors are based on [these number](https://docs.google.com/spreadsheets/d/1fkVZQvyQA_7x2OT59Ho25ul2QzdEgoV9M35y5uj6tsk/edit#gid=52730408)). `lovelace-plotly-graphs.yaml` is almost the same but uses `custom:plotly-graph` instead of `custom:apexcharts-card` for the graphs-section.
 
