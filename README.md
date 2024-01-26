@@ -368,7 +368,7 @@ Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
 - Example: `python create_ha_sensors.py --mqtt_topic test/123 --number_of_packs 3` will create 6 yaml-files (3 telemetry and 3 telesignalization) for pack-0, pack-1 and pack-3
 - The provided `combine-yaml-files.sh` (also in `ha-helpers`) will combine the 3 telemetry and 3 telesignalization yaml-files of the previous sample into one combined_telemetry.yaml and combined_telesignalization.yaml file.
 - The generated yaml is depended on a setting like `mqtt: !include_dir_merge_named mqtt` in `configuration.yaml`.
-- If you are planning to put the sensors directly into your `configuration.yaml`, add `platform: mqtt`, i.e. this
+- If you are planning to put the sensors directly into your `configuration.yaml`, add `platform: mqtt` to each sensor, i.e. this
 
 ```
 - name: Seplos Pack-0 Voltage Cell 1
