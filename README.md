@@ -47,7 +47,7 @@ Available ENV-vars are:
 `LOGGING_LEVEL`
 
 Set `RS485_REMOTE_IP` and `RS485_REMOTE_PORT` to start the docker image with socat, binding your remote RS485 device´s RS485 port locally to `vcom0` (used by default in this script).
-Not defining those will just start the script, however `SERIAL_INTERFACE` must match your existing serial-device – either passed to the container or using the privileged-flag (not recommended).
+Not defining those will just start the script, however `SERIAL_INTERFACE` must match your existing serial-device – either passed to the container directly or using the privileged-flag (not recommended).
 
 MQTT messages published by the script will look like this:
 ```
@@ -368,7 +368,7 @@ Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
 - Example: `python create_ha_sensors.py --mqtt_topic test/123 --number_of_packs 3` will create 6 yaml-files (3 telemetry and 3 telesignalization) for pack-0, pack-1 and pack-3
 - The provided `combine-yaml-files.sh` (also in `ha-helpers`) will combine the 3 telemetry and 3 telesignalization yaml-files of the previous sample into one combined_telemetry.yaml and combined_telesignalization.yaml file.
 - The generated yaml is depended on a setting like `mqtt: !include_dir_merge_named mqtt` in `configuration.yaml`.
-- If you are putting sensor directly int your `configuration.yaml`, add `platform: mqtt`, i.e. this
+- If you are planning to put the sensors directly into your `configuration.yaml`, add `platform: mqtt`, i.e. this
 
 ```
 - name: Seplos Pack-0 Voltage Cell 1
