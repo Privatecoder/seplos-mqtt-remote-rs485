@@ -3,20 +3,20 @@ This is a python script that reads data from one or multiple Seplos battery pack
 
 ## Hardware requirements:
 
-1. (Remote) RS485 device [Waveshare 2-CH RS485 to ETH has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm)
+1. (Remote) RS485 device ([Waveshare 2-CH RS485 to ETH has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
 2. For multiple packs while using CAN to connect to your Inverter, you need a splitter ([this splitter works for me](https://www.amazon.de/gp/product/B00D3KIQXC)) to split the CAN port into CAN+RS485 and two separate RS485 connections (the Waveshare 2-CH RS485 to ETH has two RS485 ports)
 3. Something that can run a Docker-Container
 4. Seplos BMS [V2 / V16 has been tested](https://www.seplos.com/bms-2.0.html)
 5. An MQTT broker
 
-## Connecting serial devices to multiple battery packs
+## Connecting serial devices to multiple battery packs:
 
 ![sample](https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/de37d398-7580-452a-b942-3c374a8b86b6)
 
-## Installation and configuration
+## Installation and configuration (Docker):
 
 1. Configure and setup an MQTT broker with a user and password
-2. Configure your (remote) RS485 device, for the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs) **or** `Baud Rate: 19200` (for Slaves)
+2. Configure your (remote) RS485 device. For the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs) **or** `Baud Rate: 19200` (for Slaves)
 3. Modify the `config.ini` and edit its settings to your needs (**alternatively**: configure everything via ENV-vars)
 4. Run the Docker Image, for example like this:
 
@@ -46,8 +46,8 @@ Available ENV-vars are:
 
 `LOGGING_LEVEL`
 
-Set `RS485_REMOTE_IP` and `RS485_REMOTE_PORT` to start the docker image with socat and `vcom0` (used by default).
-Not defining them will just start the script (`SERIAL_INTERFACE` must match your existing and passed serial-device).
+Set `RS485_REMOTE_IP` and `RS485_REMOTE_PORT` to start the docker image with socat, binding your remote RS485 device´s RS485 port locally to `vcom0` (used by default in this script).
+Not defining those will just start the script, however `SERIAL_INTERFACE` must match your existing serial-device – either passed to the container directly or using the privileged-flag (not recommended).
 
 MQTT messages published by the script will look like this:
 ```
@@ -202,7 +202,7 @@ MQTT messages published by the script will look like this:
 }
 ```
 
-## Manual execution
+## Manual execution:
 
 1. Clone the project
 2. Make sure to have Python v3.10 or later installed
@@ -360,13 +360,15 @@ INFO:SeplosBMS:Battery-Pack 1 Telesignalization feedback: {
 
 ## Configuring Home Assistant
 
+### Add MQTT Sensors:
+
 Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
 
 - The provided `create_ha_sensors.py` (in `ha-helpers`) will create a yaml-file for each pack/all sensors for a given mqtt-topic and number of packs, starting with pack-0
 - Example: `python create_ha_sensors.py --mqtt_topic test/123 --number_of_packs 3` will create 6 yaml-files (3 telemetry and 3 telesignalization) for pack-0, pack-1 and pack-3
 - The provided `combine-yaml-files.sh` (also in `ha-helpers`) will combine the 3 telemetry and 3 telesignalization yaml-files of the previous sample into one combined_telemetry.yaml and combined_telesignalization.yaml file.
 - The generated yaml is depended on a setting like `mqtt: !include_dir_merge_named mqtt` in `configuration.yaml`.
-- If you are putting sensor directly int your `configuration.yaml`, add `platform: mqtt`, i.e. this
+- If you are planning to put the sensors directly into your `configuration.yaml`, add `platform: mqtt` to each sensor, i.e. this
 
 ```
 - name: Seplos Pack-0 Voltage Cell 1
@@ -395,4 +397,10 @@ becomes this
   device_class: voltage
 ```
 
+### Add Sensors to lovelace:
+
 - The provided `lovelace.yaml` (in `ha-lovelace`) is using `custom:button-card`, `custom:bar-card` and `custom:apexcharts-card` and allows for a first start (value-based colors are based on [these number](https://docs.google.com/spreadsheets/d/1fkVZQvyQA_7x2OT59Ho25ul2QzdEgoV9M35y5uj6tsk/edit#gid=52730408)). `lovelace-plotly-graphs.yaml` is almost the same but uses `custom:plotly-graph` instead of `custom:apexcharts-card` for the graphs-section.
+
+<img width="385" alt="image" src="https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/fdc215d2-96b7-4f16-a1a7-842b63f21a61">
+<img width="381" alt="image" src="https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/2eff45a0-9a10-4fec-ba83-607b8941fbb6">
+
