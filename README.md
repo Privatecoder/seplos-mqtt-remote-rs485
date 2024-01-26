@@ -362,9 +362,9 @@ INFO:SeplosBMS:Battery-Pack 1 Telesignalization feedback: {
 
 Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
 
-- The provided `ha/create_ha_sensors.py` will create a yaml-file for each pack/all sensors for a given mqtt-topic and number of packs.
-- Example: `python create_ha_sensors.py --mqtt_topic test/123 --number_of_packs 3` will create 6 yaml-files (3 telemetry and 3 telesignalization).
-- The provided `ha/combine-yaml-files.sh` will combine the 3 telemetry and 3 telesignalization yaml-files of the previous sample into one combined_telemetry.yaml and combined_telesignalization.yaml file.
+- The provided `create_ha_sensors.py` (in `ha-helpers`) will create a yaml-file for each pack/all sensors for a given mqtt-topic and number of packs, starting with pack-0
+- Example: `python create_ha_sensors.py --mqtt_topic test/123 --number_of_packs 3` will create 6 yaml-files (3 telemetry and 3 telesignalization) for pack-0, pack-1 and pack-3
+- The provided `combine-yaml-files.sh` (also in `ha-helpers`) will combine the 3 telemetry and 3 telesignalization yaml-files of the previous sample into one combined_telemetry.yaml and combined_telesignalization.yaml file.
 - The generated yaml is depended on a setting like `mqtt: !include_dir_merge_named mqtt` in `configuration.yaml`.
 - If you are putting sensor directly int your `configuration.yaml`, add `platform: mqtt`, i.e. this
 
@@ -394,3 +394,5 @@ becomes this
   icon: mdi:battery
   device_class: voltage
 ```
+
+- The provided `lovelace.yaml` (in `ha-lovelace`) is using `custom:button-card`, `custom:bar-card` and `custom:apexcharts-card` and allows for a first start (value-based colors are based on [these number](https://docs.google.com/spreadsheets/d/1fkVZQvyQA_7x2OT59Ho25ul2QzdEgoV9M35y5uj6tsk/edit#gid=52730408)). `lovelace-plotly-graphs.yaml` is almost the same but uses `custom:plotly-graph` instead of `custom:apexcharts-card` for the graphs-section.
