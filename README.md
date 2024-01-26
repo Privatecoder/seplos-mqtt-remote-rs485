@@ -16,7 +16,7 @@ This is a python script that reads data from one or multiple Seplos battery pack
 ## Installation and configuration
 
 1. Configure and setup an MQTT broker with a user and password
-2. Configure your (remote) RS485 device, for the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs) **or** `Baud Rate: 19200` (for Slaves)
+2. Configure your (remote) RS485 device. For the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs) **or** `Baud Rate: 19200` (for Slaves)
 3. Modify the `config.ini` and edit its settings to your needs (**alternatively**: configure everything via ENV-vars)
 4. Run the Docker Image, for example like this:
 
@@ -46,8 +46,8 @@ Available ENV-vars are:
 
 `LOGGING_LEVEL`
 
-Set `RS485_REMOTE_IP` and `RS485_REMOTE_PORT` to start the docker image with socat and `vcom0` (used by default).
-Not defining them will just start the script (`SERIAL_INTERFACE` must match your existing and passed serial-device).
+Set `RS485_REMOTE_IP` and `RS485_REMOTE_PORT` to start the docker image with socat, binding your remote RS485 device´s RS485 port locally to `vcom0` (used by default in this script).
+Not defining those will just start the script, however `SERIAL_INTERFACE` must match your existing serial-device – either passed to the container or using the privileged-flag (not recommended).
 
 MQTT messages published by the script will look like this:
 ```
