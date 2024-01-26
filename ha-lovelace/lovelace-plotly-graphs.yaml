@@ -1,6 +1,9 @@
-title: Pack 0
 type: vertical-stack
 cards:
+  - type: custom:button-card
+    name: Pack 0
+    color_type: card
+    color: lightgreen
   - type: horizontal-stack
     cards:
       - type: custom:button-card
