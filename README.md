@@ -3,7 +3,7 @@ This is a python script that reads data from one or multiple Seplos battery pack
 
 ## Hardware requirements:
 
-1. (Remote) RS485 device [Waveshare 2-CH RS485 to ETH has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm)
+1. (Remote) RS485 device ([Waveshare 2-CH RS485 to ETH has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
 2. For multiple packs while using CAN to connect to your Inverter, you need a splitter ([this splitter works for me](https://www.amazon.de/gp/product/B00D3KIQXC)) to split the CAN port into CAN+RS485 and two separate RS485 connections (the Waveshare 2-CH RS485 to ETH has two RS485 ports)
 3. Something that can run a Docker-Container
 4. Seplos BMS [V2 / V16 has been tested](https://www.seplos.com/bms-2.0.html)
