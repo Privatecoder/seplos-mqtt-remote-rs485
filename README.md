@@ -1,5 +1,5 @@
 # Seplos MQTT remote RS485
-This is a python script that reads data from one or multiple Seplos (while using CAN to connect to your Inverter) battery packs via a (remote) RS485 connection and publish their stats to MQTT.
+This is a python script that reads data from one or multiple Seplos battery packs (while using CAN to connect to your Inverter) via (a) (remote) RS485 connection(s) and publish their stats to MQTT.
 
 ## Hardware requirements:
 
