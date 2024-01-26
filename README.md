@@ -360,6 +360,8 @@ INFO:SeplosBMS:Battery-Pack 1 Telesignalization feedback: {
 
 ## Configuring Home Assistant
 
+### Add MQTT Sensors
+
 Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
 
 - The provided `create_ha_sensors.py` (in `ha-helpers`) will create a yaml-file for each pack/all sensors for a given mqtt-topic and number of packs, starting with pack-0
@@ -395,4 +397,8 @@ becomes this
   device_class: voltage
 ```
 
+### Add Sensors to lovelace
+
 - The provided `lovelace.yaml` (in `ha-lovelace`) is using `custom:button-card`, `custom:bar-card` and `custom:apexcharts-card` and allows for a first start (value-based colors are based on [these number](https://docs.google.com/spreadsheets/d/1fkVZQvyQA_7x2OT59Ho25ul2QzdEgoV9M35y5uj6tsk/edit#gid=52730408)). `lovelace-plotly-graphs.yaml` is almost the same but uses `custom:plotly-graph` instead of `custom:apexcharts-card` for the graphs-section.
+
+<img width="385" alt="image" src="https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/fdc215d2-96b7-4f16-a1a7-842b63f21a61">
