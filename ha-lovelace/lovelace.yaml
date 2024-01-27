@@ -297,7 +297,7 @@ cards:
             if (states[`sensor.seplos_pack_0_equalization_cell_${i}`].state != "off") active_balancing_cells.push(i)
         }
         if (active_balancing_cells.length != 0) return `Passive Balancer active for Cells ${active_balancing_cells.join(', ')}`
-        else return "Passive Balancer inaktive";
+        else return "Passive Balancer inactive";
       ]]]
     styles:
       card:
