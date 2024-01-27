@@ -3,7 +3,63 @@ cards:
   - type: custom:button-card
     name: Pack 0
     color_type: card
-    color: lightgreen
+    styles:
+      card:
+        - color: black
+        - background: |
+            [[[
+              const sensors = [
+                'sensor.seplos_pack_0_dis_charging_current_warning',
+                'sensor.seplos_pack_0_pack_voltage_warning',
+                'sensor.seplos_pack_0_voltage_sensing_failure',
+                'sensor.seplos_pack_0_temp_sensing_failure',
+                'sensor.seplos_pack_0_current_sensing_failure',
+                'sensor.seplos_pack_0_power_switch_failure',
+                'sensor.seplos_pack_0_cell_voltage_difference_sensing_failure',
+                'sensor.seplos_pack_0_charging_switch_failure',
+                'sensor.seplos_pack_0_discharging_switch_failure',
+                'sensor.seplos_pack_0_current_limit_switch_failure',
+                'sensor.seplos_pack_0_current_limit_switch_failure',
+                'sensor.seplos_pack_0_cell_overvoltage',
+                'sensor.seplos_pack_0_cell_voltage_low',
+                'sensor.seplos_pack_0_pack_overvoltage',
+                'sensor.seplos_pack_0_pack_voltage_low',
+                'sensor.seplos_pack_0_charging_temp_high',
+                'sensor.seplos_pack_0_charging_temp_low',
+                'sensor.seplos_pack_0_discharging_temp_high',
+                'sensor.seplos_pack_0_discharging_temp_low',
+                'sensor.seplos_pack_0_ambient_temp_high',
+                'sensor.seplos_pack_0_component_temp_high',
+                'sensor.seplos_pack_0_charging_overcurrent',
+                'sensor.seplos_pack_0_discharging_overcurrent',
+                'sensor.seplos_pack_0_transient_overcurrent',
+                'sensor.seplos_pack_0_output_short_circuit',
+                'sensor.seplos_pack_0_transient_overcurrent_lock',
+                'sensor.seplos_pack_0_charging_high_voltage',
+                'sensor.seplos_pack_0_intermittent_power_supplement',
+                'sensor.seplos_pack_0_soc_low',
+                'sensor.seplos_pack_0_cell_low_voltage_forbidden_charging',
+                'sensor.seplos_pack_0_output_reverse_protection',
+                'sensor.seplos_pack_0_output_connection_failure',
+                'sensor.seplos_pack_0_eep_storage_failure',
+                'sensor.seplos_pack_0_rtc_clock_failure',
+                'sensor.seplos_pack_0_no_calibration_of_voltage',
+                'sensor.seplos_pack_0_no_calibration_of_current',
+                'sensor.seplos_pack_0_no_calibration_of_null_point'
+              ];
+              const isAnySensorAbnormal = sensors.some(sensor => states[sensor].state != "normal");
+              for (let i = 1; i <= 16; i++) {
+                  if (states[`sensor.seplos_pack_0_voltage_warning_cell_${i}`].state != "normal") return "orange";
+                  if (states[`sensor.seplos_pack_0_disconnection_cell_${i}`].state != "normal") return "orange";
+              }
+              for (let i = 1; i <= 4; i++) {
+                  if (states[`sensor.seplos_pack_0_cell_temperature_warning_${i}`].state != "normal") return "orange";
+              }
+              if (states['sensor.seplos_pack_0_ambient_temperature_warning'].state != "normal") return "orange";
+              if (states['sensor.seplos_pack_0_component_temperature_warning'].state != "normal") return "orange";
+              
+              return "lightgreen";
+            ]]]
   - type: horizontal-stack
     cards:
       - type: custom:button-card
@@ -326,7 +382,7 @@ cards:
         show_label: false
         styles:
           icon:
-            - color: red
+            - color: grey
           card:
             - font-size: 12px
       - type: custom:button-card
@@ -339,7 +395,7 @@ cards:
         show_label: false
         styles:
           icon:
-            - color: red
+            - color: grey
           card:
             - font-size: 12px
   - type: custom:plotly-graph
