@@ -605,9 +605,9 @@ def main():
         # write yaml file for this pack
         filename = f"telemetry_sensors_pack-{pack_no}.yaml"
         with open(filename, "w") as file:
-            file.write(f"# Begin Telemetry Sensors Seplos Pack-{pack_no}\n\n")
+            file.write(f"## Begin Telemetry Sensors Seplos Pack-{pack_no}\n\n")
             yaml.dump(telemetry_sensors, file, indent=2, sort_keys=False)
-            file.write(f"\n# End Telemetry Sensors Seplos Pack-{pack_no}")
+            file.write(f"\n## End Telemetry Sensors Seplos Pack-{pack_no}")
         print(f"{filename} created successfully.")
 
     for pack_no in range(0, number_of_packs):
@@ -666,9 +666,9 @@ def main():
         # write yaml file for this pack
         filename = f"telesignalization_sensors_pack-{pack_no}.yaml"
         with open(filename, "w") as file:
-            file.write(f"# Begin Telesignalization Sensors Seplos Pack-{pack_no}\n\n")
+            file.write(f"## Begin Telesignalization Sensors Seplos Pack-{pack_no}\n\n")
             yaml.dump(telesignalization_sensors, file, indent=2, sort_keys=False)
-            file.write(f"\n# End Telesignalization Sensors Seplos Pack-{pack_no}")
+            file.write(f"\n## End Telesignalization Sensors Seplos Pack-{pack_no}")
         print(f"{filename} created successfully.")
 
 if __name__ == "__main__":

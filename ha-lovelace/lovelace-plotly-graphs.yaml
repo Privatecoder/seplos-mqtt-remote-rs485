@@ -6,9 +6,12 @@ cards:
     styles:
       card:
         - color: black
-        - background: |
+        - height: 40px
+        - background-color: |
             [[[
               const sensors = [
+                'sensor.seplos_pack_0_component_temperature_warning',
+                'sensor.seplos_pack_0_ambient_temperature_warning',
                 'sensor.seplos_pack_0_dis_charging_current_warning',
                 'sensor.seplos_pack_0_pack_voltage_warning',
                 'sensor.seplos_pack_0_voltage_sensing_failure',
@@ -47,7 +50,7 @@ cards:
                 'sensor.seplos_pack_0_no_calibration_of_current',
                 'sensor.seplos_pack_0_no_calibration_of_null_point'
               ];
-              const isAnySensorAbnormal = sensors.some(sensor => states[sensor].state != "normal");
+              if (sensors.some(sensor => states[sensor].state != "normal")) return "orange";
               for (let i = 1; i <= 16; i++) {
                   if (states[`sensor.seplos_pack_0_voltage_warning_cell_${i}`].state != "normal") return "orange";
                   if (states[`sensor.seplos_pack_0_disconnection_cell_${i}`].state != "normal") return "orange";
@@ -55,9 +58,6 @@ cards:
               for (let i = 1; i <= 4; i++) {
                   if (states[`sensor.seplos_pack_0_cell_temperature_warning_${i}`].state != "normal") return "orange";
               }
-              if (states['sensor.seplos_pack_0_ambient_temperature_warning'].state != "normal") return "orange";
-              if (states['sensor.seplos_pack_0_component_temperature_warning'].state != "normal") return "orange";
-              
               return "lightgreen";
             ]]]
   - type: horizontal-stack
@@ -247,6 +247,7 @@ cards:
           font-size: 10px;
           font-weight: normal;
           line-height: 10px;
+          color: black;
           background-color: white; 
         }
         bar-card-name {
