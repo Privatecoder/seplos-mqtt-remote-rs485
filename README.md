@@ -13,6 +13,16 @@ This is a python script that reads data from one or multiple Seplos battery pack
 
 ![sample](https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/de37d398-7580-452a-b942-3c374a8b86b6)
 
+It is suggested to take a regular patch-cable, cut one of its connectors and take the `orange`, `orange-white` and `green-white` wires to crimp a terminal onto them. Finally they can be connected to the waveshare device like so:
+
+- `orange` => `RS485-A`
+- `orange-white` => `RS485-B`
+- `green-white` => `PE`
+
+This works for both, Masters via the splitter (Baud 9600) and Slaves to an empty RS485 port of the BMS (Baud 19200).
+
+![waveshare-pins](https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/34d5e8f3-43dd-46a6-8baf-5d9af662837d)
+
 ## Installation and configuration (Docker):
 
 1. Configure and setup an MQTT broker with a user and password
