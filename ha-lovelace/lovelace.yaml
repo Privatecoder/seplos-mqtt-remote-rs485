@@ -52,9 +52,9 @@ cards:
               ];
               if (sensors.some(sensor => states[sensor].state != "normal")) return "orange";
               for (let i = 1; i <= 16; i++) {
-                if (i <= 4 && states[`sensor.seplos_pack_7_cell_temperature_warning_${i}`].state != "normal") return "orange";
-                if (states[`sensor.seplos_pack_7_voltage_warning_cell_${i}`].state != "normal") return "orange";
-                if (states[`sensor.seplos_pack_7_disconnection_cell_${i}`].state != "normal") return "orange";
+                if (i <= 4 && states[`sensor.seplos_pack_0_cell_temperature_warning_${i}`].state != "normal") return "orange";
+                if (states[`sensor.seplos_pack_0_voltage_warning_cell_${i}`].state != "normal") return "orange";
+                if (states[`sensor.seplos_pack_0_disconnection_cell_${i}`].state != "normal") return "orange";
               }
               return "lightgreen";
             ]]]
