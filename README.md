@@ -84,28 +84,28 @@ docker run -itd \
 
 Available ENV-vars are:
 
-`RS485_MASTER_REMOTE_IP`
-`RS485_MASTER_REMOTE_PORT`
+- `RS485_MASTER_REMOTE_IP`
+- `RS485_MASTER_REMOTE_PORT`
 
-`RS485_SLAVES_REMOTE_IP`
-`RS485_SLAVES_REMOTE_PORT`
+- `RS485_SLAVES_REMOTE_IP`
+- `RS485_SLAVES_REMOTE_PORT`
 
-`MQTT_HOST` (default: `192.168.1.100`)
-`MQTT_PORT` (default: `1883`)
-`MQTT_USERNAME` (default: `seplos-mqtt`)
-`MQTT_PASSWORD` (default: `my-secret-password`)
-`MQTT_TOPIC` (default: `seplos`)
-`MQTT_UPDATE_INTERVAL` (default: `0`)
+- `MQTT_HOST` (default: `192.168.1.100`)
+- `MQTT_PORT` (default: `1883`)
+- `MQTT_USERNAME` (default: `seplos-mqtt`)
+- `MQTT_PASSWORD` (default: `my-secret-password`)
+- `MQTT_TOPIC` (default: `seplos`)
+- `MQTT_UPDATE_INTERVAL` (default: `0`)
 
-`FETCH_MASTER` (default: `false`)
-`NUMBER_OF_SLAVES` (default: `1`)
-`MIN_CELL_VOLTAGE` (default: `2.500`)
-`MAX_CELL_VOLTAGE` (default: `3.650`)
+- `FETCH_MASTER` (default: `false`)
+- `NUMBER_OF_SLAVES` (default: `1`)
+- `MIN_CELL_VOLTAGE` (default: `2.500`)
+- `MAX_CELL_VOLTAGE` (default: `3.650`)
 
-`MASTER_SERIAL_INTERFACE` (default: `/tmp/vcom0`)
-`SLAVES_SERIAL_INTERFACE` (default: `/tmp/vcom1`)
+- `MASTER_SERIAL_INTERFACE` (default: `/tmp/vcom0`)
+- `SLAVES_SERIAL_INTERFACE` (default: `/tmp/vcom1`)
 
-`LOGGING_LEVEL` (default: `info`)
+- `LOGGING_LEVEL` (default: `info`)
 
 Set `RS485_MASTER_REMOTE_IP`, `RS485_MASTER_REMOTE_PORT`, `RS485_SLAVES_REMOTE_IP` and `RS485_SLAVES_REMOTE_PORT` starts the docker image with socat, binding your remote RS485 device´s RS485 ports locally to `vcom0` (master) and `vcom1` (slaves) (used by default in this script).
 Not defining those will just start the script, however `MASTER_SERIAL_INTERFACE` and `SLAVES_SERIAL_INTERFACE` must match your existing serial-devices – either passed to the container directly or using the privileged-flag (not recommended).
