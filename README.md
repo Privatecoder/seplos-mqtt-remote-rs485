@@ -30,81 +30,133 @@ This works for both, Masters via the splitter (Baud 9600) and Slaves to an empty
 3. Modify the `config.ini` and edit its settings to your needs (**alternatively**: configure everything via ENV-vars)
 4. Run the Docker Image, for example like this:
 
-- For the master pack: `docker run -itd -e RS485_REMOTE_IP="192.168.1.200" -e RS485_REMOTE_PORT="4196" -v $(pwd)/config-master.ini:/usr/src/app/config.ini --name seplos-mqtt-master privatecoder/seplos-mqtt-remote-rs485:v1.2.3`
+- For 1 master and 1 slave, i.e. two packs using ENV-vars:
 
-- For the slaves: `docker run -itd -e RS485_REMOTE_IP="192.168.1.201" -e RS485_REMOTE_PORT="4196" -v $(pwd)/config-slaves.ini:/usr/src/app/config.ini --name seplos-mqtt-slaves privatecoder/seplos-mqtt-remote-rs485:v1.2.3`
+```
+docker run -itd \
+  -e RS485_MASTER_REMOTE_IP="192.168.1.200" \
+  -e RS485_MASTER_REMOTE_PORT="4196" \
+  -e RS485_SLAVES_REMOTE_IP="192.168.1.201" \
+  -e RS485_SLAVES_REMOTE_PORT="4196" \
+  -e FETCH_MASTER=true \
+  -e NUMBER_OF_SLAVES=1 \
+  -e MQTT_HOST=192.168.1.100 \
+  -e MQTT_USERNAME=seplos-mqtt \
+  -e MQTT_PASSWORD=my-secret-password \
+  --name seplos-mqtt-rs485 \
+  privatecoder/seplos-mqtt-remote-rs485:v1.2.3
+```
+
+- For 1 master and 1 slave, i.e. two packs using config.ini (in which `FETCH_MASTER` is set to `true`):
+
+```
+docker run -itd \
+  -e RS485_MASTER_REMOTE_IP="192.168.1.200" \
+  -e RS485_MASTER_REMOTE_PORT="4196" \
+  -e RS485_SLAVES_REMOTE_IP="192.168.1.201" \
+  -e RS485_SLAVES_REMOTE_PORT="4196" \
+  -v $(pwd)/config-master.ini:/usr/src/app/config.ini \
+  --name seplos-mqtt-rs485 \
+  privatecoder/seplos-mqtt-remote-rs485:v1.2.3
+```
+
+- To run the script without socat / remote RS485 but local connections, don't set the `RS485_MASTER_REMOTE_IP` and `RS485_SLAVES_REMOTE_IP` ENV-vars, i.e:
+
+```
+docker run -itd \
+  -e FETCH_MASTER=true \
+  -e NUMBER_OF_SLAVES=1 \
+  -e MQTT_HOST=192.168.1.100 \
+  -e MQTT_USERNAME=seplos-mqtt \
+  -e MQTT_PASSWORD=my-secret-password \
+  --name seplos-mqtt-rs485 \
+  privatecoder/seplos-mqtt-remote-rs485:v1.2.3
+```
+
+**or**
+
+```
+docker run -itd \
+  -v $(pwd)/config-master.ini:/usr/src/app/config.ini \
+  --name seplos-mqtt-rs485 \
+  privatecoder/seplos-mqtt-remote-rs485:v1.2.3
+```
 
 Available ENV-vars are:
 
-`RS485_REMOTE_IP`
-`RS485_REMOTE_PORT`
+`RS485_MASTER_REMOTE_IP`
+`RS485_MASTER_REMOTE_PORT`
 
-`MQTT_HOST`
-`MQTT_PORT`
-`MQTT_USERNAME`
-`MQTT_PASSWORD`
-`MQTT_TOPIC`
-`MQTT_UPDATE_INTERVAL`
+`RS485_SLAVES_REMOTE_IP`
+`RS485_SLAVES_REMOTE_PORT`
 
-`ONLY_MASTER`
-`NUMBER_OF_PACKS`
-`MIN_CELL_VOLTAGE`
-`MAX_CELL_VOLTAGE`
+`MQTT_HOST` (default: `192.168.1.100`)
+`MQTT_PORT` (default: `1883`)
+`MQTT_USERNAME` (default: `seplos-mqtt`)
+`MQTT_PASSWORD` (default: `my-secret-password`)
+`MQTT_TOPIC` (default: `seplos`)
+`MQTT_UPDATE_INTERVAL` (default: `0`)
 
-`SERIAL_INTERFACE`
-`SERIAL_BAUD_RATE`
+`FETCH_MASTER` (default: `false`)
+`NUMBER_OF_SLAVES` (default: `1`)
+`MIN_CELL_VOLTAGE` (default: `2.500`)
+`MAX_CELL_VOLTAGE` (default: `3.650`)
 
-`LOGGING_LEVEL`
+`MASTER_SERIAL_INTERFACE` (default: `/tmp/vcom0`)
+`SLAVES_SERIAL_INTERFACE` (default: `/tmp/vcom1`)
 
-Set `RS485_REMOTE_IP` and `RS485_REMOTE_PORT` to start the docker image with socat, binding your remote RS485 device´s RS485 port locally to `vcom0` (used by default in this script).
-Not defining those will just start the script, however `SERIAL_INTERFACE` must match your existing serial-device – either passed to the container directly or using the privileged-flag (not recommended).
+`LOGGING_LEVEL` (default: `info`)
+
+Set `RS485_MASTER_REMOTE_IP`, `RS485_MASTER_REMOTE_PORT`, `RS485_SLAVES_REMOTE_IP` and `RS485_SLAVES_REMOTE_PORT` starts the docker image with socat, binding your remote RS485 device´s RS485 ports locally to `vcom0` (master) and `vcom1` (slaves) (used by default in this script).
+Not defining those will just start the script, however `MASTER_SERIAL_INTERFACE` and `SLAVES_SERIAL_INTERFACE` must match your existing serial-devices – either passed to the container directly or using the privileged-flag (not recommended).
 
 MQTT messages published by the script will look like this:
 ```
 {
+    "last_update": "2024-02-02 11:39:08",
     "telemetry": {
         "min_cell_voltage": 2.5,
         "max_cell_voltage": 3.65,
         "min_pack_voltage": 40.0,
         "max_pack_voltage": 58.4,
-        "voltage_cell_1": 3.27,
-        "voltage_cell_2": 3.285,
-        "voltage_cell_3": 3.27,
-        "voltage_cell_4": 3.269,
-        "voltage_cell_5": 3.267,
-        "voltage_cell_6": 3.27,
-        "voltage_cell_7": 3.27,
-        "voltage_cell_8": 3.269,
-        "voltage_cell_9": 3.266,
-        "voltage_cell_10": 3.271,
-        "voltage_cell_11": 3.269,
-        "voltage_cell_12": 3.282,
-        "voltage_cell_13": 3.27,
-        "voltage_cell_14": 3.271,
-        "voltage_cell_15": 3.268,
-        "voltage_cell_16": 3.268,
-        "average_cell_voltage": 3.271,
-        "lowest_cell": 9,
-        "lowest_cell_voltage": 3.266,
-        "highest_cell": 2,
-        "highest_cell_voltage": 3.285,
-        "delta_cell_voltage": 0.019,
-        "cell_temperature_1": 11.7,
-        "cell_temperature_2": 10.9,
-        "cell_temperature_3": 10.7,
-        "cell_temperature_4": 11.5,
-        "ambient_temperature": 16.0,
-        "components_temperature": 12.0,
-        "dis_charge_current": 0.0,
-        "total_pack_voltage": 52.34,
-        "dis_charge_power": 0.0,
+        "voltage_cell_1": 3.339,
+        "voltage_cell_2": 3.34,
+        "voltage_cell_3": 3.34,
+        "voltage_cell_4": 3.34,
+        "voltage_cell_5": 3.339,
+        "voltage_cell_6": 3.342,
+        "voltage_cell_7": 3.342,
+        "voltage_cell_8": 3.34,
+        "voltage_cell_9": 3.342,
+        "voltage_cell_10": 3.343,
+        "voltage_cell_11": 3.34,
+        "voltage_cell_12": 3.341,
+        "voltage_cell_13": 3.34,
+        "voltage_cell_14": 3.346,
+        "voltage_cell_15": 3.343,
+        "voltage_cell_16": 3.342,
+        "average_cell_voltage": 3.341,
+        "lowest_cell": 1,
+        "lowest_cell_voltage": 3.339,
+        "highest_cell": 14,
+        "highest_cell_voltage": 3.346,
+        "delta_cell_voltage": 0.007,
+        "cell_temperature_1": 11.5,
+        "cell_temperature_2": 11.0,
+        "cell_temperature_3": 10.9,
+        "cell_temperature_4": 11.6,
+        "ambient_temperature": 16.5,
+        "components_temperature": 12.3,
+        "dis_charge_current": 1.46,
+        "total_pack_voltage": 53.46,
+        "dis_charge_power": 78.052,
         "rated_capacity": 280.0,
         "battery_capacity": 280.0,
-        "residual_capacity": 58.88,
-        "soc": 21.0,
-        "cycles": 6,
+        "residual_capacity": 192.94,
+        "soc": 68.9,
+        "cycles": 7,
         "soh": 100.0,
-        "port_voltage": 52.36
+        "port_voltage": 53.48
     },
     "telesignalization": {
         "voltage_warning_cell_1": "normal",
@@ -181,9 +233,9 @@ MQTT messages published by the script will look like this:
         "equalization_cell_15": "off",
         "equalization_cell_16": "off",
         "discharge": "off",
-        "charge": "off",
+        "charge": "on",
         "floating_charge": "off",
-        "standby": "on",
+        "standby": "off",
         "power_off": "off",
         "disconnection_cell_1": "normal",
         "disconnection_cell_2": "normal",
@@ -216,78 +268,81 @@ MQTT messages published by the script will look like this:
 
 1. Clone the project
 2. Make sure to have Python v3.10 or later installed
-3. Edit `config.ini` in `src` to your needs (to connect your remote RS485 device, bind it for example to `/tmp/vcom0` using socat like `socat pty,link=/tmp/vcom0,raw tcp:192.168.1.200:4196,retry,interval=.2,forever &` or something similar)
+3. Edit `config.ini` in `src` to your needs (to connect your remote RS485 devices, bind them for example to `/tmp/vcom0` and `/tmp/vcom1` using socat like `socat pty,link=/tmp/vcom0,raw tcp:192.168.1.200:4196,retry,interval=.2,forever &` and `socat pty,link=/tmp/vcom1,raw tcp:192.168.1.201:4196,retry,interval=.2,forever &` or something similar)
 4. Run the script, i.e. `python fetch_bms_data.py`
 
 Its output will look like this (`LOGGING` `LEVEL` set to `info`):
 ```
+INFO:SeplosBMS:Fetch data for Battery Pack 1
 INFO:SeplosBMS:Battery-Pack 1 Telemetry Feedback: {
-    "min_pack_voltage": 46.4,
-    "max_pack_voltage": 55.2,
-    "voltage_cell_1": 3.255,
-    "voltage_cell_2": 3.255,
-    "voltage_cell_3": 3.255,
-    "voltage_cell_4": 3.255,
-    "voltage_cell_5": 3.253,
-    "voltage_cell_6": 3.258,
-    "voltage_cell_7": 3.259,
-    "voltage_cell_8": 3.256,
-    "voltage_cell_9": 3.258,
-    "voltage_cell_10": 3.261,
-    "voltage_cell_11": 3.255,
-    "voltage_cell_12": 3.26,
-    "voltage_cell_13": 3.257,
-    "voltage_cell_14": 3.264,
-    "voltage_cell_15": 3.262,
-    "voltage_cell_16": 3.259,
-    "average_cell_voltage": 3.258,
-    "lowest_cell": 5,
-    "lowest_cell_voltage": 3.253,
-    "highest_cell": 14,
-    "highest_cell_voltage": 3.264,
-    "delta_cell_voltage": 0.011,
-    "cell_temperature_1": 9.7,
-    "cell_temperature_2": 9.1,
-    "cell_temperature_3": 9.1,
-    "cell_temperature_4": 9.8,
-    "ambient_temperature": 14.8,
-    "components_temperature": 10.8,
-    "dis_charge_current": 0.0,
-    "total_pack_voltage": 52.12,
-    "dis_charge_power": 0.0,
+    "min_cell_voltage": 2.5,
+    "max_cell_voltage": 3.65,
+    "min_pack_voltage": 40.0,
+    "max_pack_voltage": 58.4,
+    "voltage_cell_1": 3.342,
+    "voltage_cell_2": 3.341,
+    "voltage_cell_3": 3.34,
+    "voltage_cell_4": 3.341,
+    "voltage_cell_5": 3.341,
+    "voltage_cell_6": 3.343,
+    "voltage_cell_7": 3.34,
+    "voltage_cell_8": 3.343,
+    "voltage_cell_9": 3.336,
+    "voltage_cell_10": 3.341,
+    "voltage_cell_11": 3.344,
+    "voltage_cell_12": 3.34,
+    "voltage_cell_13": 3.356,
+    "voltage_cell_14": 3.343,
+    "voltage_cell_15": 3.344,
+    "voltage_cell_16": 3.338,
+    "average_cell_voltage": 3.342,
+    "lowest_cell": 9,
+    "lowest_cell_voltage": 3.336,
+    "highest_cell": 13,
+    "highest_cell_voltage": 3.356,
+    "delta_cell_voltage": 0.02,
+    "cell_temperature_1": 11.7,
+    "cell_temperature_2": 11.1,
+    "cell_temperature_3": 11.0,
+    "cell_temperature_4": 11.7,
+    "ambient_temperature": 16.3,
+    "components_temperature": 12.3,
+    "dis_charge_current": 1.44,
+    "total_pack_voltage": 53.47,
+    "dis_charge_power": 76.997,
     "rated_capacity": 280.0,
     "battery_capacity": 280.0,
-    "residual_capacity": 44.46,
-    "soc": 15.8,
-    "cycles": 7,
+    "residual_capacity": 195.8,
+    "soc": 69.9,
+    "cycles": 6,
     "soh": 100.0,
-    "port_voltage": 52.15
+    "port_voltage": 53.5
 }
 INFO:SeplosBMS:Battery-Pack 1 Telesignalization feedback: {
-    "warning_cell_1": "normal",
-    "warning_cell_2": "normal",
-    "warning_cell_3": "normal",
-    "warning_cell_4": "normal",
-    "warning_cell_5": "normal",
-    "warning_cell_6": "normal",
-    "warning_cell_7": "normal",
-    "warning_cell_8": "normal",
-    "warning_cell_9": "normal",
-    "warning_cell_10": "normal",
-    "warning_cell_11": "normal",
-    "warning_cell_12": "normal",
-    "warning_cell_13": "normal",
-    "warning_cell_14": "normal",
-    "warning_cell_15": "normal",
-    "warning_cell_16": "normal",
-    "warning_cell_temperature_1": "normal",
-    "warning_cell_temperature_2": "normal",
-    "warning_cell_temperature_3": "normal",
-    "warning_cell_temperature_4": "normal",
-    "ambient_temperature_warnings": "normal",
-    "component_temperature_warnings": "normal",
-    "dis_charging_current_warnings": "normal",
-    "pack_voltage_warnings": "normal",
+    "voltage_warning_cell_1": "normal",
+    "voltage_warning_cell_2": "normal",
+    "voltage_warning_cell_3": "normal",
+    "voltage_warning_cell_4": "normal",
+    "voltage_warning_cell_5": "normal",
+    "voltage_warning_cell_6": "normal",
+    "voltage_warning_cell_7": "normal",
+    "voltage_warning_cell_8": "normal",
+    "voltage_warning_cell_9": "normal",
+    "voltage_warning_cell_10": "normal",
+    "voltage_warning_cell_11": "normal",
+    "voltage_warning_cell_12": "normal",
+    "voltage_warning_cell_13": "normal",
+    "voltage_warning_cell_14": "normal",
+    "voltage_warning_cell_15": "normal",
+    "voltage_warning_cell_16": "normal",
+    "cell_temperature_warning_1": "normal",
+    "cell_temperature_warning_2": "normal",
+    "cell_temperature_warning_3": "normal",
+    "cell_temperature_warning_4": "normal",
+    "ambient_temperature_warning": "normal",
+    "component_temperature_warning": "normal",
+    "dis_charging_current_warning": "normal",
+    "pack_voltage_warning": "normal",
     "voltage_sensing_failure": "normal",
     "temp_sensing_failure": "normal",
     "current_sensing_failure": "normal",
@@ -338,9 +393,9 @@ INFO:SeplosBMS:Battery-Pack 1 Telesignalization feedback: {
     "equalization_cell_15": "off",
     "equalization_cell_16": "off",
     "discharge": "off",
-    "charge": "off",
+    "charge": "on",
     "floating_charge": "off",
-    "standby": "on",
+    "standby": "off",
     "power_off": "off",
     "disconnection_cell_1": "normal",
     "disconnection_cell_2": "normal",

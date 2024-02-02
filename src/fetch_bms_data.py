@@ -3,6 +3,7 @@ import os
 import logging
 import configparser
 import time
+from datetime import datetime
 import json
 import serial
 from serial.serialutil import SerialException
@@ -44,11 +45,7 @@ try:
         return None
 
     # BMS config
-    
-    # when ONLY_MASTER is True, data will only be fetched for one pack (0) 
-    ONLY_MASTER = get_config_value("ONLY_MASTER", return_type=bool)
-    # when ONLY_MASTER is False, data will be fetched for NUMBER_OF_PACKS (1-n)
-    NUMBER_OF_PACKS = get_config_value("NUMBER_OF_PACKS", return_type=int)
+
     # set min and max cell-voltage as this cannot be read from the BMS
     MIN_CELL_VOLTAGE = get_config_value("MIN_CELL_VOLTAGE", return_type=float)
     MAX_CELL_VOLTAGE = get_config_value("MAX_CELL_VOLTAGE", return_type=float)
@@ -81,16 +78,21 @@ try:
     mqtt_client.on_connect = logger.info("mqtt connected ({}:{}, user: {})".format(MQTT_HOST, MQTT_PORT, MQTT_USERNAME))
 
     # Serial Interface config and setup (set to 9600 for Master and 19200 for Slaves)
+    
+    # fetch master, i.e. pack-0 when FETCH_MASTER == True
+    FETCH_MASTER = get_config_value("FETCH_MASTER", return_type=bool)
+    # fetch number of slave packs, i.e. number of packs excluding the master
+    NUMBER_OF_SLAVES = get_config_value("NUMBER_OF_SLAVES", return_type=int)
+    MASTER_SERIAL_INTERFACE = get_config_value("MASTER_SERIAL_INTERFACE")
+    SLAVES_SERIAL_INTERFACE = get_config_value("SLAVES_SERIAL_INTERFACE")
 
-    SERIAL_INTERFACE = get_config_value("SERIAL_INTERFACE")
-    SERIAL_BAUD_RATE = get_config_value("SERIAL_BAUD_RATE", return_type=int)
-
-    serial_instance = None
+    serial_master_instance = None
+    serial_slaves_instance = None
 
     # Debug output of env-var settings
     
-    logger.debug(f"SERIAL_INTERFACE: {SERIAL_INTERFACE}")
-    logger.debug(f"SERIAL_BAUD_RATE: {SERIAL_BAUD_RATE}")
+    logger.debug(f"MASTER_SERIAL_INTERFACE: {MASTER_SERIAL_INTERFACE}")
+    logger.debug(f"SLAVES_SERIAL_INTERFACE: {SLAVES_SERIAL_INTERFACE}")
 
     logger.debug(f"MQTT_HOST: {MQTT_HOST}")
     logger.debug(f"MQTT_PORT: {MQTT_PORT}")
@@ -99,8 +101,8 @@ try:
     logger.debug(f"MQTT_TOPIC: {MQTT_TOPIC}")
     logger.debug(f"MQTT_UPDATE_INTERVAL: {MQTT_UPDATE_INTERVAL}")
 
-    logger.debug(f"ONLY_MASTER: {ONLY_MASTER}")
-    logger.debug(f"NUMBER_OF_PACKS: {NUMBER_OF_PACKS}")
+    logger.debug(f"FETCH_MASTER: {FETCH_MASTER}")
+    logger.debug(f"NUMBER_OF_SLAVES: {NUMBER_OF_SLAVES}")
 
     logger.debug(f"MIN_CELL_VOLTAGE: {MIN_CELL_VOLTAGE}")
     logger.debug(f"MAX_CELL_VOLTAGE: {MAX_CELL_VOLTAGE}")
@@ -869,7 +871,7 @@ try:
                 return telemetry_feedback
 
         # read data for given battery_pack address from serial interface
-        def read_serial_data(self, serial_instance):
+        def read_serial_data(self, serial_master_instance):
             logger.info("Fetch data for Battery Pack {}".format(self.pack_address))
 
             # json object to store status and alarm response values
@@ -879,8 +881,8 @@ try:
             }
 
             # flush interface in- and output
-            serial_instance.flushOutput()
-            serial_instance.flushInput()
+            serial_master_instance.flushOutput()
+            serial_master_instance.flushInput()
 
             # calculate request telemetry command (0x42) for the current pack_address
             telemetry_command = self.encode_cmd(address=self.pack_address, cid2=0x42)
@@ -891,10 +893,10 @@ try:
             while True:
                 # (re-)send telemetry_command to the serial port until a response is received
                 if telemetry_command_iteration == 1 or telemetry_command_iteration % 5 == 0:
-                    serial_instance.write(telemetry_command)
+                    serial_master_instance.write(telemetry_command)
 
                 # set EOL to \r
-                raw_data = serial_instance.read_until(b'\r')
+                raw_data = serial_master_instance.read_until(b'\r')
                 data = raw_data[13 : -5]
 
                 # check if data is valid frame
@@ -913,10 +915,10 @@ try:
             while True:
                 # (re-)send telesignalization_command to the serial port until a response is received
                 if telesignalization_command_iteration == 1 or telesignalization_command_iteration % 5 == 0:
-                    serial_instance.write(telesignalization_command)
+                    serial_master_instance.write(telesignalization_command)
 
                 # set EOL to \r
-                raw_data = serial_instance.read_until(b'\r')
+                raw_data = serial_master_instance.read_until(b'\r')
                 data = raw_data[13 : -5]
 
                 # check if data is valid frame
@@ -943,9 +945,11 @@ try:
         logger.error(f"MQTTException occurred: {e}")
         sys.exit(1)
 
-    # connect serial interface
+    # connect serial interfaces
     try:
-        serial_instance = serial.Serial(SERIAL_INTERFACE, SERIAL_BAUD_RATE)
+        if FETCH_MASTER == True:
+            serial_master_instance = serial.Serial(port=MASTER_SERIAL_INTERFACE, baudrate=9600)
+        serial_slaves_instance = serial.Serial(port=SLAVES_SERIAL_INTERFACE, baudrate=19200)
     except SerialException as e:
         logger.error(f"SerialException occurred: {e}")
         sys.exit(1)
@@ -953,29 +957,37 @@ try:
     # array of battery-pack objects
     battery_packs = []
 
-    # fill battery_packs array with one (ONLY_MASTER = true) or multiple pack(s)
-    if ONLY_MASTER:
-        battery_packs.append({"address": 0, "instance": SeplosBatteryPack(0)})
-    else:
-        for i in range(1, NUMBER_OF_PACKS + 1):
-            address = int(f'0x{i:02x}', 16)
-            instance = SeplosBatteryPack(address)
-            battery_packs.append({"address": address, "instance": instance})
+    # fill battery_packs array with master- and slave-packs
+    if FETCH_MASTER:
+        battery_packs.append({ "pack_instance": SeplosBatteryPack(0), "address": 0, "serial_instance": serial_master_instance })
+    
+    for i in range(1, NUMBER_OF_SLAVES + 1):
+        address = int(f'0x{i:02x}', 16)
+        pack_instance = SeplosBatteryPack(address)
+        battery_packs.append({ "pack_instance": pack_instance, "address": address, "serial_instance": serial_slaves_instance })
 
     # fetch battery-pack Telemetry and Telesignalization data
     i = 0
     while True:
-        current_battery_pack = battery_packs[i]["instance"]
-        stats = current_battery_pack.read_serial_data(serial_instance)
+        current_battery_pack = battery_packs[i]["pack_instance"]
+        address = battery_packs[i]["address"]
+        serial_instance = battery_packs[i]["serial_instance"]
 
-        if stats:
-            logger.info("Sending stats to MQTT")
-            topic = f"{MQTT_TOPIC}/pack-{i + 1 if not ONLY_MASTER else 0}/sensors"
-            mqtt_client.publish(topic, json.dumps(stats, indent=4))
-        else:
-            logger.info("Stats have not changed. No update required.")
+        # fetch battery_pack_data
+        battery_pack_data = current_battery_pack.read_serial_data(serial_instance)
 
-        # query all packs again after defined time
+        stats = { "last_update": datetime.now().strftime('%Y-%m-%d %H:%M:%S') }
+
+        # if battery_pack_data has changed, update mqtt stats payload
+        if battery_pack_data:
+            stats.update(battery_pack_data)
+
+        # send stats to mqtt
+        logger.info("Sending stats to MQTT")
+        topic = f"{MQTT_TOPIC}/pack-{address}/sensors"
+        mqtt_client.publish(topic, json.dumps(stats, indent=4))
+
+        # query all packs again in continuous loop or with pre-defined wait interval after each circular run
         i += 1
         if i >= len(battery_packs):
             time.sleep(MQTT_UPDATE_INTERVAL)
@@ -992,9 +1004,12 @@ finally:
         mqtt_client.disconnect()
         mqtt_client.loop_stop()
 
-    # close serial connection if open
-    if serial_instance:
-        logger.info("Closing serial connection")
-        serial_instance.close()
+    # close serial connections if open
+    if serial_master_instance is not None:
+        logger.info("Closing serial connection to master")
+        serial_master_instance.close()
+    if serial_slaves_instance is not None:
+        logger.info("Closing serial connection to slaves")
+        serial_slaves_instance.close()
     logger.info("Exiting the program.")
     sys.exit(0)
