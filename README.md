@@ -97,6 +97,9 @@ Available ENV-vars are:
 - `MQTT_TOPIC` (default: `seplos`)
 - `MQTT_UPDATE_INTERVAL` (default: `0`)
 
+- `ENABLE_HA_DISCOVERY_CONFIG` (default: `true`)
+- `HA_DISCOVERY_PREFIX` (default: `homeassistant`)
+
 - `FETCH_MASTER` (default: `false`)
 - `NUMBER_OF_SLAVES` (default: `1`)
 - `MIN_CELL_VOLTAGE` (default: `2.500`)
@@ -425,42 +428,10 @@ INFO:SeplosBMS:Battery-Pack 1 Telesignalization feedback: {
 
 ## Configuring Home Assistant
 
-### Add MQTT Sensors:
+### Add Device(s):
 
-Configure all sensor you'd like to use in Home Assistant as MQTT-Sensor.
-
-- The provided `create_ha_sensors.py` (in `ha-helpers`) will create a yaml-file for each pack/all sensors for a given mqtt-topic and number of packs, starting with pack-0
-- Example: `python create_ha_sensors.py --mqtt_topic test/123 --number_of_packs 3` will create 6 yaml-files (3 telemetry and 3 telesignalization) for pack-0, pack-1 and pack-3
-- The provided `combine-yaml-files.sh` (also in `ha-helpers`) will combine the 3 telemetry and 3 telesignalization yaml-files of the previous sample into one combined_telemetry.yaml and combined_telesignalization.yaml file.
-- The generated yaml is depended on a setting like `mqtt: !include_dir_merge_named mqtt` in `configuration.yaml`.
-- If you are planning to put the sensors directly into your `configuration.yaml`, add `platform: mqtt` to each sensor, i.e. this
-
-```
-- name: Seplos Pack-0 Voltage Cell 1
-  unique_id: seplos_pack_0_voltage_cell_1
-  state_topic: seplos/pack-0/sensors
-  value_template: '{{ value_json.telemetry.voltage_cell_1 }}'
-  state_class: measurement
-  unit_of_measurement: V
-  suggested_display_precision: 3
-  icon: mdi:battery
-  device_class: voltage
-```
-
-becomes this
-
-```
-- platform: mqtt
-  name: Seplos Pack-0 Voltage Cell 1
-  unique_id: seplos_pack_0_voltage_cell_1
-  state_topic: seplos/pack-0/sensors
-  value_template: '{{ value_json.telemetry.voltage_cell_1 }}'
-  state_class: measurement
-  unit_of_measurement: V
-  suggested_display_precision: 3
-  icon: mdi:battery
-  device_class: voltage
-```
+- If `ENABLE_HA_DISCOVERY_CONFIG` is enabled, it triggers the publishing of auto discovery sensor configs in Home Assistant after a restart.
+- Run the container and restart Home Assistant. The devices should be added automatically.
 
 ### Add Sensors to lovelace:
 

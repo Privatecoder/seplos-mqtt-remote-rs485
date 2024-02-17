@@ -10,51 +10,51 @@ cards:
         - background-color: |
             [[[
               const sensors = [
-                'sensor.seplos_pack_0_component_temperature_warning',
-                'sensor.seplos_pack_0_ambient_temperature_warning',
-                'sensor.seplos_pack_0_dis_charging_current_warning',
-                'sensor.seplos_pack_0_pack_voltage_warning',
-                'sensor.seplos_pack_0_voltage_sensing_failure',
-                'sensor.seplos_pack_0_temp_sensing_failure',
-                'sensor.seplos_pack_0_current_sensing_failure',
-                'sensor.seplos_pack_0_power_switch_failure',
-                'sensor.seplos_pack_0_cell_voltage_difference_sensing_failure',
-                'sensor.seplos_pack_0_charging_switch_failure',
-                'sensor.seplos_pack_0_discharging_switch_failure',
-                'sensor.seplos_pack_0_current_limit_switch_failure',
-                'sensor.seplos_pack_0_current_limit_switch_failure',
-                'sensor.seplos_pack_0_cell_overvoltage',
-                'sensor.seplos_pack_0_cell_voltage_low',
-                'sensor.seplos_pack_0_pack_overvoltage',
-                'sensor.seplos_pack_0_pack_voltage_low',
-                'sensor.seplos_pack_0_charging_temp_high',
-                'sensor.seplos_pack_0_charging_temp_low',
-                'sensor.seplos_pack_0_discharging_temp_high',
-                'sensor.seplos_pack_0_discharging_temp_low',
-                'sensor.seplos_pack_0_ambient_temp_high',
-                'sensor.seplos_pack_0_component_temp_high',
-                'sensor.seplos_pack_0_charging_overcurrent',
-                'sensor.seplos_pack_0_discharging_overcurrent',
-                'sensor.seplos_pack_0_transient_overcurrent',
-                'sensor.seplos_pack_0_output_short_circuit',
-                'sensor.seplos_pack_0_transient_overcurrent_lock',
-                'sensor.seplos_pack_0_charging_high_voltage',
-                'sensor.seplos_pack_0_intermittent_power_supplement',
-                'sensor.seplos_pack_0_soc_low',
-                'sensor.seplos_pack_0_cell_low_voltage_forbidden_charging',
-                'sensor.seplos_pack_0_output_reverse_protection',
-                'sensor.seplos_pack_0_output_connection_failure',
-                'sensor.seplos_pack_0_eep_storage_failure',
-                'sensor.seplos_pack_0_rtc_clock_failure',
-                'sensor.seplos_pack_0_no_calibration_of_voltage',
-                'sensor.seplos_pack_0_no_calibration_of_current',
-                'sensor.seplos_pack_0_no_calibration_of_null_point'
+                'sensor.seplos_bms_pack_0_component_temperature_warning',
+                'sensor.seplos_bms_pack_0_ambient_temperature_warning',
+                'sensor.seplos_bms_pack_0_dis_charging_current_warning',
+                'sensor.seplos_bms_pack_0_pack_voltage_warning',
+                'sensor.seplos_bms_pack_0_voltage_sensing_failure',
+                'sensor.seplos_bms_pack_0_temp_sensing_failure',
+                'sensor.seplos_bms_pack_0_current_sensing_failure',
+                'sensor.seplos_bms_pack_0_power_switch_failure',
+                'sensor.seplos_bms_pack_0_cell_voltage_difference_sensing_failure',
+                'sensor.seplos_bms_pack_0_charging_switch_failure',
+                'sensor.seplos_bms_pack_0_discharging_switch_failure',
+                'sensor.seplos_bms_pack_0_current_limit_switch_failure',
+                'sensor.seplos_bms_pack_0_current_limit_switch_failure',
+                'sensor.seplos_bms_pack_0_cell_overvoltage',
+                'sensor.seplos_bms_pack_0_cell_voltage_low',
+                'sensor.seplos_bms_pack_0_pack_overvoltage',
+                'sensor.seplos_bms_pack_0_pack_voltage_low',
+                'sensor.seplos_bms_pack_0_charging_temp_high',
+                'sensor.seplos_bms_pack_0_charging_temp_low',
+                'sensor.seplos_bms_pack_0_discharging_temp_high',
+                'sensor.seplos_bms_pack_0_discharging_temp_low',
+                'sensor.seplos_bms_pack_0_ambient_temp_high',
+                'sensor.seplos_bms_pack_0_component_temp_high',
+                'sensor.seplos_bms_pack_0_charging_overcurrent',
+                'sensor.seplos_bms_pack_0_discharging_overcurrent',
+                'sensor.seplos_bms_pack_0_transient_overcurrent',
+                'sensor.seplos_bms_pack_0_output_short_circuit',
+                'sensor.seplos_bms_pack_0_transient_overcurrent_lock',
+                'sensor.seplos_bms_pack_0_charging_high_voltage',
+                'sensor.seplos_bms_pack_0_intermittent_power_supplement',
+                'sensor.seplos_bms_pack_0_soc_low',
+                'sensor.seplos_bms_pack_0_cell_low_voltage_forbidden_charging',
+                'sensor.seplos_bms_pack_0_output_reverse_protection',
+                'sensor.seplos_bms_pack_0_output_connection_failure',
+                'sensor.seplos_bms_pack_0_eep_storage_failure',
+                'sensor.seplos_bms_pack_0_rtc_clock_failure',
+                'sensor.seplos_bms_pack_0_no_calibration_of_voltage',
+                'sensor.seplos_bms_pack_0_no_calibration_of_current',
+                'sensor.seplos_bms_pack_0_no_calibration_of_null_point'
               ];
               if (sensors.some(sensor => states[sensor].state != "normal")) return "orange";
               for (let i = 1; i <= 16; i++) {
-                if (i <= 4 && states[`sensor.seplos_pack_0_cell_temperature_warning_${i}`].state != "normal") return "orange";
-                if (states[`sensor.seplos_pack_0_voltage_warning_cell_${i}`].state != "normal") return "orange";
-                if (states[`sensor.seplos_pack_0_disconnection_cell_${i}`].state != "normal") return "orange";
+                if (i <= 4 && states[`sensor.seplos_bms_pack_0_cell_temperature_warning_${i}`].state != "normal") return "orange";
+                else if (states[`sensor.seplos_bms_pack_0_voltage_warning_cell_${i}`].state != "normal") return "orange";
+                else if (states[`sensor.seplos_bms_pack_0_disconnection_cell_${i}`].state != "normal") return "orange";
               }
               return "lightgreen";
             ]]]
@@ -63,7 +63,7 @@ cards:
       - type: custom:button-card
         name: Pack Voltage
         size: 15%
-        entity: sensor.seplos_pack_0_total_pack_voltage
+        entity: sensor.seplos_bms_pack_0_total_pack_voltage
         show_icon: true
         show_name: true
         show_state: true
@@ -72,10 +72,13 @@ cards:
           icon:
             - color: |
                 [[[
-                  if (entity.state < states['sensor.seplos_pack_0_min_pack_voltage'].state + 8) return 'red';
-                  else if (entity.state < states['sensor.seplos_pack_0_min_pack_voltage'].state + 10.4) return 'orange';
-                  else if (entity.state > states['sensor.seplos_pack_0_max_pack_voltage'].state - 3.2) return 'red';
-                  else if (entity.state > states['sensor.seplos_pack_0_max_pack_voltage'].state - 4.6) return 'orange';
+                  const totalPackVol = entity.state;
+                  const minPackVol = states['sensor.seplos_bms_pack_0_min_pack_voltage'].state;
+                  const maxPackVol = states['sensor.seplos_bms_pack_0_max_pack_voltage'].state;
+                  if (totalPackVol < minPackVol + 8) return 'red';
+                  else if (totalPackVol > maxPackVol - 3.2) return 'red';
+                  else if (totalPackVol < minPackVol + 10.4) return 'orange';
+                  else if (totalPackVol > maxPackVol - 4.6) return 'orange';
                   else return 'lightgreen';
                 ]]]
           card:
@@ -83,7 +86,7 @@ cards:
       - type: custom:button-card
         name: Port Voltage
         size: 15%
-        entity: sensor.seplos_pack_0_port_voltage
+        entity: sensor.seplos_bms_pack_0_port_voltage
         show_icon: true
         show_name: true
         show_state: true
@@ -92,10 +95,13 @@ cards:
           icon:
             - color: |
                 [[[
-                  if (entity.state < states['sensor.seplos_pack_0_min_pack_voltage'].state + 8) return 'red';
-                  else if (entity.state < states['sensor.seplos_pack_0_min_pack_voltage'].state + 10.4) return 'orange';
-                  else if (entity.state > states['sensor.seplos_pack_0_max_pack_voltage'].state - 3.2) return 'red';
-                  else if (entity.state > states['sensor.seplos_pack_0_max_pack_voltage'].state - 4.6) return 'orange';
+                  const portVol = entity.state;
+                  const minPackVol = states['sensor.seplos_bms_pack_0_min_pack_voltage'].state;
+                  const maxPackVol = states['sensor.seplos_bms_pack_0_max_pack_voltage'].state;
+                  if (portVol < minPackVol + 8) return 'red';
+                  else if (portVol > maxPackVol - 3.2) return 'red';
+                  else if (portVol < minPackVol + 10.4) return 'orange';
+                  else if (portVol > maxPackVol - 4.6) return 'orange';
                   else return 'lightgreen';
                 ]]]
           card:
@@ -103,38 +109,39 @@ cards:
       - type: custom:button-card
         name: Dis-/Charging
         size: 15%
-        entity: sensor.seplos_pack_0_dis_charge_power
+        entity: sensor.seplos_bms_pack_0_dis_charge_power
         show_icon: true
         show_name: true
         show_state: false
         show_label: true
         label: |
           [[[
-            if (states['sensor.seplos_pack_0_standby'].state == "on") return "Standby"
-            else if (states['sensor.seplos_pack_0_power_off'].state == "on") return "Off"
-            else if (states['sensor.seplos_pack_0_charge'].state == "on") return "Charging: " + entity.state + "W"
-            else if (states['sensor.seplos_pack_0_floating_charge'].state == "on") return "Floating: " + entity.state + "W"
-            else if (states['sensor.seplos_pack_0_discharge'].state == "on") return "Discharging: " + entity.state + "W"
+            const disChargePower = entity.state;
+            if (states['sensor.seplos_bms_pack_0_standby'].state == "on") return "Standby"
+            else if (states['sensor.seplos_bms_pack_0_power_off'].state == "on") return "Off"
+            else if (states['sensor.seplos_bms_pack_0_charge'].state == "on") return `Charging: ${disChargePower} W`
+            else if (states['sensor.seplos_bms_pack_0_floating_charge'].state == "on") return `Floating: ${disChargePower} W`
+            else if (states['sensor.seplos_bms_pack_0_discharge'].state == "on") return `Discharging: ${disChargePower} W`
             else return "Active Warnings"
           ]]]
         icon: |
           [[[
-            if (states['sensor.seplos_pack_0_standby'].state == "on") return "mdi:battery-off-outline"
-            else if (states['sensor.seplos_pack_0_power_off'].state == "on") return "mdi:battery-off-outline"
-            else if (states['sensor.seplos_pack_0_charge'].state == "on") return "mdi:battery-arrow-up-outline"
-            else if (states['sensor.seplos_pack_0_floating_charge'].state == "on") return "mdi:battery-arrow-up-outline"
-            else if (states['sensor.seplos_pack_0_discharge'].state == "on") return "mdi:battery-arrow-down-outline"
+            if (states['sensor.seplos_bms_pack_0_standby'].state == "on") return "mdi:battery-off-outline"
+            else if (states['sensor.seplos_bms_pack_0_power_off'].state == "on") return "mdi:battery-off-outline"
+            else if (states['sensor.seplos_bms_pack_0_charge'].state == "on") return "mdi:battery-arrow-up-outline"
+            else if (states['sensor.seplos_bms_pack_0_floating_charge'].state == "on") return "mdi:battery-arrow-up-outline"
+            else if (states['sensor.seplos_bms_pack_0_discharge'].state == "on") return "mdi:battery-arrow-down-outline"
             else return "mdi:alert"
           ]]]
         styles:
           icon:
             - color: |
                 [[[
-                  if (states['sensor.seplos_pack_0_standby'].state == "on") return "grey"
-                  else if (states['sensor.seplos_pack_0_power_off'].state == "on") return "grey"
-                  else if (states['sensor.seplos_pack_0_charge'].state == "on") return "lightgreen"
-                  else if (states['sensor.seplos_pack_0_floating_charge'].state == "on") return "lightgreen"
-                  else if (states['sensor.seplos_pack_0_discharge'].state == "on") return "lightgreen"
+                  if (states['sensor.seplos_bms_pack_0_standby'].state == "on") return "grey"
+                  else if (states['sensor.seplos_bms_pack_0_power_off'].state == "on") return "grey"
+                  else if (states['sensor.seplos_bms_pack_0_charge'].state == "on") return "lightgreen"
+                  else if (states['sensor.seplos_bms_pack_0_floating_charge'].state == "on") return "lightgreen"
+                  else if (states['sensor.seplos_bms_pack_0_discharge'].state == "on") return "lightgreen"
                   else return "red"
                 ]]]
           card:
@@ -144,31 +151,24 @@ cards:
       - type: custom:button-card
         name: State of Charge
         size: 15%
-        entity: sensor.seplos_pack_0_state_of_charge
+        entity: sensor.seplos_bms_pack_0_state_of_charge
         show_icon: true
         show_name: true
         show_state: true
         show_label: true
         icon: |
           [[[
-            if (entity.state > 90) return "mdi:battery";
-            if (entity.state > 80) return "mdi:battery-90";
-            if (entity.state > 70) return "mdi:battery-80";
-            if (entity.state > 60) return "mdi:battery-70";
-            if (entity.state > 50) return "mdi:battery-60";
-            if (entity.state > 40) return "mdi:battery-50";
-            if (entity.state > 30) return "mdi:battery-40";
-            if (entity.state > 20) return "mdi:battery-30";
-            if (entity.state > 10) return "mdi:battery-20";
-            else
-              return "mdi:battery-alert-variant-outline";
+            const soc = entity.state;
+            if (soc > 10) return `mdi:battery-${Math.floor(soc / 10) * 10}`;
+            else return "mdi:battery-alert-variant-outline";
           ]]]
         styles:
           icon:
             - color: |
                 [[[
-                  if (entity.state > 30 ) return 'lightgreen';
-                  if (entity.state > 15 ) return 'yellow';
+                  const soc = entity.state;
+                  if (soc > 30 ) return 'lightgreen';
+                  else if (soc > 15 ) return 'yellow';
                   else return 'red';
                 ]]]
           card:
@@ -176,7 +176,7 @@ cards:
       - type: custom:button-card
         name: State of Health
         size: 15%
-        entity: sensor.seplos_pack_0_state_of_health
+        entity: sensor.seplos_bms_pack_0_state_of_health
         show_icon: true
         show_name: true
         show_state: true
@@ -185,8 +185,9 @@ cards:
           icon:
             - color: |
                 [[[
-                  if (entity.state > 99) return 'lightgreen';
-                  if (entity.state > 95) return 'orange';
+                  const soh = entity.state;
+                  if (soh > 99) return 'lightgreen';
+                  else if (soh > 95) return 'orange';
                   else return 'red';
                 ]]]
           card:
@@ -194,7 +195,7 @@ cards:
       - type: custom:button-card
         name: Charging Cycles
         size: 15%
-        entity: sensor.seplos_pack_0_charging_cycles
+        entity: sensor.seplos_bms_pack_0_charging_cycles
         show_icon: true
         show_name: true
         show_state: true
@@ -203,8 +204,9 @@ cards:
           icon:
             - color: |
                 [[[
-                  if (entity.state > 5000) return 'red';
-                  if (entity.state > 3000) return 'orange';
+                  const cycles = entity.state;
+                  if (cycles > 5000) return 'red';
+                  else if (cycles > 3000) return 'orange';
                   else return 'lightgreen';
                 ]]]
           card:
@@ -218,20 +220,20 @@ cards:
     height: 80px
     severity:
       - color: red
-        from: 3.375
+        from: 3.45
         to: 3.65
       - color: orange
-        from: 3.35
-        to: 3.375
+        from: 3.363
+        to: 3.45
       - color: lightgreen
-        from: 3.15
-        to: 3.35
+        from: 3.2
+        to: 3.363
       - color: orange
-        from: 3
-        to: 3.15
+        from: 3.15
+        to: 3.2
       - color: red
         from: 2.5
-        to: 3
+        to: 3.15
     positions:
       icon: 'off'
       indicator: inside
@@ -256,47 +258,46 @@ cards:
           font-weight: normal;
         }
     entities:
-      - entity: sensor.seplos_pack_0_voltage_cell_1
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_1
         name: Cell 1
-      - entity: sensor.seplos_pack_0_voltage_cell_2
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_2
         name: Cell 2
-      - entity: sensor.seplos_pack_0_voltage_cell_3
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_3
         name: Cell 3
-      - entity: sensor.seplos_pack_0_voltage_cell_4
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_4
         name: Cell 4
-      - entity: sensor.seplos_pack_0_voltage_cell_5
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_5
         name: Cell 5
-      - entity: sensor.seplos_pack_0_voltage_cell_6
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_6
         name: Cell 6
-      - entity: sensor.seplos_pack_0_voltage_cell_7
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_7
         name: Cell 7
-      - entity: sensor.seplos_pack_0_voltage_cell_8
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_8
         name: Cell 8
-      - entity: sensor.seplos_pack_0_voltage_cell_9
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_9
         name: Cell 9
-      - entity: sensor.seplos_pack_0_voltage_cell_10
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_10
         name: Cell 10
-      - entity: sensor.seplos_pack_0_voltage_cell_11
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_11
         name: Cell 11
-      - entity: sensor.seplos_pack_0_voltage_cell_12
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_12
         name: Cell 12
-      - entity: sensor.seplos_pack_0_voltage_cell_13
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_13
         name: Cell 13
-      - entity: sensor.seplos_pack_0_voltage_cell_14
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_14
         name: Cell 14
-      - entity: sensor.seplos_pack_0_voltage_cell_15
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_15
         name: Cell 15
-      - entity: sensor.seplos_pack_0_voltage_cell_16
+      - entity: sensor.seplos_bms_pack_0_voltage_cell_16
         name: Cell 16
   - type: custom:button-card
     name: |
       [[[
-        const active_balancing_cells = []
-        for (let i = 1; i <= 16; i++) {
-            if (states[`sensor.seplos_pack_0_equalization_cell_${i}`].state != "off") active_balancing_cells.push(i)
-        }
-        if (active_balancing_cells.length != 0) return `Passive Balancer active for Cells ${active_balancing_cells.join(', ')}`
-        else return "Passive Balancer inactive";
+        const activeBalancingCells = Array.from({length: 16}, (_, i) => i + 1)
+          .filter(i => states[`sensor.seplos_bms_pack_0_equalization_cell_${i}`].state !== "off");
+        return activeBalancingCells.length > 0
+          ? `Passive Balancer active for Cells ${activeBalancingCells.join(', ')}`
+          : "Passive Balancer inactive";
       ]]]
     styles:
       card:
@@ -307,7 +308,7 @@ cards:
       - type: custom:button-card
         name: Cell Voltage Delta
         size: 15%
-        entity: sensor.seplos_pack_0_delta_cell_voltage
+        entity: sensor.seplos_bms_pack_0_delta_cell_voltage
         show_icon: true
         show_name: true
         show_state: true
@@ -315,18 +316,21 @@ cards:
           icon:
             - color: |
                 [[[
-                  if (entity.state < 0.010) return 'lightgreen';
-                  if (entity.state < 0.030) return 'orange';
+                  const cellDeltaVol = entity.state;
+                  if (cellDeltaVol < 0.010) return 'lightgreen';
+                  if (cellDeltaVol < 0.030) return 'orange';
                   else return 'red';
                 ]]]
           card:
             - font-size: 12px
       - type: custom:button-card
         name: >
-          [[[ return 'Highest Cell: ' +
-          states['sensor.seplos_pack_0_highest_cell'].state]]]
+          [[[
+            const highestCell = states['sensor.seplos_bms_pack_0_highest_cell'].state;
+            return `Highest Cell: ${highestCell}`
+          ]]]
         size: 15%
-        entity: sensor.seplos_pack_0_highest_cell_voltage
+        entity: sensor.seplos_bms_pack_0_highest_cell_voltage
         show_icon: true
         show_name: true
         show_state: true
@@ -334,20 +338,25 @@ cards:
           icon:
             - color: |
                 [[[
-                  if (entity.state < states['sensor.seplos_pack_0_min_cell_voltage'].state + 0.5) return 'red';
-                  else if (entity.state < states['sensor.seplos_pack_0_min_cell_voltage'].state + 0.65) return 'orange';
-                  else if (entity.state > states['sensor.seplos_pack_0_max_cell_voltage'].state - 0.2) return 'red';
-                  else if (entity.state > states['sensor.seplos_pack_0_max_cell_voltage'].state - 0.3) return 'orange';
-                  else return "lightgreen"
+                  const cellVol = entity.state;
+                  const minCellVol = states['sensor.seplos_bms_pack_0_min_cell_voltage'].state;
+                  const maxCellVol = states['sensor.seplos_bms_pack_0_max_cell_voltage'].state;
+                  if (cellVol < minCellVol + 0.5) return 'red';
+                  else if (cellVol > maxCellVol - 0.2) return 'red';
+                  else if (cellVol < minCellVol + 0.65) return 'orange';
+                  else if (cellVol > maxCellVol - 0.3) return 'orange';
+                  else return 'lightgreen';
                 ]]]
           card:
             - font-size: 12px
       - type: custom:button-card
         name: >
-          [[[ return 'Lowest Cell: ' +
-          states['sensor.seplos_pack_0_lowest_cell'].state]]]
+          [[[
+            const lowestCell = states['sensor.seplos_bms_pack_0_lowest_cell'].state;
+            return `Lowest Cell: ${lowestCell}`
+          ]]]
         size: 15%
-        entity: sensor.seplos_pack_0_lowest_cell_voltage
+        entity: sensor.seplos_bms_pack_0_lowest_cell_voltage
         show_icon: true
         show_name: true
         show_state: true
@@ -355,11 +364,14 @@ cards:
           icon:
             - color: |
                 [[[
-                  if (entity.state < states['sensor.seplos_pack_0_min_cell_voltage'].state + 0.5) return 'red';
-                  else if (entity.state < states['sensor.seplos_pack_0_min_cell_voltage'].state + 0.65) return 'orange';
-                  else if (entity.state > states['sensor.seplos_pack_0_max_cell_voltage'].state - 0.2) return 'red';
-                  else if (entity.state > states['sensor.seplos_pack_0_max_cell_voltage'].state - 0.3) return 'orange';
-                  else return "lightgreen"
+                  const cellVol = entity.state;
+                  const minCellVol = states['sensor.seplos_bms_pack_0_min_cell_voltage'].state;
+                  const maxCellVol = states['sensor.seplos_bms_pack_0_max_cell_voltage'].state;
+                  if (cellVol < minCellVol + 0.5) return 'red';
+                  else if (cellVol > maxCellVol - 0.2) return 'red';
+                  else if (cellVol < minCellVol + 0.65) return 'orange';
+                  else if (cellVol > maxCellVol - 0.3) return 'orange';
+                  else return 'lightgreen';
                 ]]]
           card:
             - font-size: 12px
@@ -368,7 +380,7 @@ cards:
       - type: custom:button-card
         name: Average Cell Voltage
         size: 15%
-        entity: sensor.seplos_pack_0_average_cell_voltage
+        entity: sensor.seplos_bms_pack_0_average_cell_voltage
         show_icon: true
         show_name: true
         show_state: true
@@ -377,18 +389,21 @@ cards:
           icon:
             - color: |
                 [[[
-                  if (entity.state < states['sensor.seplos_pack_0_min_cell_voltage'].state + 0.5) return 'red';
-                  else if (entity.state < states['sensor.seplos_pack_0_min_cell_voltage'].state + 0.65) return 'orange';
-                  else if (entity.state > states['sensor.seplos_pack_0_max_cell_voltage'].state - 0.2) return 'red';
-                  else if (entity.state > states['sensor.seplos_pack_0_max_cell_voltage'].state - 0.3) return 'orange';
-                  else return "lightgreen"
+                  const cellVol = entity.state;
+                  const minCellVol = states['sensor.seplos_bms_pack_0_min_cell_voltage'].state;
+                  const maxCellVol = states['sensor.seplos_bms_pack_0_max_cell_voltage'].state;
+                  if (cellVol < minCellVol + 0.5) return 'red';
+                  else if (cellVol > maxCellVol - 0.2) return 'red';
+                  else if (cellVol < minCellVol + 0.65) return 'orange';
+                  else if (cellVol > maxCellVol - 0.3) return 'orange';
+                  else return 'lightgreen';
                 ]]]
           card:
             - font-size: 12px
       - type: custom:button-card
         name: Min Cell Voltage
         size: 15%
-        entity: sensor.seplos_pack_0_min_cell_voltage
+        entity: sensor.seplos_bms_pack_0_min_cell_voltage
         show_icon: true
         show_name: true
         show_state: true
@@ -401,7 +416,7 @@ cards:
       - type: custom:button-card
         name: Max Cell Voltage
         size: 15%
-        entity: sensor.seplos_pack_0_max_cell_voltage
+        entity: sensor.seplos_bms_pack_0_max_cell_voltage
         show_icon: true
         show_name: true
         show_state: true
@@ -459,7 +474,7 @@ cards:
       show_states: true
       colorize_states: false
     series:
-      - entity: sensor.seplos_pack_0_state_of_charge
+      - entity: sensor.seplos_bms_pack_0_state_of_charge
         name: SoC
         opacity: 1
         stroke_width: 1.5
@@ -474,7 +489,7 @@ cards:
         yaxis_id: second
         float_precision: 1
         color: gold
-      - entity: sensor.seplos_pack_0_dis_charge_current
+      - entity: sensor.seplos_bms_pack_0_dis_charge_current
         name: Current
         opacity: 1
         stroke_width: 1.5
@@ -488,7 +503,7 @@ cards:
           in_header: raw
         yaxis_id: first
         color: orange
-      - entity: sensor.seplos_pack_0_total_pack_voltage
+      - entity: sensor.seplos_bms_pack_0_total_pack_voltage
         name: Pack
         opacity: 0.8
         stroke_width: 1.5
@@ -503,7 +518,7 @@ cards:
         yaxis_id: second
         float_precision: 2
         color: red
-      - entity: sensor.seplos_pack_0_port_voltage
+      - entity: sensor.seplos_bms_pack_0_port_voltage
         name: Port
         opacity: 1
         stroke_width: 1.5
@@ -566,7 +581,7 @@ cards:
       show_states: true
       colorize_states: false
     series:
-      - entity: sensor.seplos_pack_0_cell_temperature_1
+      - entity: sensor.seplos_bms_pack_0_cell_temperature_1
         name: Cells 1
         opacity: 0.8
         stroke_width: 1.5
@@ -581,7 +596,7 @@ cards:
         yaxis_id: second
         float_precision: 1
         color: blue
-      - entity: sensor.seplos_pack_0_cell_temperature_2
+      - entity: sensor.seplos_bms_pack_0_cell_temperature_2
         name: Cells 2
         opacity: 0.8
         stroke_width: 1.5
@@ -596,7 +611,7 @@ cards:
         yaxis_id: second
         float_precision: 1
         color: dodgerblue
-      - entity: sensor.seplos_pack_0_cell_temperature_3
+      - entity: sensor.seplos_bms_pack_0_cell_temperature_3
         name: Cells 3
         opacity: 0.8
         stroke_width: 1.5
@@ -611,7 +626,7 @@ cards:
         yaxis_id: second
         float_precision: 1
         color: aqua
-      - entity: sensor.seplos_pack_0_cell_temperature_4
+      - entity: sensor.seplos_bms_pack_0_cell_temperature_4
         name: Cells 4
         opacity: 0.8
         stroke_width: 1.5
@@ -626,7 +641,7 @@ cards:
         yaxis_id: second
         float_precision: 1
         color: navy
-      - entity: sensor.seplos_pack_0_ambient_temperature
+      - entity: sensor.seplos_bms_pack_0_ambient_temperature
         name: Ambient
         opacity: 0.8
         stroke_width: 1.5
@@ -641,7 +656,7 @@ cards:
         yaxis_id: second
         float_precision: 1
         color: orange
-      - entity: sensor.seplos_pack_0_components_temperature
+      - entity: sensor.seplos_bms_pack_0_components_temperature
         name: Components
         opacity: 0.8
         stroke_width: 1.5
