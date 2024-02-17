@@ -1110,13 +1110,13 @@ try:
 
         # if battery_pack_data has changed, update mqtt stats payload
         if current_battery_pack_data:
-            logger.info("Sending updated stats to MQTT")
+            logger.info("Sending updated stats to mqtt")
             stats = {**current_battery_pack_data}
             stats.update({"last_update": datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
             mqtt_client.publish(f"{MQTT_TOPIC}/pack-{current_address}/sensors", json.dumps(stats, indent=4))
 
         # send stats to mqtt
-        logger.info("Sending online status to MQTT")
+        logger.info("Sending online status to mqtt")
         mqtt_client.publish(f"{MQTT_TOPIC}/pack-{current_address}/availability", "online")
 
         # query all packs again in continuous loop or with pre-defined wait interval after each circular run
@@ -1132,6 +1132,9 @@ except KeyboardInterrupt:
 finally:
     # close mqtt client if connected
     if mqtt_client.is_connected():
+        logger.info("Sending offline status to mqtt")
+        for pack in battery_packs:
+            mqtt_client.publish(f"{MQTT_TOPIC}/pack-{pack['address']}/availability", "offline")
         logger.info("Disconnecting mqtt client")
         mqtt_client.disconnect()
         mqtt_client.loop_stop()
