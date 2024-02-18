@@ -30,13 +30,12 @@ try:
             mqtt_client.loop_stop()
 
         # close serial connections if open
-        if SERIAL_MASTER_INSTANCE is not None:
+        if SERIAL_MASTER_INSTANCE is not None and SERIAL_MASTER_INSTANCE.isOpen():
             logger.info("Closing serial connection to master")
             SERIAL_MASTER_INSTANCE.close()
-        if SERIAL_SLAVES_INSTANCE is not None:
+        if SERIAL_SLAVES_INSTANCE is not None and SERIAL_SLAVES_INSTANCE.isOpen():
             logger.info("Closing serial connection to slaves")
             SERIAL_SLAVES_INSTANCE.close()
-        logger.info("Exiting the program.")
 
         if signum is not None:
             sys.exit(0)
@@ -1158,11 +1157,11 @@ try:
 
 # catch exceptions related to the initial connection to the serial port
 except serial.SerialException as e:
-    logger.error("Serial port disconnected, exiting...")
+    logger.error("Serial port disconnected, cleaning up and exiting...")
 
 # handle keyboard-interruption
 except KeyboardInterrupt:
-    logger.info("Interrupt received! Cleaning up...")
+    logger.info("Interrupt received, cleaning up and exiting...")
 
 finally:
     graceful_exit()

@@ -2,7 +2,7 @@
 
 # Function to handle SIGTERM
 cleanup() {
-    echo "Container stopped, cleaning up..."
+    echo "INFO:SeplosBMS:Container stopped, cleaning up and exiting..."
     # Send SIGTERM to the Python script
     kill -s SIGTERM $!
     wait $!
