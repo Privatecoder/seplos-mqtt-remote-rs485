@@ -543,7 +543,7 @@ class AutoDiscoveryConfig():
 
         sensor["name"] = name
         # availability topic
-        sensor["avty"]["t"] = f"{self.mqtt_topic}/pack-{pack_no}/availability"
+        sensor["avty"]["t"] = f"{self.mqtt_topic}/availability"
         # state_topic
         sensor["stat_t"] = f"{self.mqtt_topic}/pack-{pack_no}/sensors"
         # value_template

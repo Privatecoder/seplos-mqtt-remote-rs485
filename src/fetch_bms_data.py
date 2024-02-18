@@ -4,6 +4,7 @@ reads one or more seplos protocol v2.0 bms (in parallel) via
 """
 import sys
 import os
+import signal
 import logging
 import configparser
 import time
@@ -16,6 +17,33 @@ from paho.mqtt import MQTTException
 from ha_auto_discovery import AutoDiscoveryConfig
 
 try:
+    def graceful_exit(signum=None, frame=None):
+        """ 
+        handle script exit to disconnect mqtt gracefully and cleanup
+        """
+        # close mqtt client if connected
+        if mqtt_client.is_connected():
+            logger.info("Sending offline status to mqtt")
+            mqtt_client.publish(f"{MQTT_TOPIC}/availability", "offline")
+            logger.info("Disconnecting mqtt client")
+            mqtt_client.disconnect()
+            mqtt_client.loop_stop()
+
+        # close serial connections if open
+        if SERIAL_MASTER_INSTANCE is not None:
+            logger.info("Closing serial connection to master")
+            SERIAL_MASTER_INSTANCE.close()
+        if SERIAL_SLAVES_INSTANCE is not None:
+            logger.info("Closing serial connection to slaves")
+            SERIAL_SLAVES_INSTANCE.close()
+        logger.info("Exiting the program.")
+
+        if signum is not None:
+            sys.exit(0)
+
+    # register signal handler for SIGTERM
+    signal.signal(signal.SIGTERM, graceful_exit)
+
     def cast_value(value, return_type) -> int | float | bool | str | None:
         """ 
         cast config vars to requested type, i.e. int / float / boolean / string 
@@ -1066,6 +1094,7 @@ try:
     # connect mqtt client and start the loop
     try:
         mqtt_client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)
+        mqtt_client.will_set(f"{MQTT_TOPIC}/availability", payload="offline", qos=2, retain=False)
         mqtt_client.loop_start()
     except MQTTException as e:
         logger.error("MQTTException occurred: %s", e)
@@ -1097,6 +1126,10 @@ try:
         mqtt_client.subscribe(f"{HA_DISCOVERY_PREFIX}/status")
         mqtt_client.on_message = on_ha_online
 
+    # send stats to mqtt
+    logger.info("Sending online status to mqtt")
+    mqtt_client.publish(f"{MQTT_TOPIC}/availability", "online")
+
     # fetch battery-pack Telemetry and Telesignalization data
     i = 0
     while True:
@@ -1115,9 +1148,7 @@ try:
             stats.update({"last_update": datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
             mqtt_client.publish(f"{MQTT_TOPIC}/pack-{current_address}/sensors", json.dumps(stats, indent=4))
 
-        # send stats to mqtt
-        logger.info("Sending online status to mqtt")
-        mqtt_client.publish(f"{MQTT_TOPIC}/pack-{current_address}/availability", "online")
+        
 
         # query all packs again in continuous loop or with pre-defined wait interval after each circular run
         i += 1
@@ -1125,26 +1156,13 @@ try:
             time.sleep(MQTT_UPDATE_INTERVAL)
             i = 0
 
+# catch exceptions related to the initial connection to the serial port
+except serial.SerialException as e:
+    logger.error("Serial port disconnected, exiting...")
+
 # handle keyboard-interruption
 except KeyboardInterrupt:
     logger.info("Interrupt received! Cleaning up...")
 
 finally:
-    # close mqtt client if connected
-    if mqtt_client.is_connected():
-        logger.info("Sending offline status to mqtt")
-        for pack in battery_packs:
-            mqtt_client.publish(f"{MQTT_TOPIC}/pack-{pack['address']}/availability", "offline")
-        logger.info("Disconnecting mqtt client")
-        mqtt_client.disconnect()
-        mqtt_client.loop_stop()
-
-    # close serial connections if open
-    if SERIAL_MASTER_INSTANCE is not None:
-        logger.info("Closing serial connection to master")
-        SERIAL_MASTER_INSTANCE.close()
-    if SERIAL_SLAVES_INSTANCE is not None:
-        logger.info("Closing serial connection to slaves")
-        SERIAL_SLAVES_INSTANCE.close()
-    logger.info("Exiting the program.")
-    sys.exit(0)
+    graceful_exit()
