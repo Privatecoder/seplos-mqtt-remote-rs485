@@ -500,18 +500,18 @@ class AutoDiscoveryConfig():
     """
     this class holds all methods for creating Home Assitant auto-discovery config
     """
-
     def __init__(self, mqtt_topic, discovery_prefix, mqtt_client):
 
-        # 
+        # sensor data gets published to this mqtt topic
         self.mqtt_topic = mqtt_topic
 
-        # 
+        # sensor config data gets published here, defaults to homeassistant
         self.discovery_prefix = discovery_prefix
 
-        # 
+        # mqtt client
         self.mqtt_client = mqtt_client
 
+        # flag to indicate wheater this is the first sensor config created
         self.first_run: bool = True
 
     def create_sensor_config(

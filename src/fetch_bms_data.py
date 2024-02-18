@@ -312,7 +312,7 @@ try:
             self.last_status = None
 
             # Telemetry and Telesignalization store
-            self.telemetry = Telemetry()           
+            self.telemetry = Telemetry()
             self.telesignalization = Telesignalization()
 
         @staticmethod
@@ -437,13 +437,13 @@ try:
 
             battery_capacity_offset = 32
             print(f"battery_capacity: {self.int_from_2byte_hex_ascii(data, battery_capacity_offset) / 100}")
-            
+
             soc_offset = 36
             print(f"soc: {self.int_from_2byte_hex_ascii(data, soc_offset) / 10}")
 
             port_voltage_offset = 40
             print(f"port_voltage: {self.int_from_2byte_hex_ascii(data, port_voltage_offset) / 100}")
-            
+
             #print(f"cell_overvoltage: {self.status_from_20_bit_alarm(data=data[42 : -16], offset=2, warn_bit=1, protection_bit=2)}")
             #print(f"pack_overvoltage: {self.status_from_20_bit_alarm(data=data[42 : -16], offset=2, warn_bit=3, protection_bit=4)}")
 
@@ -1016,7 +1016,7 @@ try:
             #         raw_data = serial_instance.read_until(b'\r')
             #         pack_no_data = raw_data[3 : -77]
             #         info_frame_data = raw_data[13 : -5]
-                    
+
             #         is_valid_pack_no = self.is_valid_hex_string(pack_no_data)
 
             #         if is_valid_pack_no and self.is_valid_length(info_frame_data, expected_length=64) and self.is_valid_hex_string(info_frame_data):
@@ -1110,9 +1110,8 @@ try:
         battery_packs.append({ "pack_instance": SeplosBatteryPack(pack_address=0), "address": 0 })
 
     for i in range(1, NUMBER_OF_SLAVES + 1):
-        pack_address = int(f'0x{i:02x}', 16)
-        pack_instance = SeplosBatteryPack(pack_address=pack_address)
-        battery_packs.append({ "pack_instance": pack_instance, "address": pack_address })
+        pack_instance = SeplosBatteryPack(pack_address=int(f'0x{i:02x}', 16))
+        battery_packs.append({ "pack_instance": pack_instance, "address": int(f'0x{i:02x}', 16) })
 
     # publish sensor configs to topic (HA_DISCOVERY_PREFIX) when "online"-status is received
     if ENABLE_HA_DISCOVERY_CONFIG is True:

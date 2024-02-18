@@ -1,4 +1,6 @@
-ha-helper/*.yaml
 .vscode/
 .vscode/settings.jso
 .DS_Store
+src/__pycache__
+src/decode_findings.md
+src/docker_run_locally.md
