@@ -1030,12 +1030,9 @@ try:
             logger.debug("Pack%s:telemetry_command: %s", self.pack_address, telemetry_command)
 
             # loop over responses until a valid frame is received, then decode and return it as json
-            telemetry_command_iteration = 1
             while True:
-                # (re-)send telemetry_command to the serial port until a response is received
-                if telemetry_command_iteration == 1 or telemetry_command_iteration % 3 == 0:
-                    serial_instance.write(telemetry_command)
-                telemetry_command_iteration += 1
+                # send request command to serial interface
+                serial_instance.write(telemetry_command)
 
                 # set EOL to \r
                 raw_data = serial_instance.read_until(b'\r')
@@ -1058,12 +1055,9 @@ try:
             logger.debug("Pack%s:telesignalization_command: %s", self.pack_address, telesignalization_command)
 
             # loop over responses until a valid frame is received, then decode and return it as json
-            telesignalization_command_iteration = 1
             while True:
-                # (re-)send telesignalization_command to the serial port until a response is received
-                if telesignalization_command_iteration == 1 or telesignalization_command_iteration % 3 == 0:
-                    serial_instance.write(telesignalization_command)
-                telesignalization_command_iteration += 1
+                # send request command to serial interface
+                serial_instance.write(telesignalization_command)
 
                 # set EOL to \r
                 raw_data = serial_instance.read_until(b'\r')
