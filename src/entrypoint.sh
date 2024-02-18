@@ -27,7 +27,7 @@ fi
 echo "start the script"
 
 # run the script in background
-python fetch_bms_data.py &
+python fetch_bms_data.py > /proc/1/fd/1 2> /proc/1/fd/2 &
 
 # wait for the script to exit
 wait $!

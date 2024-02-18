@@ -996,7 +996,7 @@ try:
             """
             read data for given battery_pack address from serial interface
             """
-            logger.info("Fetch data for Battery Pack %s", self.pack_address)
+            logger.info("Pack%s:Requesting data...", self.pack_address)
 
             serial_instance = SERIAL_MASTER_INSTANCE if self.pack_address == 0 else SERIAL_SLAVES_INSTANCE
 
@@ -1028,13 +1028,13 @@ try:
 
             # calculate request telemetry command (0x42) for the current pack_address
             telemetry_command = self.encode_cmd(address=self.pack_address, cid2=0x42)
-            logger.debug("telemetry_command: %s", telemetry_command)
+            logger.debug("Pack%s:telemetry_command: %s", self.pack_address, telemetry_command)
 
             # loop over responses until a valid frame is received, then decode and return it as json
             telemetry_command_iteration = 1
             while True:
                 # (re-)send telemetry_command to the serial port until a response is received
-                if telemetry_command_iteration == 1 or telemetry_command_iteration % 5 == 0:
+                if telemetry_command_iteration == 1 or telemetry_command_iteration % 3 == 0:
                     serial_instance.write(telemetry_command)
                 telemetry_command_iteration += 1
 
@@ -1051,18 +1051,18 @@ try:
                 if is_requested_pack and self.is_valid_length(info_frame_data, expected_length=150) and self.is_valid_hex_string(info_frame_data) and self.is_valid_frame(raw_data):
                     telemetry_feedback = self.decode_telemetry_feedback_frame(info_frame_data)
                     battery_pack_data["telemetry"] = telemetry_feedback
-                    logger.info("Battery-Pack %s Telemetry Feedback: %s", self.pack_address, json.dumps(telemetry_feedback, indent=4))
+                    logger.info("Pack%s:Telemetry Feedback: %s", self.pack_address, json.dumps(telemetry_feedback, indent=4))
                     break
 
             # calculate request telesignalization command (0x44) for the current pack_address
             telesignalization_command = self.encode_cmd(address=self.pack_address, cid2=0x44)
-            logger.debug("telesignalization_command: %s", telesignalization_command)
+            logger.debug("Pack%s:telesignalization_command: %s", self.pack_address, telesignalization_command)
 
             # loop over responses until a valid frame is received, then decode and return it as json
             telesignalization_command_iteration = 1
             while True:
                 # (re-)send telesignalization_command to the serial port until a response is received
-                if telesignalization_command_iteration == 1 or telesignalization_command_iteration % 5 == 0:
+                if telesignalization_command_iteration == 1 or telesignalization_command_iteration % 3 == 0:
                     serial_instance.write(telesignalization_command)
                 telesignalization_command_iteration += 1
 
@@ -1079,7 +1079,7 @@ try:
                 if is_requested_pack and self.is_valid_length(info_frame_data, expected_length=98) and self.is_valid_hex_string(info_frame_data) and self.is_valid_frame(raw_data):
                     telesignalization_feedback = self.decode_telesignalization_feedback_frame(info_frame_data)
                     battery_pack_data["telesignalization"] = telesignalization_feedback
-                    logger.info("Battery-Pack %s Telesignalization feedback: %s", self.pack_address, json.dumps(telesignalization_feedback, indent=4))
+                    logger.info("Pack%s:Telesignalization feedback: %s", self.pack_address, json.dumps(telesignalization_feedback, indent=4))
                     break
 
             # keep current stats to check if they changed before returning
@@ -1143,12 +1143,12 @@ try:
 
         # if battery_pack_data has changed, update mqtt stats payload
         if current_battery_pack_data:
-            logger.info("Sending updated stats to mqtt")
+            logger.info("Pack%s:Sending updated stats to mqtt.", current_address)
             stats = {**current_battery_pack_data}
             stats.update({"last_update": datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
             mqtt_client.publish(f"{MQTT_TOPIC}/pack-{current_address}/sensors", json.dumps(stats, indent=4))
-
-        
+        else:
+            logger.info("Pack-%s:Data not changed, skipping mqtt update.", current_address)
 
         # query all packs again in continuous loop or with pre-defined wait interval after each circular run
         i += 1
