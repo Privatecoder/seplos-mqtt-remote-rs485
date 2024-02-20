@@ -24,7 +24,7 @@ try:
         # close mqtt client if connected
         if mqtt_client.is_connected():
             logger.info("Sending offline status to mqtt")
-            mqtt_client.publish(f"{MQTT_TOPIC}/availability", "offline")
+            mqtt_client.publish(f"{MQTT_TOPIC}/availability", "offline", retain=True)
             logger.info("Disconnecting mqtt client")
             mqtt_client.disconnect()
             mqtt_client.loop_stop()
@@ -1120,7 +1120,7 @@ try:
 
     # send stats to mqtt
     logger.info("Sending online status to mqtt")
-    mqtt_client.publish(f"{MQTT_TOPIC}/availability", "online")
+    mqtt_client.publish(f"{MQTT_TOPIC}/availability", "online", retain=True)
 
     # fetch battery-pack Telemetry and Telesignalization data
     i = 0
