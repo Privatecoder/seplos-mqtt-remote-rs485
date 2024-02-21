@@ -1118,10 +1118,6 @@ try:
         mqtt_client.subscribe(f"{HA_DISCOVERY_PREFIX}/status")
         mqtt_client.on_message = on_ha_online
 
-    # send stats to mqtt
-    logger.info("Sending online status to mqtt")
-    mqtt_client.publish(f"{MQTT_TOPIC}/availability", "online", retain=True)
-
     # fetch battery-pack Telemetry and Telesignalization data
     i = 0
     while True:
@@ -1131,16 +1127,18 @@ try:
         # fetch battery_pack_data
         current_battery_pack_data = current_battery_pack.read_serial_data()
 
-        stats = {}
-
         # if battery_pack_data has changed, update mqtt stats payload
         if current_battery_pack_data:
             logger.info("Pack%s:Sending updated stats to mqtt.", current_address)
-            stats = {**current_battery_pack_data}
-            stats.update({"last_update": datetime.now().strftime('%Y-%m-%d %H:%M:%S')})
-            mqtt_client.publish(f"{MQTT_TOPIC}/pack-{current_address}/sensors", json.dumps(stats, indent=4))
+            mqtt_client.publish(f"{MQTT_TOPIC}/pack-{current_address}/sensors", json.dumps({
+                **current_battery_pack_data,
+                "last_update": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }, indent=4))
         else:
             logger.info("Pack-%s:Data not changed, skipping mqtt update.", current_address)
+
+        logger.info("Sending online status to mqtt")
+        mqtt_client.publish(f"{MQTT_TOPIC}/availability", "online", retain=False)
 
         # query all packs again in continuous loop or with pre-defined wait interval after each circular run
         i += 1
