@@ -44,7 +44,7 @@ docker run -itd \
   -e MQTT_USERNAME=seplos-mqtt \
   -e MQTT_PASSWORD=my-secret-password \
   --name seplos-mqtt-rs485 \
-  privatecoder/seplos-mqtt-remote-rs485:v1.3.0
+  privatecoder/seplos-mqtt-remote-rs485:v2.0.2
 ```
 
 - For 1 master and 1 slave, i.e. two packs using config.ini (in which `FETCH_MASTER` is set to `true`):
