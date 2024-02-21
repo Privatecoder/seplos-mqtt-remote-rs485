@@ -57,7 +57,7 @@ docker run -itd \
   -e RS485_SLAVES_REMOTE_PORT="4196" \
   -v $(pwd)/config-master.ini:/usr/src/app/config.ini \
   --name seplos-mqtt-rs485 \
-  privatecoder/seplos-mqtt-remote-rs485:v1.3.0
+  privatecoder/seplos-mqtt-remote-rs485:v2.0.2
 ```
 
 - To run the script without socat / remote RS485 but local connections, don't set the `RS485_MASTER_REMOTE_IP` and `RS485_SLAVES_REMOTE_IP` ENV-vars, i.e:
@@ -70,7 +70,7 @@ docker run -itd \
   -e MQTT_USERNAME=seplos-mqtt \
   -e MQTT_PASSWORD=my-secret-password \
   --name seplos-mqtt-rs485 \
-  privatecoder/seplos-mqtt-remote-rs485:v1.3.0
+  privatecoder/seplos-mqtt-remote-rs485:v2.0.2
 ```
 
 **or**
@@ -79,7 +79,7 @@ docker run -itd \
 docker run -itd \
   -v $(pwd)/config-master.ini:/usr/src/app/config.ini \
   --name seplos-mqtt-rs485 \
-  privatecoder/seplos-mqtt-remote-rs485:v1.3.0
+  privatecoder/seplos-mqtt-remote-rs485:v2.0.2
 ```
 
 Available ENV-vars are:
