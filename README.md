@@ -88,31 +88,31 @@ docker run -itd \
 
 Available ENV-vars are:
 
-- `RS485_MASTER_REMOTE_IP`
-- `RS485_MASTER_REMOTE_PORT`
+- `RS485_MASTER_REMOTE_IP` (IP of the remote RS485 device the master is connected to)
+- `RS485_MASTER_REMOTE_PORT` (Port of the remote RS485 device the master is connected to)
 
-- `RS485_SLAVES_REMOTE_IP`
-- `RS485_SLAVES_REMOTE_PORT`
+- `RS485_SLAVES_REMOTE_IP` (IP of the remote RS485 device the slaves are connected to)
+- `RS485_SLAVES_REMOTE_PORT` (Port of the remote RS485 device the slaves are connected to)
 
-- `MQTT_HOST` (default: `192.168.1.100`)
-- `MQTT_PORT` (default: `1883`)
-- `MQTT_USERNAME` (default: `seplos-mqtt`)
-- `MQTT_PASSWORD` (default: `my-secret-password`)
-- `MQTT_TOPIC` (default: `seplos`)
-- `MQTT_UPDATE_INTERVAL` (default: `0`)
+- `MQTT_HOST` (MQTT Broker IP, default: `192.168.1.100`)
+- `MQTT_PORT` (MQTT Broker Port, default: `1883`)
+- `MQTT_USERNAME` (MQTT Broker Username, default: `seplos-mqtt`)
+- `MQTT_PASSWORD` (MQTT Broker Password, default: `my-secret-password`)
+- `MQTT_TOPIC` (MQTT Broker Topic to publish to, default: `seplos`)
+- `MQTT_UPDATE_INTERVAL` (Interval, in seconds, to update stats in MQTT after each circular reading is finished, 0 => continuous reading, default: `0`)
 
-- `ENABLE_HA_DISCOVERY_CONFIG` (default: `true`)
-- `HA_DISCOVERY_PREFIX` (default: `homeassistant`)
+- `ENABLE_HA_DISCOVERY_CONFIG` (Enable Home Assistant config creation via MQTT for auto-discovery, default: `true`)
+- `HA_DISCOVERY_PREFIX` (Home Assistant Topic to publish the config creations to, default: `homeassistant`)
 
-- `FETCH_MASTER` (default: `false`)
-- `NUMBER_OF_SLAVES` (default: `1`)
-- `MIN_CELL_VOLTAGE` (default: `2.500`)
-- `MAX_CELL_VOLTAGE` (default: `3.650`)
+- `FETCH_MASTER` (Fetch data of a master device when running multiple packs in parallel, default: `false`)
+- `NUMBER_OF_SLAVES` (Fetch data of n slave devices, either when running multiple packs in parallel or one pack only, default: `1`)
+- `MIN_CELL_VOLTAGE` (Min cell voltage as base calculation constant, as this cannot be read from the BMS, default: `2.500`)
+- `MAX_CELL_VOLTAGE` (Max cell voltage as base calculation constant, as this cannot be read from the BMS, default: `3.650`)
 
-- `MASTER_SERIAL_INTERFACE` (default: `/tmp/vcom0`)
-- `SLAVES_SERIAL_INTERFACE` (default: `/tmp/vcom1`)
+- `MASTER_SERIAL_INTERFACE` (Local master RS485 device path, default: `/tmp/vcom0`)
+- `SLAVES_SERIAL_INTERFACE` (Local slaves RS485 device path,default: `/tmp/vcom1`)
 
-- `LOGGING_LEVEL` (default: `info`)
+- `LOGGING_LEVEL` (Logging level, available modes are info, error and debug, default: `info`)
 
 Set `RS485_MASTER_REMOTE_IP`, `RS485_MASTER_REMOTE_PORT`, `RS485_SLAVES_REMOTE_IP` and `RS485_SLAVES_REMOTE_PORT` starts the docker image with socat, binding your remote RS485 device´s RS485 ports locally to `vcom0` (master) and `vcom1` (slaves) (used by default in this script).
 Not defining those will just start the script, however `MASTER_SERIAL_INTERFACE` and `SLAVES_SERIAL_INTERFACE` must match your existing serial-devices – either passed to the container directly or using the privileged-flag (not recommended).
