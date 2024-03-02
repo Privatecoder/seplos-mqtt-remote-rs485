@@ -34,6 +34,7 @@ This works for both, Masters via the splitter (Baud 9600) and Slaves to an empty
 
 ```
 docker run -itd \
+  --restart unless-stopped \
   -e RS485_MASTER_REMOTE_IP="192.168.1.200" \
   -e RS485_MASTER_REMOTE_PORT="4196" \
   -e RS485_SLAVES_REMOTE_IP="192.168.1.201" \
@@ -51,6 +52,7 @@ docker run -itd \
 
 ```
 docker run -itd \
+  --restart unless-stopped \
   -e RS485_MASTER_REMOTE_IP="192.168.1.200" \
   -e RS485_MASTER_REMOTE_PORT="4196" \
   -e RS485_SLAVES_REMOTE_IP="192.168.1.201" \
@@ -64,6 +66,7 @@ docker run -itd \
 
 ```
 docker run -itd \
+  --restart unless-stopped \
   -e FETCH_MASTER=true \
   -e NUMBER_OF_SLAVES=1 \
   -e MQTT_HOST=192.168.1.100 \
@@ -77,6 +80,7 @@ docker run -itd \
 
 ```
 docker run -itd \
+  --restart unless-stopped \
   -v $(pwd)/config-master.ini:/usr/src/app/config.ini \
   --name seplos-mqtt-rs485 \
   privatecoder/seplos-mqtt-remote-rs485:v2.0.2
