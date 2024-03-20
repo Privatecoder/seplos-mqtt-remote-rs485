@@ -22,11 +22,11 @@ BASE_SENSOR = {
 
 DEVICE_BASE_CONFIG = {
   # hw_version
-  "hw": "V14 (10C) / V16 (10E)",
+  "hw": "10C / 10E",
   # sw_version
   "sw": "2.x / 16.x",
   # model
-  "mdl": "BMS Protocol 2.0",
+  "mdl": "BMS V14 / V16",
   # manufacturer
   "mf": "Seplos"
 }
