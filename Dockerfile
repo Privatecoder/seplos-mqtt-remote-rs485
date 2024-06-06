@@ -1,7 +1,7 @@
 FROM python:3.12-alpine
 
 # Install socat
-RUN apk add --no-cache socat
+RUN apk add --no-cache socat nano
 
 # Set the working directory in the container
 WORKDIR /usr/src/app

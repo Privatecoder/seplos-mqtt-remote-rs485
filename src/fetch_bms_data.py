@@ -87,7 +87,7 @@ try:
 
     # Logging setup and config
 
-    logging.basicConfig()
+    logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO)
     logger = logging.getLogger("SeplosBMS")
 
     if get_config_value("LOGGING_LEVEL").upper() == "ERROR":
@@ -108,12 +108,19 @@ try:
     MQTT_TOPIC = get_config_value("MQTT_TOPIC")
     MQTT_UPDATE_INTERVAL = get_config_value("MQTT_UPDATE_INTERVAL", return_type=int)
 
+    def on_mqtt_connect(client, userdata, flags, rc):
+        if rc == 0:
+            logger.info("Connected to MQTT (%s:%s, user: %s)", MQTT_HOST, MQTT_PORT, MQTT_USERNAME)
+        else:
+            logger.error("Failed to connect to MQTT Broker (%s:%s, user: %s): %s ", MQTT_HOST, MQTT_PORT, MQTT_USERNAME, rc)
+    
+    def on_mqtt_message(client, userdata, msg):
+        logger.info(f"MQTT message received: {msg.topic} {msg.payload}")
+    
     mqtt_client = mqtt.Client()
     mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
-    mqtt_client.on_connect = logger.info(
-        "mqtt connected (%s:%s, user: %s)",
-        MQTT_HOST, MQTT_PORT, MQTT_USERNAME
-    )
+    mqtt_client.on_connect = on_mqtt_connect
+    mqtt_client.on_message = on_mqtt_message
 
     # Home Assistant auto-discovery config
 
@@ -1121,30 +1128,34 @@ try:
     # fetch battery-pack Telemetry and Telesignalization data
     i = 0
     while True:
-        current_battery_pack = battery_packs[i]["pack_instance"]
-        current_address = battery_packs[i]["address"]
-
-        # fetch battery_pack_data
-        current_battery_pack_data = current_battery_pack.read_serial_data()
-
-        # if battery_pack_data has changed, update mqtt stats payload
-        if current_battery_pack_data:
-            logger.info("Pack%s:Sending updated stats to mqtt.", current_address)
-            mqtt_client.publish(f"{MQTT_TOPIC}/pack-{current_address}/sensors", json.dumps({
-                **current_battery_pack_data,
-                "last_update": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            }, indent=4))
-        else:
-            logger.info("Pack-%s:Data not changed, skipping mqtt update.", current_address)
-
-        logger.info("Sending online status to mqtt")
-        mqtt_client.publish(f"{MQTT_TOPIC}/availability", "online", retain=False)
-
-        # query all packs again in continuous loop or with pre-defined wait interval after each circular run
-        i += 1
-        if i >= len(battery_packs):
-            time.sleep(MQTT_UPDATE_INTERVAL)
-            i = 0
+        try:
+            current_battery_pack = battery_packs[i]["pack_instance"]
+            current_address = battery_packs[i]["address"]
+            
+            # fetch battery_pack_data
+            current_battery_pack_data = current_battery_pack.read_serial_data()
+            
+            # if battery_pack_data has changed, update mqtt stats payload
+            if current_battery_pack_data:
+                logger.info("Pack%s:Sending updated stats to mqtt.", current_address)
+                mqtt_client.publish(f"{MQTT_TOPIC}/pack-{current_address}/sensors", json.dumps({
+                    **current_battery_pack_data,
+                    "last_update": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                }, indent=4))
+            else:
+                logger.info("Pack-%s:Data not changed, skipping mqtt update.", current_address)
+            
+            logger.info("Sending online status to mqtt")
+            mqtt_client.publish(f"{MQTT_TOPIC}/availability", "online", retain=False)
+            
+            # query all packs again in continuous loop or with pre-defined wait interval after each circular run
+            i += 1
+            if i >= len(battery_packs):
+                time.sleep(MQTT_UPDATE_INTERVAL)
+                i = 0
+        except Exception as e:
+            logger.error(f"Error in main loop: {e}")
+            time.sleep(10)
 
 # catch exceptions related to the initial connection to the serial port
 except serial.SerialException as e:
