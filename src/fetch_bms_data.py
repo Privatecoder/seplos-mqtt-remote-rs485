@@ -18,7 +18,7 @@ from ha_auto_discovery import AutoDiscoveryConfig
 
 try:
     def graceful_exit(signum=None, frame=None):
-        """ 
+        """
         handle script exit to disconnect mqtt gracefully and cleanup
         """
         # close mqtt client if connected
@@ -44,8 +44,8 @@ try:
     signal.signal(signal.SIGTERM, graceful_exit)
 
     def cast_value(value, return_type) -> int | float | bool | str | None:
-        """ 
-        cast config vars to requested type, i.e. int / float / boolean / string 
+        """
+        cast config vars to requested type, i.e. int / float / boolean / string
         """
         try:
             if return_type == int:
@@ -113,10 +113,10 @@ try:
             logger.info("Connected to MQTT (%s:%s, user: %s)", MQTT_HOST, MQTT_PORT, MQTT_USERNAME)
         else:
             logger.error("Failed to connect to MQTT Broker (%s:%s, user: %s): %s ", MQTT_HOST, MQTT_PORT, MQTT_USERNAME, rc)
-    
+
     def on_mqtt_message(client, userdata, msg):
         logger.info(f"MQTT message received: {msg.topic} {msg.payload}")
-    
+
     mqtt_client = mqtt.Client()
     mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
     mqtt_client.on_connect = on_mqtt_connect
@@ -179,7 +179,7 @@ try:
         """
         def __init__(self):
 
-            # equalization status
+            # info data
 
             self.cell_voltage_warning = [None] * 16
             self.cell_temperature_warning = [None] * 4
@@ -1057,6 +1057,9 @@ try:
                     logger.info("Pack%s:Telemetry Feedback: %s", self.pack_address, json.dumps(telemetry_feedback, indent=4))
                     break
 
+            # don't spam intra-pack communication too much (reduce multimaster collisions)
+            time.sleep(1)
+
             # calculate request telesignalization command (0x44) for the current pack_address
             telesignalization_command = self.encode_cmd(address=self.pack_address, cid2=0x44)
             logger.debug("Pack%s:telesignalization_command: %s", self.pack_address, telesignalization_command)
@@ -1131,10 +1134,10 @@ try:
         try:
             current_battery_pack = battery_packs[i]["pack_instance"]
             current_address = battery_packs[i]["address"]
-            
+
             # fetch battery_pack_data
             current_battery_pack_data = current_battery_pack.read_serial_data()
-            
+
             # if battery_pack_data has changed, update mqtt stats payload
             if current_battery_pack_data:
                 logger.info("Pack%s:Sending updated stats to mqtt.", current_address)
@@ -1144,17 +1147,20 @@ try:
                 }, indent=4))
             else:
                 logger.info("Pack-%s:Data not changed, skipping mqtt update.", current_address)
-            
+
             logger.info("Sending online status to mqtt")
             mqtt_client.publish(f"{MQTT_TOPIC}/availability", "online", retain=False)
-            
+
+            # don't spam intra-pack communication too much (reduce multimaster collisions)
+            time.sleep(1)
+
             # query all packs again in continuous loop or with pre-defined wait interval after each circular run
             i += 1
             if i >= len(battery_packs):
                 time.sleep(MQTT_UPDATE_INTERVAL)
                 i = 0
         except Exception as e:
-            logger.error(f"Error in main loop: {e}")
+            logger.error("Error in main loop: %s", e)
             time.sleep(10)
 
 # catch exceptions related to the initial connection to the serial port
