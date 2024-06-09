@@ -1106,8 +1106,8 @@ try:
     # connect serial interfaces
     try:
         if FETCH_MASTER is True:
-            SERIAL_MASTER_INSTANCE = serial.Serial(port=MASTER_SERIAL_INTERFACE, baudrate=9600)
-        SERIAL_SLAVES_INSTANCE = serial.Serial(port=SLAVES_SERIAL_INTERFACE, baudrate=19200)
+            SERIAL_MASTER_INSTANCE = serial.Serial(port=MASTER_SERIAL_INTERFACE, baudrate=9600, timeout=0.5)
+        SERIAL_SLAVES_INSTANCE = serial.Serial(port=SLAVES_SERIAL_INTERFACE, baudrate=19200, timeout=0.5)
     except SerialException as e:
         logger.error("SerialException occurred: %s", e)
         sys.exit(1)
