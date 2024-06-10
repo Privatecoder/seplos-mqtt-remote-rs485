@@ -13,9 +13,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the src directory contents into the container at /usr/src/app
 COPY ./src .
 
-# Define default environment variables
-ENV PYTHONUNBUFFERED 1
-
 # Make sure entrypoint is executable
 RUN chmod +x /usr/src/app/entrypoint.sh
 

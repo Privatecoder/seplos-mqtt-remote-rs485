@@ -44,7 +44,7 @@ fi
 echo "Starting the script"
 
 # Run the Python script in the background
-python fetch_bms_data.py > /proc/1/fd/1 2> /proc/1/fd/2 &
+python fetch_bms_data.py
 
 # Wait for any process to exit
 wait $!

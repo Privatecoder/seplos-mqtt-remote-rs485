@@ -87,7 +87,7 @@ try:
 
     # Logging setup and config
 
-    logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO)
+    logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s')
     logger = logging.getLogger("SeplosBMS")
 
     if get_config_value("LOGGING_LEVEL").upper() == "ERROR":
