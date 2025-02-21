@@ -105,7 +105,7 @@ try:
     MQTT_TOPIC = get_config_value("MQTT_TOPIC")
     MQTT_UPDATE_INTERVAL = get_config_value("MQTT_UPDATE_INTERVAL", return_type=int)
 
-    def on_mqtt_connect(client, userdata, flags, reason_code, properties):
+    def on_mqtt_connect(client, userdata, flags, reason_code):
         if reason_code == 0:
             logger.info("Connected to MQTT (%s:%s, user: %s)", MQTT_HOST, MQTT_PORT, MQTT_USERNAME)
         if reason_code > 0:
@@ -1107,7 +1107,7 @@ try:
     # array of battery-pack objects
     battery_packs = []
 
-    for i in range(1, NUMBER_OF_PACKS):
+    for i in range(0, NUMBER_OF_PACKS):
         pack_instance = SeplosBatteryPack(pack_address=int(f'0x{i:02x}', 16))
         battery_packs.append({ "pack_instance": pack_instance, "address": int(f'0x{i:02x}', 16) })
 
