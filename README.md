@@ -1,32 +1,27 @@
 # Seplos MQTT remote RS485
-This is a python script that reads data from one or multiple (V2 / V16) Seplos battery packs (while using CAN to connect to your Inverter) via (a) (remote) RS485 connection(s) and publish their stats to MQTT.
+This is a python script that reads data from multiple (V2 / V16) Seplos battery packs (while using CAN to connect to your Inverter) via (a) (remote) RS485 connection(s) and publishes their stats to MQTT.
 
 ## Hardware requirements:
 
 1. (Remote) RS485 device ([Waveshare 2-CH RS485 to ETH has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
-2. For multiple packs while using CAN to connect to your Inverter, you need a splitter ([this splitter works for me](https://www.amazon.de/gp/product/B00D3KIQXC)) to split the CAN port into CAN+RS485 and two separate RS485 connections (the Waveshare 2-CH RS485 to ETH has two RS485 ports)
-3. Something that can run a Docker-Container
-4. Seplos BMS [V2 / V16 has been tested](https://www.seplos.com/bms-2.0.html)
-5. An MQTT broker
+2. For multiple packs while using CAN to connect to your Inverter, you need to split the Master's CAN-port into CAN+RS485.
+3. The CAN-part of this port, i.e. Pin 4+5, connects to the inverter, the RS485-part, i.e. Pin 7+8 connects to the slave's PIN 1+2 and is then daisy chained to all subsequent slaves.
+4. Something that can run a Docker-Container
+5. Seplos BMS [V2 / V16 has been tested](https://www.seplos.com/bms-2.0.html)
+6. An MQTT broker
 
-## Connecting serial devices to multiple battery packs:
+## Connecting the serial device to multiple battery packs:
 
-![sample](https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/de37d398-7580-452a-b942-3c374a8b86b6)
+It is suggested to crimp your own cable(s) like so:
 
-It is suggested to take a regular patch-cable, cut one of its connectors and take the `orange`, `orange-white` and `green-white` wires to crimp a terminal onto them. Finally they can be connected to the waveshare device like so:
-
-- `orange` => `RS485-A`
-- `orange-white` => `RS485-B`
-- `green-white` => `PE`
-
-This works for both, Masters via the splitter (Baud 9600) and Slaves to an empty RS485 port of the BMS (Baud 19200).
+![seplos](https://github.com/user-attachments/assets/24b8224a-5c89-4057-9b51-27ef3bd31d92)
 
 ![waveshare-pins](https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/34d5e8f3-43dd-46a6-8baf-5d9af662837d)
 
 ## Installation and configuration (Docker):
 
 1. Configure and setup an MQTT broker with a user and password
-2. Configure your (remote) RS485 device. For the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs) **or** `Baud Rate: 19200` (for Slaves)
+2. Configure your (remote) RS485 device. For the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs)
 3. Modify the `config.ini` and edit its settings to your needs (**alternatively**: configure everything via ENV-vars)
 4. Run the Docker Image, for example like this:
 
@@ -35,45 +30,55 @@ This works for both, Masters via the splitter (Baud 9600) and Slaves to an empty
 ```
 docker run -itd \
   --restart unless-stopped \
-  -e RS485_MASTER_REMOTE_IP="192.168.1.200" \
-  -e RS485_MASTER_REMOTE_PORT="4196" \
-  -e RS485_SLAVES_REMOTE_IP="192.168.1.201" \
-  -e RS485_SLAVES_REMOTE_PORT="4196" \
-  -e FETCH_MASTER=true \
-  -e NUMBER_OF_SLAVES=1 \
+  -e RS485_REMOTE_IP="192.168.1.200" \
+  -e RS485_REMOTE_PORT="4196" \
+  -e SERIAL_INTERFACE=/tmp/vcom0 \
+  -e NUMBER_OF_PACKS=2 \
+  -e MIN_CELL_VOLTAGE=2.500 \
+  -e MAX_CELL_VOLTAGE=3.650 \
   -e MQTT_HOST=192.168.1.100 \
   -e MQTT_USERNAME=seplos-mqtt \
   -e MQTT_PASSWORD=my-secret-password \
+  -e MQTT_TOPIC=seplos \
+  -e MQTT_UPDATE_INTERVAL=1 \
+  -e ENABLE_HA_DISCOVERY_CONFIG=true \
+  -e HA_DISCOVERY_PREFIX=homeassistant \
+  -e LOGGING_LEVEL=info \
   --name seplos-mqtt-rs485 \
-  privatecoder/seplos-mqtt-remote-rs485:v2.0.2
+  privatecoder/seplos-mqtt-remote-rs485:v3.0.0
 ```
 
-- For 1 master and 1 slave, i.e. two packs using config.ini (in which `FETCH_MASTER` is set to `true`):
+- For 1 master and 1 slave, i.e. two packs using config.ini:
 
 ```
 docker run -itd \
   --restart unless-stopped \
-  -e RS485_MASTER_REMOTE_IP="192.168.1.200" \
-  -e RS485_MASTER_REMOTE_PORT="4196" \
-  -e RS485_SLAVES_REMOTE_IP="192.168.1.201" \
-  -e RS485_SLAVES_REMOTE_PORT="4196" \
+  -e RS485_REMOTE_IP="192.168.1.200" \
+  -e RS485_REMOTE_PORT="4196" \
   -v $(pwd)/config-master.ini:/usr/src/app/config.ini \
   --name seplos-mqtt-rs485 \
-  privatecoder/seplos-mqtt-remote-rs485:v2.0.2
+  privatecoder/seplos-mqtt-remote-rs485:v3.0.0
 ```
 
-- To run the script without socat / remote RS485 but local connections, don't set the `RS485_MASTER_REMOTE_IP` and `RS485_SLAVES_REMOTE_IP` ENV-vars, i.e:
+- To run the script without socat / remote RS485 but local connections, don't set the `RS485_REMOTE_IP` and `RS485_REMOTE_PORT` ENV-vars, i.e:
 
 ```
 docker run -itd \
   --restart unless-stopped \
-  -e FETCH_MASTER=true \
-  -e NUMBER_OF_SLAVES=1 \
+  -e SERIAL_INTERFACE=/path/to/your/serialport \
+  -e NUMBER_OF_PACKS=2 \
+  -e MIN_CELL_VOLTAGE=2.500 \
+  -e MAX_CELL_VOLTAGE=3.650 \
   -e MQTT_HOST=192.168.1.100 \
   -e MQTT_USERNAME=seplos-mqtt \
   -e MQTT_PASSWORD=my-secret-password \
+  -e MQTT_TOPIC=seplos \
+  -e MQTT_UPDATE_INTERVAL=1 \
+  -e ENABLE_HA_DISCOVERY_CONFIG=true \
+  -e HA_DISCOVERY_PREFIX=homeassistant \
+  -e LOGGING_LEVEL=info \
   --name seplos-mqtt-rs485 \
-  privatecoder/seplos-mqtt-remote-rs485:v2.0.2
+  privatecoder/seplos-mqtt-remote-rs485:v3.0.0
 ```
 
 **or**
@@ -83,16 +88,13 @@ docker run -itd \
   --restart unless-stopped \
   -v $(pwd)/config-master.ini:/usr/src/app/config.ini \
   --name seplos-mqtt-rs485 \
-  privatecoder/seplos-mqtt-remote-rs485:v2.0.2
+  privatecoder/seplos-mqtt-remote-rs485:v3.0.0
 ```
 
 Available ENV-vars are:
 
-- `RS485_MASTER_REMOTE_IP` (IP of the remote RS485 device the master is connected to)
-- `RS485_MASTER_REMOTE_PORT` (Port of the remote RS485 device the master is connected to)
-
-- `RS485_SLAVES_REMOTE_IP` (IP of the remote RS485 device the slaves are connected to)
-- `RS485_SLAVES_REMOTE_PORT` (Port of the remote RS485 device the slaves are connected to)
+- `RS485_REMOTE_IP` (IP of the remote RS485 device)
+- `RS485_REMOTE_PORT` (Port of the remote RS485 device)
 
 - `MQTT_HOST` (MQTT Broker IP, default: `192.168.1.100`)
 - `MQTT_PORT` (MQTT Broker Port, default: `1883`)
@@ -104,18 +106,17 @@ Available ENV-vars are:
 - `ENABLE_HA_DISCOVERY_CONFIG` (Enable Home Assistant config creation via MQTT for auto-discovery, default: `true`)
 - `HA_DISCOVERY_PREFIX` (Home Assistant Topic to publish the config creations to, default: `homeassistant`)
 
-- `FETCH_MASTER` (Fetch data of a master device when running multiple packs in parallel, default: `false`)
-- `NUMBER_OF_SLAVES` (Fetch data of n slave devices, either when running multiple packs in parallel or one pack only, default: `1`)
+- `NUMBER_OF_PACKS` (Fetch data of n packs, default: `2`)
+
 - `MIN_CELL_VOLTAGE` (Min cell voltage as base calculation constant, as this cannot be read from the BMS, default: `2.500`)
 - `MAX_CELL_VOLTAGE` (Max cell voltage as base calculation constant, as this cannot be read from the BMS, default: `3.650`)
 
-- `MASTER_SERIAL_INTERFACE` (Local master RS485 device path, default: `/tmp/vcom0`)
-- `SLAVES_SERIAL_INTERFACE` (Local slaves RS485 device path,default: `/tmp/vcom1`)
+- `SERIAL_INTERFACE` (Local RS485 device path, default: `/tmp/vcom0`)
 
 - `LOGGING_LEVEL` (Logging level, available modes are info, error and debug, default: `info`)
 
-Set `RS485_MASTER_REMOTE_IP`, `RS485_MASTER_REMOTE_PORT`, `RS485_SLAVES_REMOTE_IP` and `RS485_SLAVES_REMOTE_PORT` starts the docker image with socat, binding your remote RS485 device´s RS485 ports locally to `vcom0` (master) and `vcom1` (slaves) (used by default in this script).
-Not defining those will just start the script, however `MASTER_SERIAL_INTERFACE` and `SLAVES_SERIAL_INTERFACE` must match your existing serial-devices – either passed to the container directly or using the privileged-flag (not recommended).
+Setting `RS485_REMOTE_IP` and `RS485_REMOTE_PORT` starts the docker image with socat, binding your remote RS485 device´s RS485 ports locally to `vcom0` (used by default in this script).
+Not defining those will just start the script, however `SERIAL_INTERFACE` must match your existing serial-device – either passed to the container directly or using the privileged-flag (not recommended).
 
 MQTT messages published by the script will look like this:
 ```
