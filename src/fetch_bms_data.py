@@ -1096,7 +1096,7 @@ try:
     try:
         if NUMBER_OF_PACKS > 1:
             logger.debug("Setting up serial instance for %s Packs (Baud=9600)", NUMBER_OF_PACKS)
-            SERIAL_INSTANCE = serial.Serial(port=SERIAL_INTERFACE, baudrate=19200, timeout=0.5)
+            SERIAL_INSTANCE = serial.Serial(port=SERIAL_INTERFACE, baudrate=9600, timeout=0.5)
         else:
             logger.debug("Setting up serial instance for one Pack (Baud=19200)")
             SERIAL_INSTANCE = serial.Serial(port=SERIAL_INTERFACE, baudrate=19200, timeout=0.5)
