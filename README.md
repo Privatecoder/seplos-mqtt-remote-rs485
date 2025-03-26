@@ -455,7 +455,7 @@ INFO:SeplosBMS:Pack0:Sending updated stats to mqtt.
 
 ### Add Sensors to lovelace:
 
-- The provided `lovelace.yaml` (in `ha-lovelace`) is using `card_mod`, `button-card`, `bar-card` and `apexcharts-card` (can be installed via HACS) and allows for a first start (value-based colors are based on [these number](https://docs.google.com/spreadsheets/d/1fkVZQvyQA_7x2OT59Ho25ul2QzdEgoV9M35y5uj6tsk/edit#gid=52730408)). `lovelace-plotly-graphs.yaml` is almost the same but uses `plotly-graph` instead of `apexcharts-card` for the graphs-section.
+- The provided `lovelace.yaml` (in `ha-lovelace`) is using `card_mod`, `button-card`, `bar-card` and `apexcharts-card` (can be installed via HACS) and allows for a first start (value-based colors are based on [these numbers](https://docs.google.com/spreadsheets/d/1fkVZQvyQA_7x2OT59Ho25ul2QzdEgoV9M35y5uj6tsk/edit#gid=52730408)). `lovelace-plotly-graphs.yaml` is almost the same but uses `plotly-graph` instead of `apexcharts-card` for the graphs-section.
 
 <img width="420" alt="image" src="https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/df5b09e5-ed90-4026-b8b7-3294ff8ae0fb">
 <img width="381" alt="image" src="https://github.com/Privatecoder/seplos-mqtt-remote-rs485/assets/45964815/2eff45a0-9a10-4fec-ba83-607b8941fbb6">
