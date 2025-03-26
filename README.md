@@ -5,7 +5,7 @@ This is a python script that reads data from one or multiple (V2 / V16) Seplos b
 
 For **multiple packs** (only):
 
-1. To connect multiple packs while using CAN to connect to your Inverter, you need to split the Master's CAN-port into CAN+RS485. The CAN-part of this port, i.e. Pin 4+5, connects to the inverter, the RS485-part, i.e. Pin 7+8, connects to the slave's PIN 1+2 and is then daisy chained to all subsequent slaves. **It is strictly necessary to make sure that the RS485-part of the CAN-port does NOT have any connection to your inverter!**
+1. To connect multiple packs while using CAN to connect to your Inverter, you need to split the Master's CAN-port into CAN+RS485. The CAN-part of this port, i.e. Pins 4+5, connects to the inverter, the RS485-part, i.e. Pins 7+8, connects to the slave's Pins 1+2 and is then daisy chained to all subsequent slaves. **It is strictly necessary to make sure that the RS485-part of the CAN-port does NOT have any connection to your inverter!**
 
 For **a single pack** (only):
 
