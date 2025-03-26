@@ -11,7 +11,7 @@ For **multiple packs** (only):
 - The RS485-part, i.e. pins 6+7+8 (GND+RS485-A+RS485-B), connects to the **slave's CAN-port** (more specific: the RS485-part of it), i.e. pins 1+2+3 (GND+RS485-A+RS485-B) and is then **daisy chained** to all subsequent **slave's CAN-ports** (more specific: the RS485-part of them).
 - **It is strictly necessary to make sure that the Master's RS485-part of the CAN-port does NOT have any connection to your inverter!**
 
-For **a single pack** (only):
+For a **single pack** (only):
 
 1. Connect your RS485 device directly to one of the two RS485-ports.
 
