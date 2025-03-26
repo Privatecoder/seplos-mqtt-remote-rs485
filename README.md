@@ -24,7 +24,7 @@ For all configurations:
 
 ## Connecting the serial device to one or multiple battery packs:
 
-When using one pack only, connect your Inverter to the CAN-port and your RS485 device directly to one of the two RS485-ports.
+When using one pack only, connect your Inverter to the CAN-port and your RS485 device directly to one of the two RS485-ports; no adapter/splitting/crimping involved.
 
 For **multiple packs**, it is suggested to crimp your own cable(s) like so:
 
