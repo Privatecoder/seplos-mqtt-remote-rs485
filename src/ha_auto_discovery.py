@@ -537,10 +537,11 @@ class AutoDiscoveryConfig():
         if self.first_run is True:
             # device
             sensor["dev"] = {**DEVICE_BASE_CONFIG}
-            # device
-            sensor["dev"]["name"] = f"Seplos BMS Pack-{pack_no} ({'Master' if pack_no == 0 else 'Slave' })"
+            # device name
+            sensor["dev"]["name"] = f"Seplos BMS Pack-{pack_no} ({'Master' if pack_no == 0 else 'Slave'})"
             self.first_run = False
 
+        # name
         sensor["name"] = name
         # availability topic
         sensor["avty"]["t"] = f"{self.mqtt_topic}/availability"

@@ -26,17 +26,11 @@ start_socat() {
     echo "socat started successfully for device $device"
 }
 
-# Start socat for master and slaves
-if [ -n "$RS485_MASTER_REMOTE_IP" ] && [ -n "$RS485_MASTER_REMOTE_PORT" ]; then
-    start_socat "$RS485_MASTER_REMOTE_IP" "$RS485_MASTER_REMOTE_PORT" "/tmp/vcom0" || {
-        echo "Failed to start socat for master"
-        exit 1
-    }
-fi
-
-if [ -n "$RS485_SLAVES_REMOTE_IP" ] && [ -n "$RS485_SLAVES_REMOTE_PORT" ]; then
-    start_socat "$RS485_SLAVES_REMOTE_IP" "$RS485_SLAVES_REMOTE_PORT" "/tmp/vcom1" || {
-        echo "Failed to start socat for slaves"
+# Start socat
+if [ -n "$RS485_REMOTE_IP" ] && [ -n "$RS485_REMOTE_PORT" ]; then
+    echo "Hello Socat"
+    start_socat "$RS485_REMOTE_IP" "$RS485_REMOTE_PORT" "/tmp/vcom0" || {
+        echo "Failed to start socat"
         exit 1
     }
 fi

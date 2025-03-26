@@ -30,12 +30,9 @@ try:
             mqtt_client.loop_stop()
 
         # close serial connections if open
-        if SERIAL_MASTER_INSTANCE is not None and SERIAL_MASTER_INSTANCE.isOpen():
-            logger.info("Closing serial connection to master")
-            SERIAL_MASTER_INSTANCE.close()
-        if SERIAL_SLAVES_INSTANCE is not None and SERIAL_SLAVES_INSTANCE.isOpen():
-            logger.info("Closing serial connection to slaves")
-            SERIAL_SLAVES_INSTANCE.close()
+        if SERIAL_INSTANCE is not None and SERIAL_INSTANCE.isOpen():
+            logger.info("Closing serial connection")
+            SERIAL_INSTANCE.close()
 
         if signum is not None:
             sys.exit(0)
@@ -108,14 +105,15 @@ try:
     MQTT_TOPIC = get_config_value("MQTT_TOPIC")
     MQTT_UPDATE_INTERVAL = get_config_value("MQTT_UPDATE_INTERVAL", return_type=int)
 
-    def on_mqtt_connect(client, userdata, flags, rc):
-        if rc == 0:
+    def on_mqtt_connect(client, userdata, flags, reason_code):
+        if reason_code == 0:
             logger.info("Connected to MQTT (%s:%s, user: %s)", MQTT_HOST, MQTT_PORT, MQTT_USERNAME)
-        else:
-            logger.error("Failed to connect to MQTT Broker (%s:%s, user: %s): %s ", MQTT_HOST, MQTT_PORT, MQTT_USERNAME, rc)
+        if reason_code > 0:
+            logger.error("Failed to connect to MQTT Broker (%s:%s, user: %s): %s ", MQTT_HOST, MQTT_PORT, MQTT_USERNAME, reason_code)
 
-    def on_mqtt_message(client, userdata, msg):
-        logger.info(f"MQTT message received: {msg.topic} {msg.payload}")
+
+    def on_mqtt_message(client, userdata, message):
+        logger.info(f"MQTT message received: {message.topic} {message.payload}")
 
     mqtt_client = mqtt.Client()
     mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
@@ -142,23 +140,15 @@ try:
             for pack in battery_packs:
                 auto_discovery_instance.create_autodiscovery_sensors(pack_no=pack['address'])
 
-    # Serial Interface config and setup (set to 9600 for Master and 19200 for Slaves)
 
-    # fetch master, i.e. pack-0 when FETCH_MASTER == True
-    FETCH_MASTER = get_config_value("FETCH_MASTER", return_type=bool)
-    # fetch number of slave packs, i.e. number of packs excluding the master
-    NUMBER_OF_SLAVES = get_config_value("NUMBER_OF_SLAVES", return_type=int)
-    MASTER_SERIAL_INTERFACE = get_config_value("MASTER_SERIAL_INTERFACE")
-    SLAVES_SERIAL_INTERFACE = get_config_value("SLAVES_SERIAL_INTERFACE")
+    NUMBER_OF_PACKS = get_config_value("NUMBER_OF_PACKS", return_type=int)
+    SERIAL_INTERFACE = get_config_value("SERIAL_INTERFACE")
 
-    SERIAL_MASTER_INSTANCE = None
-    SERIAL_SLAVES_INSTANCE = None
+    SERIAL_INSTANCE = None
 
     # Debug output of env-var settings
 
-    logger.debug("MASTER_SERIAL_INTERFACE: %s", MASTER_SERIAL_INTERFACE)
-    logger.debug("SLAVES_SERIAL_INTERFACE: %s", SLAVES_SERIAL_INTERFACE)
-
+    logger.debug("SERIAL_INTERFACE: %s", SERIAL_INTERFACE)
     logger.debug("MQTT_HOST: %s", MQTT_HOST)
     logger.debug("MQTT_PORT: %s", MQTT_PORT)
     logger.debug("MQTT_USERNAME: %s", MQTT_USERNAME)
@@ -167,8 +157,7 @@ try:
     logger.debug("MQTT_UPDATE_INTERVAL: %s", MQTT_UPDATE_INTERVAL)
     logger.debug("ENABLE_HA_DISCOVERY_CONFIG: %s", ENABLE_HA_DISCOVERY_CONFIG)
 
-    logger.debug("FETCH_MASTER: %s", FETCH_MASTER)
-    logger.debug("NUMBER_OF_SLAVES: %s", NUMBER_OF_SLAVES)
+    logger.debug("NUMBER_OF_PACKS: %s", NUMBER_OF_PACKS)
 
     logger.debug("MIN_CELL_VOLTAGE: %s", MIN_CELL_VOLTAGE)
     logger.debug("MAX_CELL_VOLTAGE: %s", MAX_CELL_VOLTAGE)
@@ -1004,7 +993,7 @@ try:
             """
             logger.info("Pack%s:Requesting data...", self.pack_address)
 
-            serial_instance = SERIAL_MASTER_INSTANCE if self.pack_address == 0 else SERIAL_SLAVES_INSTANCE
+            serial_instance = SERIAL_INSTANCE
 
             # json object to store status and alarm response values
             battery_pack_data = {
@@ -1105,9 +1094,12 @@ try:
 
     # connect serial interfaces
     try:
-        if FETCH_MASTER is True:
-            SERIAL_MASTER_INSTANCE = serial.Serial(port=MASTER_SERIAL_INTERFACE, baudrate=9600, timeout=0.5)
-        SERIAL_SLAVES_INSTANCE = serial.Serial(port=SLAVES_SERIAL_INTERFACE, baudrate=19200, timeout=0.5)
+        if NUMBER_OF_PACKS > 1:
+            logger.debug("Setting up serial instance for %s Packs (Baud=9600)", NUMBER_OF_PACKS)
+            SERIAL_INSTANCE = serial.Serial(port=SERIAL_INTERFACE, baudrate=19200, timeout=0.5)
+        else:
+            logger.debug("Setting up serial instance for one Pack (Baud=19200)")
+            SERIAL_INSTANCE = serial.Serial(port=SERIAL_INTERFACE, baudrate=19200, timeout=0.5)
     except SerialException as e:
         logger.error("SerialException occurred: %s", e)
         sys.exit(1)
@@ -1115,11 +1107,7 @@ try:
     # array of battery-pack objects
     battery_packs = []
 
-    # fill battery_packs array with master- and slave-packs
-    if FETCH_MASTER is True:
-        battery_packs.append({ "pack_instance": SeplosBatteryPack(pack_address=0), "address": 0 })
-
-    for i in range(1, NUMBER_OF_SLAVES + 1):
+    for i in range(0, NUMBER_OF_PACKS):
         pack_instance = SeplosBatteryPack(pack_address=int(f'0x{i:02x}', 16))
         battery_packs.append({ "pack_instance": pack_instance, "address": int(f'0x{i:02x}', 16) })
 
