@@ -5,7 +5,7 @@ This is a python script that reads data from one or multiple (V2 / V16) Seplos b
 
 For **multiple packs** (only):
 
-1. To connect multiple packs while using CAN to connect to your Inverter, you need to split the Master's CAN-port into CAN+RS485. The CAN-part of this port, i.e. Pin 4+5, connects to the inverter, the RS485-part, i.e. Pin 7+8 connects to the slave's PIN 1+2 and is then daisy chained to all subsequent slaves. **It is strictly necessary to make sure that the RS485-part of the CAN-port does NOT have any connection to your inverter!**
+1. To connect multiple packs while using CAN to connect to your Inverter, you need to split the Master's CAN-port into CAN+RS485. The CAN-part of this port, i.e. Pin 4+5, connects to the inverter, the RS485-part, i.e. Pin 7+8, connects to the slave's PIN 1+2 and is then daisy chained to all subsequent slaves. **It is strictly necessary to make sure that the RS485-part of the CAN-port does NOT have any connection to your inverter!**
 
 For **a single pack** (only):
 
@@ -18,7 +18,7 @@ For all configurations:
 4. Seplos BMS [V2 / V16 has been tested](https://www.seplos.com/bms-2.0.html)
 5. An MQTT broker
 
-## Connecting the serial device to multiple battery packs:
+## Connecting the serial device to one or multiple battery packs:
 
 When using one pack only, connect your Inverter to the CAN-port and your RS485 device directly to one of the two RS485-ports.
 
@@ -31,7 +31,7 @@ For **multiple packs**, it is suggested to crimp your own cable(s) like so:
 ## Installation and configuration (Docker):
 
 1. Configure and setup an MQTT broker with a user and password
-2. Configure your (remote) RS485 device. For the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs)
+2. Configure your (remote) RS485 device. For the Waveshare 2-CH RS485 to ETH this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for Master with multiple Packs) **or** `Baud Rate: 19200` (for a single pack)
 3. Modify the `config.ini` and edit its settings to your needs (**alternatively**: configure everything via ENV-vars)
 4. Run the Docker Image, for example like this:
 
@@ -116,7 +116,7 @@ Available ENV-vars are:
 - `ENABLE_HA_DISCOVERY_CONFIG` (Enable Home Assistant config creation via MQTT for auto-discovery, default: `true`)
 - `HA_DISCOVERY_PREFIX` (Home Assistant Topic to publish the config creations to, default: `homeassistant`)
 
-- `NUMBER_OF_PACKS` (Fetch data of n packs, default: `2`)
+- `NUMBER_OF_PACKS` (Fetch data of n packs, default: `1`)
 
 - `MIN_CELL_VOLTAGE` (Min cell voltage as base calculation constant, as this cannot be read from the BMS, default: `2.500`)
 - `MAX_CELL_VOLTAGE` (Max cell voltage as base calculation constant, as this cannot be read from the BMS, default: `3.650`)
