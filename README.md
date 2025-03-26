@@ -1,18 +1,28 @@
 # Seplos MQTT remote RS485
-This is a python script that reads data from multiple (V2 / V16) Seplos battery packs (while using CAN to connect to your Inverter) via (a) (remote) RS485 connection(s) and publishes their stats to MQTT.
+This is a python script that reads data from one or multiple (V2 / V16) Seplos battery packs (while using CAN to connect to your Inverter) via (a) (remote) RS485 connection(s) and publishes their stats to MQTT.
 
 ## Hardware requirements:
 
-1. (Remote) RS485 device ([Waveshare 2-CH RS485 to ETH has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
-2. For multiple packs while using CAN to connect to your Inverter, you need to split the Master's CAN-port into CAN+RS485.
-3. The CAN-part of this port, i.e. Pin 4+5, connects to the inverter, the RS485-part, i.e. Pin 7+8 connects to the slave's PIN 1+2 and is then daisy chained to all subsequent slaves.
-4. Something that can run a Docker-Container
-5. Seplos BMS [V2 / V16 has been tested](https://www.seplos.com/bms-2.0.html)
-6. An MQTT broker
+For **multiple packs** (only):
+
+1. To connect multiple packs while using CAN to connect to your Inverter, you need to split the Master's CAN-port into CAN+RS485. The CAN-part of this port, i.e. Pin 4+5, connects to the inverter, the RS485-part, i.e. Pin 7+8 connects to the slave's PIN 1+2 and is then daisy chained to all subsequent slaves. **It is strictly necessary to make sure that the RS485-part of the CAN-port does NOT have any connection to your inverter!**
+
+For **a single pack** (only):
+
+1. Connect your RS485 device directly to one of the two RS485-ports.
+
+For all configurations:
+
+2. (Remote) RS485 device ([Waveshare 2-CH RS485 to ETH has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
+3. Something that can run a Docker-Container
+4. Seplos BMS [V2 / V16 has been tested](https://www.seplos.com/bms-2.0.html)
+5. An MQTT broker
 
 ## Connecting the serial device to multiple battery packs:
 
-It is suggested to crimp your own cable(s) like so:
+When using one pack only, connect your Inverter to the CAN-port and your RS485 device directly to one of the two RS485-ports.
+
+For **multiple packs**, it is suggested to crimp your own cable(s) like so:
 
 ![seplos](https://github.com/user-attachments/assets/24b8224a-5c89-4057-9b51-27ef3bd31d92)
 
