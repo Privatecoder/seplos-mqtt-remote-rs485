@@ -13,6 +13,8 @@ This second Bus is intended for Inverters who read BMS data from the Master via 
 
 So when connecting the Master in multi-pack configurations via CAN to the Inverter (you must only connect the CAN-part to the inverter, the RS485-part of the port can be used by any RS485 device to read the Masters data at Baud 9600.
 
+(This and the way of reading multiple packs without multi-master-collisions has been discussed [here](https://github.com/syssi/esphome-seplos-bms/issues/116) and made me change this script and my cabling and I strongly suggest to update/upgrade existing setups! Thanks to @Wiki591 for his findings and @syssi for his great work [esphome-seplos-bms](https://github.com/syssi/esphome-seplos-bms/))
+
 ## Hardware requirements:
 
 For **multiple packs** (only):
@@ -22,8 +24,6 @@ For **multiple packs** (only):
 - The CAN-part of this port, i.e. pins 4+5 (CAN-H+CAN-L), connects to the inverter.
 - The RS485-part, i.e. pins 6+7+8 (GND+RS485-A+RS485-B), connects to the **slave's CAN-port** (more specific: the RS485-part of it), i.e. pins 1+2+3 (GND+RS485-A+RS485-B) and is then **daisy chained** to all subsequent **slave's CAN-ports** (more specific: the RS485-part of them).
 - **It is strictly necessary to make sure that the Master's RS485-part of the CAN-port does NOT have any connection to your inverter!**
-
-(The way of reading multiple packs without multi-master-collisions has been discussed [here](https://github.com/syssi/esphome-seplos-bms/issues/116) and made me change this script and my cabling and I strongly suggest to update/upgrade existing setups! Thanks to @Wiki591 for his findings and @syssi for his great work [esphome-seplos-bms](https://github.com/syssi/esphome-seplos-bms/))
 
 For a **single pack** (only):
 
