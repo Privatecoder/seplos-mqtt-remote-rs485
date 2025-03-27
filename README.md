@@ -11,7 +11,7 @@ However there is a **second** RS485-bus on the BMS, namely on the CAN-port, whic
 
 This second Bus is intended for Inverters who read BMS data from the Master via RS485 (and not CAN), in which case the Inverter itself acts as a master on this bus.
 
-So when connecting the Master in multi-pack configurations via CAN to the Inverter (you must only connect the CAN-part to the inverter, the RS485-part of the port can be used by any RS485 device to read the Masters data at Baud 9600.
+So when connecting the Master in multi-pack configurations via CAN to the Inverter (you must only connect the CAN-part to the inverter, the RS485-part of the port can then be used by any RS485 device to read the Masters data at Baud 9600.
 
 (This and the way of reading multiple packs without multi-master-collisions has been discussed [here](https://github.com/syssi/esphome-seplos-bms/issues/116) and made me change this script and my cabling and I strongly suggest to update/upgrade existing setups! Thanks to @Wiki591 for his findings and @syssi for his great work [esphome-seplos-bms](https://github.com/syssi/esphome-seplos-bms/))
 
