@@ -1,6 +1,18 @@
 # Seplos MQTT remote RS485
 This is a python script that reads data from one or multiple (V2 / V16) Seplos battery packs (while using CAN to connect to your Inverter) via (a) (remote) RS485 connection(s) and publishes their stats to MQTT.
 
+## A technical note on the Seplos V2 / V16 BMS
+
+I often read about the purported design-flaw of the Seplos V2 / V16 BMS, where in multi-pack configurations the Master cannot be read via BMS-Monitor or other means.
+
+This is, because the Master in multi-pack configurations becomes the (RS485-)bus-master to poll the _slave_-devices and as a _master_ it cannot be polled by another bus-master, i.e. BMS-Monitor or another RS485-device, acting as such.
+
+However there is a **second** RS485-bus on the BMS, namely on the CAN-port, which can be polled by a master, as it is always working in _slave-mode_.
+
+This second Bus is intended for Inverters who read BMS data from the Master via RS485 (and not CAN), in which case the Inverter itself acts as a master on this bus.
+
+So when connecting the Master in multi-pack configurations via CAN to the Inverter (you must only connect the CAN-part to the inverter, the RS485-part of the port can be used by any RS485 device to read the Masters data at Baud 9600.
+
 ## Hardware requirements:
 
 For **multiple packs** (only):
