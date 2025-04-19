@@ -9,7 +9,7 @@ This is, because the Master in multi-pack configurations becomes the (RS485-)bus
 
 However there is a **second** RS485-bus on the BMS, namely on the CAN-port, which can be polled by a master, as it is always working in _slave-mode_.
 
-This second Bus is intended for Inverters who read BMS data from the Master via RS485 (and not CAN), in which case the Inverter itself acts as a master on this bus.
+This second Bus is intended for Inverters who read BMS data from it via RS485 (and not CAN), in which case the Inverter itself acts as a master on this bus.
 
 So when connecting the Master in multi-pack configurations via CAN to the Inverter (you must only connect the CAN-part to the inverter, the RS485-part of the port can then be used by any RS485 device to read the Master's and Slave's data at Baud 9600 (provided they are all chained together as [described further down below](https://github.com/Privatecoder/seplos-mqtt-remote-rs485#connecting-the-serial-device-to-one-or-multiple-battery-packs)).
 
