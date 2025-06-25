@@ -7,9 +7,9 @@ I often read about the purported design-flaw of the Seplos V2 / V16 BMS, where i
 
 This is, because the Master in multi-pack configurations becomes the (RS485-bus-)master _itself_ to poll the _slave_-devices and as a _master_ it cannot be polled by another (bus-)master, i.e. BMS-Monitor or another RS485-device, acting as such.
 
-However there is a **second** RS485-bus on the BMS, namely on the CAN-port, which can be polled by a master, as it is always working in _slave-mode_.
+However there is a **second** RS485-bus on the BMS, namely on the port labeled "CAN", which can be polled by another master, as it is always working in _slave-mode_.
 
-This second Bus is intended for Inverters who read BMS data from it via RS485 (and not CAN), in which case the Inverter itself acts as a master on this bus.
+This second RS485-bus is intended for Inverters who read BMS data from it via RS485 (and not CAN), in which case the Inverter itself acts as a master on this bus.
 
 So when connecting the Master in multi-pack configurations via CAN to the Inverter (you must only connect the CAN-part to the inverter, the RS485-part of the port can then be used by any RS485 device to read the Master's and Slave's data at Baud 9600 (provided they are all chained together as [described further down below](https://github.com/Privatecoder/seplos-mqtt-remote-rs485#connecting-the-serial-device-to-one-or-multiple-battery-packs)).
 
