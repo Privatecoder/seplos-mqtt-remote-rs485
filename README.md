@@ -32,7 +32,7 @@ For a **single pack** (only):
 For all configurations:
 
 2. (Remote) RS485 device ([Waveshare 2-CH RS485 to ETH has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
-3. Something that can run a Docker-Container
+3. Something that can run a Docker-Container (when using the container-image) or Python (when just using the script)
 4. Seplos BMS [V2 / V16 has been tested](https://www.seplos.com/bms-2.0.html)
 5. An MQTT broker
 
