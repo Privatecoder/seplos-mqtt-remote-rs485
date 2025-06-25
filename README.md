@@ -11,7 +11,7 @@ However there is a **second** RS485-bus on the BMS, namely on the port labeled "
 
 This second RS485-bus is intended for Inverters who read BMS data from it via RS485 (and not CAN), in which case the Inverter itself acts as a master on this bus.
 
-So when connecting the Master in multi-pack configurations via CAN to the Inverter (you must only connect the CAN-part to the inverter, the RS485-part of the port can then be used by any RS485 device to read the Master's and Slave's data at Baud 9600 (provided they are all chained together as [described further down below](https://github.com/Privatecoder/seplos-mqtt-remote-rs485#connecting-the-serial-device-to-one-or-multiple-battery-packs)).
+So when connecting the Master in multi-pack configurations via CAN to the Inverter (**you must only connect the CAN-part to the inverter**), the RS485-part of the port can then be used by any RS485 device to read the Master's and Slave's data at Baud 9600 (provided they are all chained together as [described further down below](https://github.com/Privatecoder/seplos-mqtt-remote-rs485#connecting-the-serial-device-to-one-or-multiple-battery-packs)).
 
 (This and the way of reading multiple packs without multi-master-collisions has been discussed [here](https://github.com/syssi/esphome-seplos-bms/issues/116) and made me change this script and my cabling and I strongly suggest to update/upgrade existing setups! Thanks to @Wiki591 for his findings and @syssi for his great work [esphome-seplos-bms](https://github.com/syssi/esphome-seplos-bms/))
 
