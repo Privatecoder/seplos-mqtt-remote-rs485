@@ -10,7 +10,7 @@ Home Assistant Sensor auto discovery can be enabled (optional)
 
 1. A remote or local RS485 device ([the Waveshare 2-CH RS485 to ETH gateway has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
 2. A self-crimped cable or a (modified) splitter ([this one works for me, when cutting the RS485 part from one of the two outlets and the CAN part from the other one) to split the CAN port into CAN+RS485](https://www.amazon.de/gp/product/B00D3KIQXC)
-3. One or multiple Seplos BMS [V2 / V16](https://www.seplos.com/bms-2.0.html)
+3. One or multiple [Seplos BMS V2 / V16](https://www.seplos.com/bms-2.0.html)
 4. A configured and running MQTT broker
 
 ## Wiring the RS485 device to one or multiple battery packs

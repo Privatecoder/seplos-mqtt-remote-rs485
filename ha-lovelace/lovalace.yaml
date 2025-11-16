@@ -408,7 +408,7 @@ cards:
       columns: 6
       rows: 1
   - type: custom:mushroom-template-card
-    primary: Max Cell Temp.
+    primary: Highest Cell Temp.
     secondary: |
       {% set temps = [
         states('sensor.seplos_bms_pack_0_cell_temperature_1') | float(0),
@@ -472,6 +472,65 @@ cards:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
+            name: Delta Cell Temp.
+            size: 15%
+            entity: sensor.seplos_bms_pack_0_delta_cell_temperature
+            show_icon: true
+            show_name: true
+            show_state: true
+            styles:
+              icon:
+                - color: |
+                    [[[
+                      const temp = entity.state;
+                      if (temp > 3) return 'red';
+                      if (temp > 2) return 'orange';
+                      if (temp > 1) return 'yellow';
+                      return 'lightgreen';
+                    ]]]
+              card:
+                - font-size: 12px
+          - type: custom:button-card
+            name: Ambient Temp.
+            size: 15%
+            entity: sensor.seplos_bms_pack_0_ambient_temperature
+            show_icon: true
+            show_name: true
+            show_state: true
+            styles:
+              icon:
+                - color: |
+                    [[[
+                      const temp = entity.state;
+                      if (temp < 5 || temp > 40) return 'red';
+                      if (temp < 9 || temp > 30) return 'orange';
+                      if (temp < 13 || temp > 20) return 'yellow';
+                      return 'lightgreen';
+                    ]]]
+              card:
+                - font-size: 12px
+          - type: custom:button-card
+            name: Comp. Temp
+            size: 15%
+            entity: sensor.seplos_bms_pack_0_components_temperature
+            show_icon: true
+            show_name: true
+            show_state: true
+            styles:
+              icon:
+                - color: |
+                    [[[
+                      const temp = entity.state;
+                      if (temp < 5 || temp > 40) return 'red';
+                      if (temp < 9 || temp > 30) return 'orange';
+                      if (temp < 13 || temp > 20) return 'yellow';
+                      return 'lightgreen';
+                    ]]]
+              card:
+                - font-size: 12px
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
             name: Cell Temp. 1
             size: 15%
             entity: sensor.seplos_bms_pack_0_cell_temperature_1
@@ -532,46 +591,6 @@ cards:
             name: Cell Temp. 4
             size: 15%
             entity: sensor.seplos_bms_pack_0_cell_temperature_4
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const temp = entity.state;
-                      if (temp < 5 || temp > 40) return 'red';
-                      if (temp < 9 || temp > 30) return 'orange';
-                      if (temp < 13 || temp > 20) return 'yellow';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            name: Ambient Temp.
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_ambient_temperature
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const temp = entity.state;
-                      if (temp < 5 || temp > 40) return 'red';
-                      if (temp < 9 || temp > 30) return 'orange';
-                      if (temp < 13 || temp > 20) return 'yellow';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: Comp. Temp
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_components_temperature
             show_icon: true
             show_name: true
             show_state: true
@@ -838,3 +857,18 @@ cards:
                     ]]]
               card:
                 - font-size: 12px
+      - type: horizontal-stack
+        cards:
+          - type: custom:button-card
+            name: |
+              [[[
+                const activeBalancingCells = Array.from({length: 16}, (_, i) => i + 1)
+                  .filter(i => states[`binary_sensor.seplos_bms_pack_0_balancer_cell_${i}`].state == "ON");
+                return activeBalancingCells.length > 0
+                  ? `Passive Balancer active for Cells ${activeBalancingCells.join(', ')}`
+                  : "Passive Balancer inactive";
+              ]]]
+            styles:
+              card:
+                - font-size: 12px
+                - height: 40px
