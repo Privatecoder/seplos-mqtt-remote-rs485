@@ -89,9 +89,9 @@ Available ENV-vars are:
 - `MQTT_USERNAME` (MQTT Broker Username, default: `seplos-mqtt`)
 - `MQTT_PASSWORD` (MQTT Broker Password, default: `my-secret-password`)
 - `MQTT_TOPIC` (MQTT Broker Topic to publish to, default: `seplos`)
-- `MQTT_UPDATE_INTERVAL` (Interval, in seconds, to update stats in MQTT after each circular reading is finished, 0 => continuous reading, default: `0`)
+- `MQTT_UPDATE_INTERVAL` (Time to wait (in seconds) in between each circular reading to update stats in MQTT, `0` => continuous reading, default: `0`)
 
-- `ENABLE_HA_DISCOVERY_CONFIG` (Enable Home Assistant config creation via MQTT for auto-discovery, default: `true`)
+- `ENABLE_HA_DISCOVERY_CONFIG` (Enable Home Assistant sensor config creation via MQTT for auto-discovery, default: `true`)
 - `HA_DISCOVERY_PREFIX` (Home Assistant Topic to publish the config creations to, default: `homeassistant`)
 
 - `NUMBER_OF_PACKS` (Fetch data of n packs, default: `1`)
