@@ -51,6 +51,7 @@ docker run -itd \
   -e MQTT_TOPIC=seplos \
   -e MQTT_UPDATE_INTERVAL=1 \
   -e ENABLE_HA_DISCOVERY_CONFIG=true \
+  -e INVERT_HA_DIS_CHARGE_MEASUREMENTS=true \
   -e HA_DISCOVERY_PREFIX=homeassistant \
   -e LOGGING_LEVEL=info \
   --name seplos-mqtt-rs485 \
