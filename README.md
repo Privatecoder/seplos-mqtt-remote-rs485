@@ -73,6 +73,7 @@ docker run -itd \
   -e MQTT_TOPIC=seplos \
   -e MQTT_UPDATE_INTERVAL=1 \
   -e ENABLE_HA_DISCOVERY_CONFIG=true \
+  -e INVERT_HA_DIS_CHARGE_MEASUREMENTS=true \
   -e HA_DISCOVERY_PREFIX=homeassistant \
   -e LOGGING_LEVEL=info \
   --name seplos-mqtt-rs485 \
@@ -92,6 +93,7 @@ Available ENV-vars are:
 - `MQTT_UPDATE_INTERVAL` (Time to wait (in seconds) in between each circular reading to update stats in MQTT, `0` => continuous reading, default: `0`)
 
 - `ENABLE_HA_DISCOVERY_CONFIG` (Enable Home Assistant sensor config creation via MQTT for auto-discovery, default: `true`)
+- `INVERT_HA_DIS_CHARGE_MEASUREMENTS` (Inverts the values of the charging and discharging sensors in Home Assistant, default: `false`)
 - `HA_DISCOVERY_PREFIX` (Home Assistant Topic to publish the config creations to, default: `homeassistant`)
 
 - `NUMBER_OF_PACKS` (Fetch data of n packs, default: `1`)
@@ -128,5 +130,6 @@ Not defining those will just start the script, however `SERIAL_INTERFACE` must m
 
 - The provided `ha-lovelace/lovelace.yaml` is using custom add-ons like `mushroom-template-card`, `entity-progress-card`, `expander-card`, `button-card`, `bar-card`, `card_mod` and `browser_mod` (can be installed via HACS) and allows for a first start (value-based colors are based on EVE LF280K datasheets and measurements and personal preferences).
 
-<img alt="lovelace sample collapsed" src="https://github.com/user-attachments/assets/6e4f0cc6-8f22-4745-8e78-af51b41a3394" width="400">
-<img alt="lovelace sample expanded" src="https://github.com/user-attachments/assets/fc7912e4-dd2b-4003-abad-a29574231207" width="400">
+<img width="400" alt="lovelace sample multiple packs card" src="https://github.com/user-attachments/assets/814f7540-57a1-40db-9ac1-5d1a3e9a19a3" />
+<img width="400" alt="lovelace sample pack info" src="https://github.com/user-attachments/assets/829acb11-d50c-43a0-b818-96fbe28907aa" />
+<img width="400" alt="lovelace sample pack errors and warnings" src="https://github.com/user-attachments/assets/419ed442-98ec-4985-98a6-6b4f5b4b9841" />
