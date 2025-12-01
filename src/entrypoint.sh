@@ -36,6 +36,7 @@ require_cmd() {
 : "${LOGGING_LEVEL:=info}"
 : "${MQTT_UPDATE_INTERVAL:=1}"        # seconds
 : "${ENABLE_HA_DISCOVERY_CONFIG:=false}"
+: "${INVERT_HA_DIS_CHARGE_MEASUREMENTS:=false}"
 : "${HA_DISCOVERY_PREFIX:=homeassistant}"
 
 ###############################################################################
@@ -110,6 +111,7 @@ if [[ "${LOGGING_LEVEL}" == "debug" ]]; then
   log "  MQTT_UPDATE_INTERVAL=${MQTT_UPDATE_INTERVAL}"
   log "  ENABLE_HA_DISCOVERY_CONFIG=${ENABLE_HA_DISCOVERY_CONFIG}"
   log "  HA_DISCOVERY_PREFIX=${HA_DISCOVERY_PREFIX}"
+  log "  INVERT_HA_DIS_CHARGE_MEASUREMENTS=${INVERT_HA_DIS_CHARGE_MEASUREMENTS}"
   log "  LOGGING_LEVEL=${LOGGING_LEVEL}"
 fi
 

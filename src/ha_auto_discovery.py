@@ -136,6 +136,7 @@ TELEMETRY_SENSOR_TEMPLATES: List[Dict[str, Any]] = [
     {
         "name": "Dis-/Charge Current",
         "value_template_key": "dis_charge_current",
+        "invert_value": True,
         "device_class": "current",
         "state_class": "measurement",
         "unit_of_measurement": "A",
@@ -145,6 +146,7 @@ TELEMETRY_SENSOR_TEMPLATES: List[Dict[str, Any]] = [
     {
         "name": "Dis-/Charge Power",
         "value_template_key": "dis_charge_power",
+        "invert_value": True,
         "device_class": "power",
         "state_class": "measurement",
         "unit_of_measurement": "W",
@@ -592,17 +594,19 @@ TELESIGNALIZATION_BINARY_SENSOR_TEMPLATES: List[Dict[str, Any]] = [
 class AutoDiscoveryConfig:
     """Handle Home Assistant auto-discovery configuration creation and publishing."""
 
-    def __init__(self, mqtt_topic: str, discovery_prefix: str, mqtt_client) -> None:
+    def __init__(self, mqtt_topic: str, discovery_prefix: str, invert_ha_dis_charge_measurements: bool, mqtt_client) -> None:
         """
         Initialize AutoDiscoveryConfig.
 
         Args:
             mqtt_topic: MQTT topic where sensor data gets published
             discovery_prefix: Discovery prefix for Home Assistant (defaults to 'homeassistant')
+            invert_ha_dis_charge_measurements: Inverts dis-/charge values for power and current
             mqtt_client: MQTT client instance for publishing
         """
         self.mqtt_topic = mqtt_topic
         self.discovery_prefix = discovery_prefix
+        self.invert_ha_dis_charge_measurements = invert_ha_dis_charge_measurements
         self.mqtt_client = mqtt_client
         self._device_info_published = set()
 
@@ -721,6 +725,7 @@ class AutoDiscoveryConfig:
         name: str,
         value_template_group: str,
         value_template_key: str,
+        invert_value: Optional[bool] = False,
         unit_of_measurement: Optional[str] = None,
         suggested_display_precision: Optional[int] = None,
         icon: Optional[str] = None,
@@ -731,10 +736,13 @@ class AutoDiscoveryConfig:
         """
         Build sensor configuration dictionary.
         """
+
+        value_template_expr = f"value_json.{value_template_group}.normal.{value_template_key}"
+            
         sensor = self._build_base_entity(
             pack_no=pack_no,
             name=name,
-            value_template=f"{{{{ value_json.{value_template_group}.normal.{value_template_key} }}}}",
+            value_template=f"{{{{ ({value_template_expr} | float) * -1 }}}}" if invert_value and self.invert_ha_dis_charge_measurements else f"{{{{ {value_template_expr} }}}}",
             uniq_obj_id=f"seplos_bms_pack_{pack_no}_{value_template_key}",
         )
 
@@ -836,6 +844,7 @@ class AutoDiscoveryConfig:
         value_template_group: str,
         name: str,
         value_template_key: str,
+        invert_value: Optional[bool] = False,
         unit_of_measurement: Optional[str] = None,
         suggested_display_precision: Optional[int] = None,
         icon: Optional[str] = None,
@@ -854,6 +863,7 @@ class AutoDiscoveryConfig:
             value_template_group=value_template_group,
             name=name,
             value_template_key=value_template_key,
+            invert_value=invert_value,
             unit_of_measurement=unit_of_measurement,
             suggested_display_precision=suggested_display_precision,
             icon=icon,

@@ -1,80 +1,30 @@
 type: grid
 cards:
   - type: heading
-    heading: Seplos Pack 0
+    icon: mdi:server
+    heading: Stack 1
     heading_style: title
   - type: custom:mushroom-template-card
     features_position: bottom
-    primary: BMS Status
-    secondary: |
-      {% set ns = namespace(alarm=0, failure=0) %}
-      {% set sensors = [
-        'sensor.seplos_bms_pack_0_ambient_temperature_alarm',
-        'sensor.seplos_bms_pack_0_component_temperature_alarm',
-        'sensor.seplos_bms_pack_0_dis_charging_current_alarm',
-        'sensor.seplos_bms_pack_0_pack_voltage_alarm',
-        'sensor.seplos_bms_pack_0_cell_overvoltage',
-        'sensor.seplos_bms_pack_0_cell_voltage_low',
-        'sensor.seplos_bms_pack_0_pack_overvoltage',
-        'sensor.seplos_bms_pack_0_pack_voltage_low',
-        'sensor.seplos_bms_pack_0_charging_temperature_high',
-        'sensor.seplos_bms_pack_0_charging_temperature_low',
-        'sensor.seplos_bms_pack_0_discharging_temperature_high',
-        'sensor.seplos_bms_pack_0_discharging_temperature_low',
-        'sensor.seplos_bms_pack_0_ambient_temperature_high',
-        'sensor.seplos_bms_pack_0_ambient_temperature_low',
-        'sensor.seplos_bms_pack_0_component_temperature_high',
-        'sensor.seplos_bms_pack_0_charging_overcurrent',
-        'sensor.seplos_bms_pack_0_discharging_overcurrent',
-        'sensor.seplos_bms_pack_0_transient_overcurrent',
-        'sensor.seplos_bms_pack_0_output_short_circuit',
-        'sensor.seplos_bms_pack_0_soc_low',
-        'binary_sensor.seplos_bms_pack_0_low_temperature_heating',
-        'binary_sensor.seplos_bms_pack_0_charging_high_voltage_protection',
-        'binary_sensor.seplos_bms_pack_0_intermittent_power_supplement',
-        'binary_sensor.seplos_bms_pack_0_cell_low_voltage_forbidden_charging',
-        'binary_sensor.seplos_bms_pack_0_output_reverse_polarity_protection',
-        'binary_sensor.seplos_bms_pack_0_auto_charging_wait',
-        'binary_sensor.seplos_bms_pack_0_manual_charging_wait',
-        'binary_sensor.seplos_bms_pack_0_no_calibration_of_voltage',
-        'binary_sensor.seplos_bms_pack_0_no_calibration_of_current',
-        'binary_sensor.seplos_bms_pack_0_no_calibration_of_null_point',
-        'binary_sensor.seplos_bms_pack_0_voltage_sensing_failure',
-        'binary_sensor.seplos_bms_pack_0_temperature_sensing_failure',
-        'binary_sensor.seplos_bms_pack_0_current_sensing_failure',
-        'binary_sensor.seplos_bms_pack_0_power_switch_failure',
-        'binary_sensor.seplos_bms_pack_0_cell_voltage_difference_sensing_failure',
-        'binary_sensor.seplos_bms_pack_0_charging_switch_failure',
-        'binary_sensor.seplos_bms_pack_0_discharging_switch_failure',
-        'binary_sensor.seplos_bms_pack_0_current_limit_switch_failure',
-        'binary_sensor.seplos_bms_pack_0_output_connection_failure',
-        'binary_sensor.seplos_bms_pack_0_eep_storage_failure',
-        'binary_sensor.seplos_bms_pack_0_rtc_clock_failure'
-      ] %}
-      {% for i in range(1, 17) %}
-        {% if i <= 4 %}
-          {% set sensors = sensors + ['sensor.seplos_bms_pack_0_cell_temperature_alarm_' ~ i] %}
-        {% endif %}
-        {% set sensors = sensors + ['sensor.seplos_bms_pack_0_cell_voltage_alarm_' ~ i] %}
-        {% set sensors = sensors + ['binary_sensor.seplos_bms_pack_0_disconnection_cell_' ~ i] %}
-      {% endfor %}
+    primary: Pack 00
+    multiline_secondary: true
+    secondary: >
+      {{ states('sensor.seplos_bms_pack_0_system_status') }}: {{
+      states('sensor.seplos_bms_pack_0_dis_charge_power') | float | round(2) }}
+      W
 
-      {% for sensor in sensors %}
-        {% if states(sensor) not in ['OK', 'off'] %}
-          {% if 'failure' in sensor %}
-            {% set ns.failure = ns.failure + 1 %}
-          {% else %}
-            {% set ns.alarm = ns.alarm + 1 %}
-          {% endif %}
-        {% endif %}
-      {% endfor %}
+      Δ Cell {{ states('sensor.seplos_bms_pack_0_delta_cell_voltage') }} V / {{
+      states('sensor.seplos_bms_pack_0_delta_cell_temperature') }} °C
 
-      {% if ns.alarm == 0 and ns.failure == 0 %}
-        ✓ Normal
-      {% else %}
-        {% if ns.failure > 0 %}🔴 {{ ns.failure }}{% endif %}
-        {% if ns.alarm > 0 %}🟠 {{ ns.alarm }}{% endif %}
-      {% endif %}
+      {% set temps = [
+        states('sensor.seplos_bms_pack_0_cell_temperature_1') | float,
+        states('sensor.seplos_bms_pack_0_cell_temperature_2') | float,
+        states('sensor.seplos_bms_pack_0_cell_temperature_3') | float,
+        states('sensor.seplos_bms_pack_0_cell_temperature_4') | float
+      ] %} {%- set tmax = temps | max -%} Highest Cell: {{ tmax | round(1) }} °C
+
+      BMS: {{ states('sensor.seplos_bms_pack_0_components_temperature') }} °C /
+      Ambient: {{ states('sensor.seplos_bms_pack_0_ambient_temperature') }} °C
     icon: |
       {% set ns = namespace(alarm=0, failure=0) %}
       {% set sensors = [
@@ -211,18 +161,18 @@ cards:
       {% endfor %}
 
       {% if ns.has_failure %}
-        red
-      {% elif ns.has_alarm %}
         orange
+      {% elif ns.has_alarm %}
+        yellow
       {% else %}
         green
       {% endif %}
-    tap_action:
+    icon_tap_action:
       action: fire-dom-event
       browser_mod:
         service: browser_mod.popup
         data:
-          title: Pack 0 Status
+          title: Pack 00 – Status
           content:
             type: markdown
             content: |
@@ -242,13 +192,13 @@ cards:
               ] %}
               {% set has_failure = namespace(value=false) %}
               {% for sensor in failures %}
-                {% if states(sensor) not in ['OK', 'off'] %}
-                  {% set has_failure.value = true %}
-                  {{ state_attr(sensor, 'friendly_name')|replace('Seplos BMS Pack 0 ', '') }}: {{ states(sensor) }}
+                {% if not is_state(sensor, 'off') %}
+                  {%- set has_failure.value = true -%}
+                  - {{ state_attr(sensor, 'friendly_name')|replace('Seplos BMS Pack-0 (Master) ', '') }}: **{{ states(sensor) }}**
                 {% endif %}
               {% endfor %}
               {% if not has_failure.value %}
-              *No active failure*
+              *No active failures*
               {% endif %}
 
               ## 🟠 Alarms
@@ -287,8 +237,8 @@ cards:
               {% set has_alarm = namespace(value=false) %}
               {% for sensor in alarms %}
                 {% if states(sensor) not in ['OK', 'off'] %}
-                  {% set has_alarm.value = true %}
-                  {{ state_attr(sensor, 'friendly_name')|replace('Seplos BMS Pack 0 ', '') }}: {{ states(sensor) }}
+                  {%- set has_alarm.value = true -%}
+                  - {{ state_attr(sensor, 'friendly_name')|replace('Seplos BMS Pack-0 (Master) ', '') }}: **{{ states(sensor) }}**
                 {% endif %}
               {% endfor %}
               {% if not has_alarm.value %}
@@ -300,9 +250,9 @@ cards:
               {% set has_voltage_warning = namespace(value=false) %}
               {% for i in range(1, 17) %}
                 {% set sensor = 'sensor.seplos_bms_pack_0_cell_voltage_alarm_' ~ i %}
-                {% if states(sensor) != 'OK' %}
-                  {% set has_voltage_warning.value = true %}
-                  - **Zelle {{ i }}**: {{ states(sensor) }}
+                {% if not is_state(sensor, 'OK') %}
+                  {%- set has_voltage_warning.value = true -%}
+                  - Cell {{ i }}: **{{ states(sensor) }}**
                 {% endif %}
               {% endfor %}
               {% if not has_voltage_warning.value %}
@@ -313,9 +263,9 @@ cards:
               {% set has_temp_warning = namespace(value=false) %}
               {% for i in range(1, 5) %}
                 {% set sensor = 'sensor.seplos_bms_pack_0_cell_temperature_alarm_' ~ i %}
-                {% if states(sensor) != 'OK' %}
-                  {% set has_temp_warning.value = true %}
-                  - **Temperatursensor {{ i }}**: {{ states(sensor) }}
+                {% if not is_state(sensor, 'OK') %}
+                  {%- set has_temp_warning.value = true -%}
+                  - Temperature Sensor {{ i }}: **{{ states(sensor) }}**
                 {% endif %}
               {% endfor %}
               {% if not has_temp_warning.value %}
@@ -326,9 +276,9 @@ cards:
               {% set has_disconnection = namespace(value=false) %}
               {% for i in range(1, 17) %}
                 {% set sensor = 'binary_sensor.seplos_bms_pack_0_disconnection_cell_' ~ i %}
-                {% if states(sensor) != 'on' %}
-                  {% set has_disconnection.value = true %}
-                  - **Zelle {{ i }}**: {{ states(sensor) }}
+                {% if not is_state(sensor, 'on') %}
+                  {%- set has_disconnection.value = true -%}
+                  - Cell {{ i }}: **{{ 'disconnected' if is_state(sensor, 'off') else states(sensor) }}**
                 {% endif %}
               {% endfor %}
               {% if not has_disconnection.value %}
@@ -337,538 +287,3273 @@ cards:
 
               ---
               *Last update: {{ now().strftime('%H:%M:%S') }}*
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Pack 00 – Info
+          content:
+            type: vertical-stack
+            cards:
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Port
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_0_port_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const portVol = entity.state;
+                              const minPackVol = states['sensor.seplos_bms_pack_0_min_pack_voltage'].state;
+                              const maxPackVol = states['sensor.seplos_bms_pack_0_max_pack_voltage'].state;
+                              if (portVol < minPackVol + 8) return 'red';
+                              if (portVol > maxPackVol - 3.2) return 'red';
+                              if (portVol < minPackVol + 10.4) return 'orange';
+                              if (portVol > maxPackVol - 4.6) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Pack
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_0_total_pack_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const totalPackVol = entity.state;
+                              const minPackVol = states['sensor.seplos_bms_pack_0_min_pack_voltage'].state;
+                              const maxPackVol = states['sensor.seplos_bms_pack_0_max_pack_voltage'].state;
+                              if (totalPackVol < minPackVol + 8) return 'red';
+                              if (totalPackVol > maxPackVol - 3.2) return 'red';
+                              if (totalPackVol < minPackVol + 10.4) return 'orange';
+                              if (totalPackVol > maxPackVol - 4.6) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Cycles
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_0_charging_cycles
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const cycles = entity.state;
+                              if (cycles > 5000) return 'red';
+                              if (cycles > 3000) return 'orange';
+                              if (cycles > 1000) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: SoH
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_0_state_of_health
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const soh = entity.state;
+                              if (soh > 99) return 'lightgreen';
+                              if (soh > 95) return 'yellow';
+                              if (soh > 90) return 'orange';
+                              return 'red';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Average Cell
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_0_average_cell_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const cellVol = entity.state;
+                              const minCellVol = states['sensor.seplos_bms_pack_0_min_cell_voltage'].state;
+                              const maxCellVol = states['sensor.seplos_bms_pack_0_max_cell_voltage'].state;
+                              if (cellVol < minCellVol + 0.5) return 'red';
+                              if (cellVol > maxCellVol - 0.2) return 'red';
+                              if (cellVol < minCellVol + 0.65) return 'orange';
+                              if (cellVol > maxCellVol - 0.3) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Ambient Temp.
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_0_ambient_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 9 || temp > 30) return 'orange';
+                              if (temp < 13 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: BMS Temp.
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_0_components_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 9 || temp > 30) return 'orange';
+                              if (temp < 13 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Delta Cell
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_0_delta_cell_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp > 3) return 'red';
+                              if (temp > 2) return 'orange';
+                              if (temp > 1) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: |
+                      [[[
+                        const activeBalancingCells = Array.from({length: 16}, (_, i) => i + 1)
+                          .filter(i => states[`binary_sensor.seplos_bms_pack_0_balancer_cell_${i}`].state == "on");
+                        return activeBalancingCells.length > 0
+                          ? `Passive Balancer active for Cells ${activeBalancingCells.join(', ')}`
+                          : "Passive Balancer inactive";
+                      ]]]
+                    styles:
+                      name:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 40px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Temp. Cell 2
+                    entity: sensor.seplos_bms_pack_0_cell_temperature_1
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+                  - type: custom:button-card
+                    name: Temp. Cell 7
+                    entity: sensor.seplos_bms_pack_0_cell_temperature_2
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:bar-card
+                    direction: up
+                    columns: 8
+                    decimal: 3
+                    max: 3.65
+                    min: 2.5
+                    height: 70px
+                    entity_config: true
+                    severity:
+                      - color: red
+                        from: 3.45
+                        to: 3.65
+                      - color: orange
+                        from: 3.363
+                        to: 3.45
+                      - color: lightgreen
+                        from: 3.2
+                        to: 3.363
+                      - color: orange
+                        from: 3.15
+                        to: 3.2
+                      - color: red
+                        from: 2.5
+                        to: 3.15
+                    positions:
+                      icon: "off"
+                      indicator: inside
+                      name: outside
+                    card_mod:
+                      style: >-
+                        :host {
+                          --bar-card-border-radius: 4px;
+                        } ha-card {
+                          margin: 0 !important;
+                          padding: 0 !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                        } ha-card > #states {
+                          padding: 0 !important;
+                        }
+
+                        {% set high =
+                        states('sensor.seplos_bms_pack_0_highest_cell') | int %}
+
+                        {% set low  =
+                        states('sensor.seplos_bms_pack_0_lowest_cell') | int %}
+
+                        {% if 1 <= high <= 8 %}
+
+                        bar-card-card:nth-child({{ high }}) {
+                          box-shadow: 0px 0px 3px 1px red !important;
+                          border: 1px solid red !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        {% if 1 <= low <= 8 %}
+
+                        bar-card-card:nth-child({{ low }}) {
+                          box-shadow: 0px 0px 3px 1px blue !important;
+                          border: 1px solid blue !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        bar-card-value {
+                          margin-right: auto;
+                          margin-left: auto;
+                          margin-bottom: 35px;
+                          padding: 1px;
+                          font-size: 9px;
+                          font-weight: 500;
+                          line-height: 9px;
+                          color: black;
+                          background-color: white; 
+                        }
+
+                        bar-card-name {
+                          margin: 0;
+                          font-size: 8px;
+                          font-weight: normal;
+                        }
+                    entities:
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_1
+                        name: Cell 1
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_2
+                        name: Cell 2
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_3
+                        name: Cell 3
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_4
+                        name: Cell 4
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_5
+                        name: Cell 5
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_6
+                        name: Cell 6
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_7
+                        name: Cell 7
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_8
+                        name: Cell 8
+              - type: horizontal-stack
+                cards:
+                  - type: custom:bar-card
+                    direction: up
+                    columns: 8
+                    decimal: 3
+                    max: 3.65
+                    min: 2.5
+                    height: 70px
+                    entity_config: true
+                    severity:
+                      - color: red
+                        from: 3.45
+                        to: 3.65
+                      - color: orange
+                        from: 3.363
+                        to: 3.45
+                      - color: lightgreen
+                        from: 3.2
+                        to: 3.363
+                      - color: orange
+                        from: 3.15
+                        to: 3.2
+                      - color: red
+                        from: 2.5
+                        to: 3.15
+                    positions:
+                      icon: "off"
+                      indicator: inside
+                      name: outside
+                    card_mod:
+                      style: >-
+                        :host {
+                          --bar-card-border-radius: 4px;
+                        }
+
+                        ha-card {
+                          margin: 0 !important;
+                          padding: 0 !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                        }
+
+                        ha-card > #states {
+                          padding: 0 !important;
+                        }
+
+                        {% set high = 17 -
+                        (states('sensor.seplos_bms_pack_0_highest_cell') | int)
+                        %}
+
+                        {% set low  = 17 -
+                        (states('sensor.seplos_bms_pack_0_lowest_cell') | int)
+                        %}
+
+                        {% if 1 <= high <= 8 %}
+
+                        bar-card-card:nth-child({{ high }}) {
+                          box-shadow: 0px 0px 3px 1px red !important;
+                          border: 1px solid red !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        {% if 1 <= low <= 8 %}
+
+                        bar-card-card:nth-child({{ low }}) {
+                          box-shadow: 0px 0px 3px 1px blue !important;
+                          border: 1px solid blue !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        bar-card-value {
+                          margin-right: auto;
+                          margin-left: auto;
+                          margin-bottom: 35px;
+                          padding: 1px;
+                          font-size: 9px;
+                          font-weight: 500;
+                          color: black;
+                          background-color: white; 
+                        }
+
+                        bar-card-name {
+                          margin: 0;
+                          font-size: 8px;
+                          font-weight: normal;
+                        }
+                    entities:
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_16
+                        name: Cell 16
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_15
+                        name: Cell 15
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_14
+                        name: Cell 14
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_13
+                        name: Cell 13
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_12
+                        name: Cell 12
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_11
+                        name: Cell 11
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_10
+                        name: Cell 10
+                      - entity: sensor.seplos_bms_pack_0_voltage_cell_9
+                        name: Cell 9
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Temp. Cell 15
+                    entity: sensor.seplos_bms_pack_0_cell_temperature_3
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+                  - type: custom:button-card
+                    name: Temp. Cell 10
+                    entity: sensor.seplos_bms_pack_0_cell_temperature_4
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
     grid_options:
-      columns: 6
-      rows: 1
+      columns: 9
+      rows: 2
   - type: custom:entity-progress-card
     entity: sensor.seplos_bms_pack_0_state_of_charge
     name: State of Charge
-    custom_theme:
-      - min: 0
-        max: 35
-        color: red
-      - min: 35
-        max: 65
-        color: orange
-      - min: 65
-        max: 100
-        color: green
+    theme: optimal_when_high
+    bar_size: small
+    layout: vertical
+    hide:
+      - name
+    icon: mdi:battery-charging
     grid_options:
-      columns: 6
-      rows: 1
+      columns: 3
+      rows: 2
   - type: custom:mushroom-template-card
-    entity: sensor.seplos_bms_pack_0_dis_charge_power
-    primary: |
-      {{ states('sensor.seplos_bms_pack_0_system_status') }}
-    secondary: >
-      {{ states('sensor.seplos_bms_pack_0_dis_charge_power') | float(0) |
-      round(2) }} W
-    icon: >
-      {% if is_state('sensor.seplos_bms_pack_0_system_status', 'Standby') %}
-        mdi:battery-off-outline
-      {% elif is_state('sensor.seplos_bms_pack_0_system_status', 'Off') %}
-        mdi:battery-off-outline
-      {% elif is_state('sensor.seplos_bms_pack_0_system_status', 'Charging') %}
-        mdi:battery-arrow-up-outline
-      {% elif is_state('sensor.seplos_bms_pack_0_system_status', 'Floating
-      Charge') %}
-        mdi:battery-arrow-up-outline
-      {% elif is_state('sensor.seplos_bms_pack_0_system_status', 'Discharging')
-      %}
-        mdi:battery-arrow-down-outline
-      {% else %}
-        mdi:alert
-      {% endif %}
-    multiline_secondary: false
-    tap_action:
-      action: more-info
-    color: >
-      {% if is_state('sensor.seplos_bms_pack_0_system_status', 'Standby') %}
-        grey
-      {% elif is_state('sensor.seplos_bms_pack_0_system_status', 'Off') %}
-        grey
-      {% elif is_state('sensor.seplos_bms_pack_0_system_status', 'Charging') %}
-        green
-      {% elif is_state('sensor.seplos_bms_pack_0_system_status', 'Floating
-      Charge') %}
-        green
-      {% elif is_state('sensor.seplos_bms_pack_0_system_status', 'Discharging')
-      %}
-        green
-      {% else %}
-        red
-      {% endif %}
     features_position: bottom
-    card_mod:
-      style: |
-        ha-card {
-          font-size: 12px;
-        }
-    grid_options:
-      columns: 6
-      rows: 1
-  - type: custom:mushroom-template-card
-    primary: Highest Cell Temp.
-    secondary: |
+    primary: Pack 01
+    multiline_secondary: true
+    secondary: >
+      {{ states('sensor.seplos_bms_pack_1_system_status') }}: {{
+      states('sensor.seplos_bms_pack_1_dis_charge_power') | float(0) | round(2)
+      }} W
+
+      Δ Cell {{ states('sensor.seplos_bms_pack_1_delta_cell_voltage') }} V / {{
+      states('sensor.seplos_bms_pack_1_delta_cell_temperature') }} °C
+
       {% set temps = [
-        states('sensor.seplos_bms_pack_0_cell_temperature_1') | float(0),
-        states('sensor.seplos_bms_pack_0_cell_temperature_2') | float(0),
-        states('sensor.seplos_bms_pack_0_cell_temperature_3') | float(0),
-        states('sensor.seplos_bms_pack_0_cell_temperature_4') | float(0)
-      ] %}
-      {% set tmax = temps | max %} {{ tmax | round(1) }} °C
+        states('sensor.seplos_bms_pack_1_cell_temperature_1') | float(0),
+        states('sensor.seplos_bms_pack_1_cell_temperature_2') | float(0),
+        states('sensor.seplos_bms_pack_1_cell_temperature_3') | float(0),
+        states('sensor.seplos_bms_pack_1_cell_temperature_4') | float(0)
+      ] %} {%- set tmax = temps | max -%} Highest Cell: {{ tmax | round(1) }} °C
+
+      BMS: {{ states('sensor.seplos_bms_pack_1_components_temperature') }} °C /
+      Ambient: {{ states('sensor.seplos_bms_pack_1_ambient_temperature') }} °C
     icon: |
-      {% set temps = [
-        states('sensor.seplos_bms_pack_0_cell_temperature_1') | float(0),
-        states('sensor.seplos_bms_pack_0_cell_temperature_2') | float(0),
-        states('sensor.seplos_bms_pack_0_cell_temperature_3') | float(0),
-        states('sensor.seplos_bms_pack_0_cell_temperature_4') | float(0)
+      {% set ns = namespace(alarm=0, failure=0) %}
+      {% set sensors = [
+        'sensor.seplos_bms_pack_1_ambient_temperature_alarm',
+        'sensor.seplos_bms_pack_1_component_temperature_alarm',
+        'sensor.seplos_bms_pack_1_dis_charging_current_alarm',
+        'sensor.seplos_bms_pack_1_pack_voltage_alarm',
+        'sensor.seplos_bms_pack_1_cell_overvoltage',
+        'sensor.seplos_bms_pack_1_cell_voltage_low',
+        'sensor.seplos_bms_pack_1_pack_overvoltage',
+        'sensor.seplos_bms_pack_1_pack_voltage_low',
+        'sensor.seplos_bms_pack_1_charging_temperature_high',
+        'sensor.seplos_bms_pack_1_charging_temperature_low',
+        'sensor.seplos_bms_pack_1_discharging_temperature_high',
+        'sensor.seplos_bms_pack_1_discharging_temperature_low',
+        'sensor.seplos_bms_pack_1_ambient_temperature_high',
+        'sensor.seplos_bms_pack_1_ambient_temperature_low',
+        'sensor.seplos_bms_pack_1_component_temperature_high',
+        'sensor.seplos_bms_pack_1_charging_overcurrent',
+        'sensor.seplos_bms_pack_1_discharging_overcurrent',
+        'sensor.seplos_bms_pack_1_transient_overcurrent',
+        'sensor.seplos_bms_pack_1_output_short_circuit',
+        'sensor.seplos_bms_pack_1_soc_low',
+        'binary_sensor.seplos_bms_pack_1_low_temperature_heating',
+        'binary_sensor.seplos_bms_pack_1_charging_high_voltage_protection',
+        'binary_sensor.seplos_bms_pack_1_intermittent_power_supplement',
+        'binary_sensor.seplos_bms_pack_1_cell_low_voltage_forbidden_charging',
+        'binary_sensor.seplos_bms_pack_1_output_reverse_polarity_protection',
+        'binary_sensor.seplos_bms_pack_1_auto_charging_wait',
+        'binary_sensor.seplos_bms_pack_1_manual_charging_wait',
+        'binary_sensor.seplos_bms_pack_1_no_calibration_of_voltage',
+        'binary_sensor.seplos_bms_pack_1_no_calibration_of_current',
+        'binary_sensor.seplos_bms_pack_1_no_calibration_of_null_point',
+        'binary_sensor.seplos_bms_pack_1_voltage_sensing_failure',
+        'binary_sensor.seplos_bms_pack_1_temperature_sensing_failure',
+        'binary_sensor.seplos_bms_pack_1_current_sensing_failure',
+        'binary_sensor.seplos_bms_pack_1_power_switch_failure',
+        'binary_sensor.seplos_bms_pack_1_cell_voltage_difference_sensing_failure',
+        'binary_sensor.seplos_bms_pack_1_charging_switch_failure',
+        'binary_sensor.seplos_bms_pack_1_discharging_switch_failure',
+        'binary_sensor.seplos_bms_pack_1_current_limit_switch_failure',
+        'binary_sensor.seplos_bms_pack_1_output_connection_failure',
+        'binary_sensor.seplos_bms_pack_1_eep_storage_failure',
+        'binary_sensor.seplos_bms_pack_1_rtc_clock_failure'
       ] %}
-      {% set tmax = temps | max %}
-      {% if tmax < 5 or tmax > 40 %}
+      {% for i in range(1, 17) %}
+        {% if i <= 4 %}
+          {% set sensors = sensors + ['sensor.seplos_bms_pack_1_cell_temperature_alarm_' ~ i] %}
+        {% endif %}
+        {% set sensors = sensors + ['sensor.seplos_bms_pack_1_cell_voltage_alarm_' ~ i] %}
+        {% set sensors = sensors + ['binary_sensor.seplos_bms_pack_1_disconnection_cell_' ~ i] %}
+      {% endfor %}
+
+      {% set ns = namespace(has_failure=false, has_alarm=false) %}
+      {% for sensor in sensors %}
+        {% if states(sensor) not in ['OK', 'off'] %}
+          {% if 'failure' in sensor %}
+            {% set ns.has_failure = true %}
+          {% else %}
+            {% set ns.has_alarm = true %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% if ns.has_failure %}
         mdi:alert-octagon-outline
-      {% elif tmax < 9 or tmax > 30 %}
+      {% elif ns.has_alarm %}
         mdi:alert-circle-outline
-      {% elif tmax < 13 %}
-        mdi:thermometer-low
-      {% elif tmax > 20 %}
-        mdi:thermometer-high
       {% else %}
-        mdi:thermometer
+        mdi:check-circle-outline
       {% endif %}
-    multiline_secondary: false
-    tap_action:
-      action: none
     color: |
-      {% set temps = [
-        states('sensor.seplos_bms_pack_0_cell_temperature_1') | float(0),
-        states('sensor.seplos_bms_pack_0_cell_temperature_2') | float(0),
-        states('sensor.seplos_bms_pack_0_cell_temperature_3') | float(0),
-        states('sensor.seplos_bms_pack_0_cell_temperature_4') | float(0)
+      {% set ns = namespace(alarm=0, failure=0) %}
+      {% set sensors = [
+        'sensor.seplos_bms_pack_1_ambient_temperature_alarm',
+        'sensor.seplos_bms_pack_1_component_temperature_alarm',
+        'sensor.seplos_bms_pack_1_dis_charging_current_alarm',
+        'sensor.seplos_bms_pack_1_pack_voltage_alarm',
+        'sensor.seplos_bms_pack_1_cell_overvoltage',
+        'sensor.seplos_bms_pack_1_cell_voltage_low',
+        'sensor.seplos_bms_pack_1_pack_overvoltage',
+        'sensor.seplos_bms_pack_1_pack_voltage_low',
+        'sensor.seplos_bms_pack_1_charging_temperature_high',
+        'sensor.seplos_bms_pack_1_charging_temperature_low',
+        'sensor.seplos_bms_pack_1_discharging_temperature_high',
+        'sensor.seplos_bms_pack_1_discharging_temperature_low',
+        'sensor.seplos_bms_pack_1_ambient_temperature_high',
+        'sensor.seplos_bms_pack_1_ambient_temperature_low',
+        'sensor.seplos_bms_pack_1_component_temperature_high',
+        'sensor.seplos_bms_pack_1_charging_overcurrent',
+        'sensor.seplos_bms_pack_1_discharging_overcurrent',
+        'sensor.seplos_bms_pack_1_transient_overcurrent',
+        'sensor.seplos_bms_pack_1_output_short_circuit',
+        'sensor.seplos_bms_pack_1_soc_low',
+        'binary_sensor.seplos_bms_pack_1_low_temperature_heating',
+        'binary_sensor.seplos_bms_pack_1_charging_high_voltage_protection',
+        'binary_sensor.seplos_bms_pack_1_intermittent_power_supplement',
+        'binary_sensor.seplos_bms_pack_1_cell_low_voltage_forbidden_charging',
+        'binary_sensor.seplos_bms_pack_1_output_reverse_polarity_protection',
+        'binary_sensor.seplos_bms_pack_1_auto_charging_wait',
+        'binary_sensor.seplos_bms_pack_1_manual_charging_wait',
+        'binary_sensor.seplos_bms_pack_1_no_calibration_of_voltage',
+        'binary_sensor.seplos_bms_pack_1_no_calibration_of_current',
+        'binary_sensor.seplos_bms_pack_1_no_calibration_of_null_point',
+        'binary_sensor.seplos_bms_pack_1_voltage_sensing_failure',
+        'binary_sensor.seplos_bms_pack_1_temperature_sensing_failure',
+        'binary_sensor.seplos_bms_pack_1_current_sensing_failure',
+        'binary_sensor.seplos_bms_pack_1_power_switch_failure',
+        'binary_sensor.seplos_bms_pack_1_cell_voltage_difference_sensing_failure',
+        'binary_sensor.seplos_bms_pack_1_charging_switch_failure',
+        'binary_sensor.seplos_bms_pack_1_discharging_switch_failure',
+        'binary_sensor.seplos_bms_pack_1_current_limit_switch_failure',
+        'binary_sensor.seplos_bms_pack_1_output_connection_failure',
+        'binary_sensor.seplos_bms_pack_1_eep_storage_failure',
+        'binary_sensor.seplos_bms_pack_1_rtc_clock_failure'
       ] %}
-      {% set tmax = temps | max %}
-      {% if tmax < 5 or tmax > 40 %}
-        red
-      {% elif tmax < 9 or tmax > 30 %}
+      {% for i in range(1, 17) %}
+        {% if i <= 4 %}
+          {% set sensors = sensors + ['sensor.seplos_bms_pack_1_cell_temperature_alarm_' ~ i] %}
+        {% endif %}
+        {% set sensors = sensors + ['sensor.seplos_bms_pack_1_cell_voltage_alarm_' ~ i] %}
+        {% set sensors = sensors + ['binary_sensor.seplos_bms_pack_1_disconnection_cell_' ~ i] %}
+      {% endfor %}
+
+      {% set ns = namespace(has_failure=false, has_alarm=false) %}
+      {% for sensor in sensors %}
+        {% if states(sensor) not in ['OK', 'off'] %}
+          {% if 'failure' in sensor %}
+            {% set ns.has_failure = true %}
+          {% else %}
+            {% set ns.has_alarm = true %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% if ns.has_failure %}
         orange
-      {% elif tmax < 13 or tmax > 20 %}
+      {% elif ns.has_alarm %}
         yellow
       {% else %}
         green
       {% endif %}
+    icon_tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Pack 01 – Status
+          content:
+            type: markdown
+            content: |
+              ## 🔴 Failures
+              {% set failures = [
+                'binary_sensor.seplos_bms_pack_1_voltage_sensing_failure',
+                'binary_sensor.seplos_bms_pack_1_temperature_sensing_failure',
+                'binary_sensor.seplos_bms_pack_1_current_sensing_failure',
+                'binary_sensor.seplos_bms_pack_1_power_switch_failure',
+                'binary_sensor.seplos_bms_pack_1_cell_voltage_difference_sensing_failure',
+                'binary_sensor.seplos_bms_pack_1_charging_switch_failure',
+                'binary_sensor.seplos_bms_pack_1_discharging_switch_failure',
+                'binary_sensor.seplos_bms_pack_1_current_limit_switch_failure',
+                'binary_sensor.seplos_bms_pack_1_output_connection_failure',
+                'binary_sensor.seplos_bms_pack_1_eep_storage_failure',
+                'binary_sensor.seplos_bms_pack_1_rtc_clock_failure'
+              ] %}
+              {% set has_failure = namespace(value=false) %}
+              {% for sensor in failures %}
+                {% if not is_state(sensor, 'off') %}
+                  {%- set has_failure.value = true -%}
+                  - {{ state_attr(sensor, 'friendly_name')|replace('Seplos BMS Pack-0 (Master) ', '') }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_failure.value %}
+              *No active failures*
+              {% endif %}
+
+              ## 🟠 Alarms
+              {% set alarms = [
+                'sensor.seplos_bms_pack_1_ambient_temperature_alarm',
+                'sensor.seplos_bms_pack_1_component_temperature_alarm',
+                'sensor.seplos_bms_pack_1_dis_charging_current_alarm',
+                'sensor.seplos_bms_pack_1_pack_voltage_alarm',
+                'sensor.seplos_bms_pack_1_cell_overvoltage',
+                'sensor.seplos_bms_pack_1_cell_voltage_low',
+                'sensor.seplos_bms_pack_1_pack_overvoltage',
+                'sensor.seplos_bms_pack_1_pack_voltage_low',
+                'sensor.seplos_bms_pack_1_charging_temperature_high',
+                'sensor.seplos_bms_pack_1_charging_temperature_low',
+                'sensor.seplos_bms_pack_1_discharging_temperature_high',
+                'sensor.seplos_bms_pack_1_discharging_temperature_low',
+                'sensor.seplos_bms_pack_1_ambient_temperature_high',
+                'sensor.seplos_bms_pack_1_ambient_temperature_low',
+                'sensor.seplos_bms_pack_1_component_temperature_high',
+                'sensor.seplos_bms_pack_1_charging_overcurrent',
+                'sensor.seplos_bms_pack_1_discharging_overcurrent',
+                'sensor.seplos_bms_pack_1_transient_overcurrent',
+                'sensor.seplos_bms_pack_1_output_short_circuit',
+                'sensor.seplos_bms_pack_1_soc_low',
+                'binary_sensor.seplos_bms_pack_1_low_temperature_heating',
+                'binary_sensor.seplos_bms_pack_1_charging_high_voltage_protection',
+                'binary_sensor.seplos_bms_pack_1_intermittent_power_supplement',
+                'binary_sensor.seplos_bms_pack_1_cell_low_voltage_forbidden_charging',
+                'binary_sensor.seplos_bms_pack_1_output_reverse_polarity_protection',
+                'binary_sensor.seplos_bms_pack_1_auto_charging_wait',
+                'binary_sensor.seplos_bms_pack_1_manual_charging_wait',
+                'binary_sensor.seplos_bms_pack_1_no_calibration_of_voltage',
+                'binary_sensor.seplos_bms_pack_1_no_calibration_of_current',
+                'binary_sensor.seplos_bms_pack_1_no_calibration_of_null_point'
+              ] %}
+              {% set has_alarm = namespace(value=false) %}
+              {% for sensor in alarms %}
+                {% if states(sensor) not in ['OK', 'off'] %}
+                  {%- set has_alarm.value = true -%}
+                  - {{ state_attr(sensor, 'friendly_name')|replace('Seplos BMS Pack-0 (Master) ', '') }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_alarm.value %}
+              *No active alarms*
+              {% endif %}
+
+              ## 📊 Cell-Status
+              ### Voltage warnings
+              {% set has_voltage_warning = namespace(value=false) %}
+              {% for i in range(1, 17) %}
+                {% set sensor = 'sensor.seplos_bms_pack_1_cell_voltage_alarm_' ~ i %}
+                {% if not is_state(sensor, 'OK') %}
+                  {%- set has_voltage_warning.value = true -%}
+                  - Cell {{ i }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_voltage_warning.value %}
+              *No active voltage warnings*
+              {% endif %}
+
+              ### Temperature warnings
+              {% set has_temp_warning = namespace(value=false) %}
+              {% for i in range(1, 5) %}
+                {% set sensor = 'sensor.seplos_bms_pack_1_cell_temperature_alarm_' ~ i %}
+                {% if not is_state(sensor, 'OK') %}
+                  {%- set has_temp_warning.value = true -%}
+                  - Temperature Sensor {{ i }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_temp_warning.value %}
+              *No active temperature warnings*
+              {% endif %}
+
+              ### Connection warnings
+              {% set has_disconnection = namespace(value=false) %}
+              {% for i in range(1, 17) %}
+                {% set sensor = 'binary_sensor.seplos_bms_pack_1_disconnection_cell_' ~ i %}
+                {% if not is_state(sensor, 'on') %}
+                  {%- set has_disconnection.value = true -%}
+                  - Cell {{ i }}: **{{ 'disconnected' if is_state(sensor, 'off') else states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_disconnection.value %}
+              *No active connection warnings*
+              {% endif %}
+
+              ---
+              *Last update: {{ now().strftime('%H:%M:%S') }}*
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Pack 01 – Info
+          content:
+            type: vertical-stack
+            cards:
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Port
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_1_port_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const portVol = entity.state;
+                              const minPackVol = states['sensor.seplos_bms_pack_1_min_pack_voltage'].state;
+                              const maxPackVol = states['sensor.seplos_bms_pack_1_max_pack_voltage'].state;
+                              if (portVol < minPackVol + 8) return 'red';
+                              if (portVol > maxPackVol - 3.2) return 'red';
+                              if (portVol < minPackVol + 10.4) return 'orange';
+                              if (portVol > maxPackVol - 4.6) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Pack
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_1_total_pack_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const totalPackVol = entity.state;
+                              const minPackVol = states['sensor.seplos_bms_pack_1_min_pack_voltage'].state;
+                              const maxPackVol = states['sensor.seplos_bms_pack_1_max_pack_voltage'].state;
+                              if (totalPackVol < minPackVol + 8) return 'red';
+                              if (totalPackVol > maxPackVol - 3.2) return 'red';
+                              if (totalPackVol < minPackVol + 10.4) return 'orange';
+                              if (totalPackVol > maxPackVol - 4.6) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Cycles
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_1_charging_cycles
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const cycles = entity.state;
+                              if (cycles > 5000) return 'red';
+                              if (cycles > 3000) return 'orange';
+                              if (cycles > 1000) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: SoH
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_1_state_of_health
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const soh = entity.state;
+                              if (soh > 99) return 'lightgreen';
+                              if (soh > 95) return 'yellow';
+                              if (soh > 90) return 'orange';
+                              return 'red';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Average Cell
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_1_average_cell_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const cellVol = entity.state;
+                              const minCellVol = states['sensor.seplos_bms_pack_1_min_cell_voltage'].state;
+                              const maxCellVol = states['sensor.seplos_bms_pack_1_max_cell_voltage'].state;
+                              if (cellVol < minCellVol + 0.5) return 'red';
+                              if (cellVol > maxCellVol - 0.2) return 'red';
+                              if (cellVol < minCellVol + 0.65) return 'orange';
+                              if (cellVol > maxCellVol - 0.3) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Ambient Temp.
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_1_ambient_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 9 || temp > 30) return 'orange';
+                              if (temp < 13 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: BMS Temp.
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_1_components_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 9 || temp > 30) return 'orange';
+                              if (temp < 13 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Delta Cell
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_1_delta_cell_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp > 3) return 'red';
+                              if (temp > 2) return 'orange';
+                              if (temp > 1) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: |
+                      [[[
+                        const activeBalancingCells = Array.from({length: 16}, (_, i) => i + 1)
+                          .filter(i => states[`binary_sensor.seplos_bms_pack_1_balancer_cell_${i}`].state == "on");
+                        return activeBalancingCells.length > 0
+                          ? `Passive Balancer active for Cells ${activeBalancingCells.join(', ')}`
+                          : "Passive Balancer inactive";
+                      ]]]
+                    styles:
+                      name:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 40px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Temp. Cell 2
+                    entity: sensor.seplos_bms_pack_1_cell_temperature_1
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+                  - type: custom:button-card
+                    name: Temp. Cell 7
+                    entity: sensor.seplos_bms_pack_1_cell_temperature_2
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:bar-card
+                    direction: up
+                    columns: 8
+                    decimal: 3
+                    max: 3.65
+                    min: 2.5
+                    height: 70px
+                    entity_config: true
+                    severity:
+                      - color: red
+                        from: 3.45
+                        to: 3.65
+                      - color: orange
+                        from: 3.363
+                        to: 3.45
+                      - color: lightgreen
+                        from: 3.2
+                        to: 3.363
+                      - color: orange
+                        from: 3.15
+                        to: 3.2
+                      - color: red
+                        from: 2.5
+                        to: 3.15
+                    positions:
+                      icon: "off"
+                      indicator: inside
+                      name: outside
+                    card_mod:
+                      style: >-
+                        :host {
+                          --bar-card-border-radius: 4px;
+                        } ha-card {
+                          margin: 0 !important;
+                          padding: 0 !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                        } ha-card > #states {
+                          padding: 0 !important;
+                        }
+
+                        {% set high =
+                        states('sensor.seplos_bms_pack_1_highest_cell') | int %}
+
+                        {% set low  =
+                        states('sensor.seplos_bms_pack_1_lowest_cell') | int %}
+
+                        {% if 1 <= high <= 8 %}
+
+                        bar-card-card:nth-child({{ high }}) {
+                          box-shadow: 0px 0px 3px 1px red !important;
+                          border: 1px solid red !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        {% if 1 <= low <= 8 %}
+
+                        bar-card-card:nth-child({{ low }}) {
+                          box-shadow: 0px 0px 3px 1px blue !important;
+                          border: 1px solid blue !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        bar-card-value {
+                          margin-right: auto;
+                          margin-left: auto;
+                          margin-bottom: 35px;
+                          padding: 1px;
+                          font-size: 9px;
+                          font-weight: 500;
+                          line-height: 9px;
+                          color: black;
+                          background-color: white; 
+                        }
+
+                        bar-card-name {
+                          margin: 0;
+                          font-size: 8px;
+                          font-weight: normal;
+                        }
+                    entities:
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_1
+                        name: Cell 1
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_2
+                        name: Cell 2
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_3
+                        name: Cell 3
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_4
+                        name: Cell 4
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_5
+                        name: Cell 5
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_6
+                        name: Cell 6
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_7
+                        name: Cell 7
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_8
+                        name: Cell 8
+              - type: horizontal-stack
+                cards:
+                  - type: custom:bar-card
+                    direction: up
+                    columns: 8
+                    decimal: 3
+                    max: 3.65
+                    min: 2.5
+                    height: 70px
+                    entity_config: true
+                    severity:
+                      - color: red
+                        from: 3.45
+                        to: 3.65
+                      - color: orange
+                        from: 3.363
+                        to: 3.45
+                      - color: lightgreen
+                        from: 3.2
+                        to: 3.363
+                      - color: orange
+                        from: 3.15
+                        to: 3.2
+                      - color: red
+                        from: 2.5
+                        to: 3.15
+                    positions:
+                      icon: "off"
+                      indicator: inside
+                      name: outside
+                    card_mod:
+                      style: >-
+                        :host {
+                          --bar-card-border-radius: 4px;
+                        }
+
+                        ha-card {
+                          margin: 0 !important;
+                          padding: 0 !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                        }
+
+                        ha-card > #states {
+                          padding: 0 !important;
+                        }
+
+                        {% set high = 17 -
+                        (states('sensor.seplos_bms_pack_1_highest_cell') | int)
+                        %}
+
+                        {% set low  = 17 -
+                        (states('sensor.seplos_bms_pack_1_lowest_cell') | int)
+                        %}
+
+                        {% if 1 <= high <= 8 %}
+
+                        bar-card-card:nth-child({{ high }}) {
+                          box-shadow: 0px 0px 3px 1px red !important;
+                          border: 1px solid red !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        {% if 1 <= low <= 8 %}
+
+                        bar-card-card:nth-child({{ low }}) {
+                          box-shadow: 0px 0px 3px 1px blue !important;
+                          border: 1px solid blue !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        bar-card-value {
+                          margin-right: auto;
+                          margin-left: auto;
+                          margin-bottom: 35px;
+                          padding: 1px;
+                          font-size: 9px;
+                          font-weight: 500;
+                          color: black;
+                          background-color: white; 
+                        }
+
+                        bar-card-name {
+                          margin: 0;
+                          font-size: 8px;
+                          font-weight: normal;
+                        }
+                    entities:
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_16
+                        name: Cell 16
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_15
+                        name: Cell 15
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_14
+                        name: Cell 14
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_13
+                        name: Cell 13
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_12
+                        name: Cell 12
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_11
+                        name: Cell 11
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_10
+                        name: Cell 10
+                      - entity: sensor.seplos_bms_pack_1_voltage_cell_9
+                        name: Cell 9
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Temp. Cell 15
+                    entity: sensor.seplos_bms_pack_1_cell_temperature_3
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+                  - type: custom:button-card
+                    name: Temp. Cell 10
+                    entity: sensor.seplos_bms_pack_1_cell_temperature_4
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+    grid_options:
+      columns: 9
+      rows: 2
+  - type: custom:entity-progress-card
+    entity: sensor.seplos_bms_pack_1_state_of_charge
+    name: State of Charge
+    theme: optimal_when_high
+    bar_size: small
+    layout: vertical
+    hide:
+      - name
+    icon: mdi:battery-charging
+    grid_options:
+      columns: 3
+      rows: 2
+  - type: custom:mushroom-template-card
     features_position: bottom
-    card_mod:
-      style: |
-        ha-card {
-          font-size: 12px;
-        }
-  - type: custom:expander-card
-    title: More Info
-    child-margin-top: 0.6em
-    padding: 0.6em
-    title-card-button-overlay: true
-    title-card-clickable: true
-    cards:
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            name: Delta Cell Temp.
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_delta_cell_temperature
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const temp = entity.state;
-                      if (temp > 3) return 'red';
-                      if (temp > 2) return 'orange';
-                      if (temp > 1) return 'yellow';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: Ambient Temp.
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_ambient_temperature
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const temp = entity.state;
-                      if (temp < 5 || temp > 40) return 'red';
-                      if (temp < 9 || temp > 30) return 'orange';
-                      if (temp < 13 || temp > 20) return 'yellow';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: Comp. Temp
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_components_temperature
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const temp = entity.state;
-                      if (temp < 5 || temp > 40) return 'red';
-                      if (temp < 9 || temp > 30) return 'orange';
-                      if (temp < 13 || temp > 20) return 'yellow';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            name: Cell Temp. 1
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_cell_temperature_1
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const temp = entity.state;
-                      if (temp < 5 || temp > 40) return 'red';
-                      if (temp < 9 || temp > 30) return 'orange';
-                      if (temp < 13 || temp > 20) return 'yellow';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: Cell Temp. 2
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_cell_temperature_2
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const temp = entity.state;
-                      if (temp < 5 || temp > 40) return 'red';
-                      if (temp < 9 || temp > 30) return 'orange';
-                      if (temp < 13 || temp > 20) return 'yellow';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: Cell Temp. 3
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_cell_temperature_3
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const temp = entity.state;
-                      if (temp < 5 || temp > 40) return 'red';
-                      if (temp < 9 || temp > 30) return 'orange';
-                      if (temp < 13 || temp > 20) return 'yellow';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: Cell Temp. 4
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_cell_temperature_4
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const temp = entity.state;
-                      if (temp < 5 || temp > 40) return 'red';
-                      if (temp < 9 || temp > 30) return 'orange';
-                      if (temp < 13 || temp > 20) return 'yellow';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            name: Port Voltage
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_port_voltage
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const portVol = entity.state;
-                      const minPackVol = states['sensor.seplos_bms_pack_0_min_pack_voltage'].state;
-                      const maxPackVol = states['sensor.seplos_bms_pack_0_max_pack_voltage'].state;
-                      if (portVol < minPackVol + 8) return 'red';
-                      if (portVol > maxPackVol - 3.2) return 'red';
-                      if (portVol < minPackVol + 10.4) return 'orange';
-                      if (portVol > maxPackVol - 4.6) return 'orange';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: Pack Voltage
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_total_pack_voltage
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const totalPackVol = entity.state;
-                      const minPackVol = states['sensor.seplos_bms_pack_0_min_pack_voltage'].state;
-                      const maxPackVol = states['sensor.seplos_bms_pack_0_max_pack_voltage'].state;
-                      if (totalPackVol < minPackVol + 8) return 'red';
-                      if (totalPackVol > maxPackVol - 3.2) return 'red';
-                      if (totalPackVol < minPackVol + 10.4) return 'orange';
-                      if (totalPackVol > maxPackVol - 4.6) return 'orange';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: Cycles
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_charging_cycles
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const cycles = entity.state;
-                      if (cycles > 5000) return 'red';
-                      if (cycles > 3000) return 'orange';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: SoH
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_state_of_health
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const soh = entity.state;
-                      if (soh > 99) return 'lightgreen';
-                      if (soh > 95) return 'orange';
-                      return 'red';
-                    ]]]
-              card:
-                - font-size: 12px
-      - type: custom:bar-card
-        direction: up
-        columns: 8
-        decimal: 3
-        max: 3.65
-        min: 2.5
-        height: 80px
-        severity:
-          - color: red
-            from: 3.45
-            to: 3.65
-          - color: orange
-            from: 3.363
-            to: 3.45
-          - color: lightgreen
-            from: 3.2
-            to: 3.363
-          - color: orange
-            from: 3.15
-            to: 3.2
-          - color: red
-            from: 2.5
-            to: 3.15
-        positions:
-          icon: "off"
-          indicator: inside
-          name: outside
-        card_mod:
-          style: |-
-            bar-card-value {
-              margin-right: auto;
-              margin-left: auto;
-              margin-bottom: 35px;
-              font-size: 10px;
-              font-weight: normal;
-              line-height: 10px;
-              color: black;
-              background-color: white; 
-            }
-            bar-card-name {
-              margin-right: auto;
-              margin-left: auto;
-              margin-bottom: 0px;
-              font-size: 10px;
-              font-weight: normal;
-            }
-        entities:
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_1
-            name: Cell 1
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_2
-            name: Cell 2
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_3
-            name: Cell 3
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_4
-            name: Cell 4
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_5
-            name: Cell 5
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_6
-            name: Cell 6
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_7
-            name: Cell 7
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_8
-            name: Cell 8
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_9
-            name: Cell 9
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_10
-            name: Cell 10
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_11
-            name: Cell 11
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_12
-            name: Cell 12
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_13
-            name: Cell 13
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_14
-            name: Cell 14
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_15
-            name: Cell 15
-          - entity: sensor.seplos_bms_pack_0_voltage_cell_16
-            name: Cell 16
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            name: Delta
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_delta_cell_voltage
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const cellDeltaVol = entity.state;
-                      if (cellDeltaVol < 0.010) return 'lightgreen';
-                      if (cellDeltaVol < 0.030) return 'orange';
-                      return 'red';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: >
-              [[[ return 'Highest: ' +
-              states['sensor.seplos_bms_pack_0_highest_cell'].state]]]
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_highest_cell_voltage
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const cellVol = entity.state;
-                      const minCellVol = states['sensor.seplos_bms_pack_0_min_cell_voltage'].state;
-                      const maxCellVol = states['sensor.seplos_bms_pack_0_max_cell_voltage'].state;
-                      if (cellVol < minCellVol + 0.5) return 'red';
-                      if (cellVol > maxCellVol - 0.2) return 'red';
-                      if (cellVol < minCellVol + 0.65) return 'orange';
-                      if (cellVol > maxCellVol - 0.3) return 'orange';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: >
-              [[[ return 'Lowest: ' +
-              states['sensor.seplos_bms_pack_0_lowest_cell'].state]]]
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_lowest_cell_voltage
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const cellVol = entity.state;
-                      const minCellVol = states['sensor.seplos_bms_pack_0_min_cell_voltage'].state;
-                      const maxCellVol = states['sensor.seplos_bms_pack_0_max_cell_voltage'].state;
-                      if (cellVol < minCellVol + 0.5) return 'red';
-                      if (cellVol > maxCellVol - 0.2) return 'red';
-                      if (cellVol < minCellVol + 0.65) return 'orange';
-                      if (cellVol > maxCellVol - 0.3) return 'orange';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-          - type: custom:button-card
-            name: Average
-            size: 15%
-            entity: sensor.seplos_bms_pack_0_average_cell_voltage
-            show_icon: true
-            show_name: true
-            show_state: true
-            styles:
-              icon:
-                - color: |
-                    [[[
-                      const cellVol = entity.state;
-                      const minCellVol = states['sensor.seplos_bms_pack_0_min_cell_voltage'].state;
-                      const maxCellVol = states['sensor.seplos_bms_pack_0_max_cell_voltage'].state;
-                      if (cellVol < minCellVol + 0.5) return 'red';
-                      if (cellVol > maxCellVol - 0.2) return 'red';
-                      if (cellVol < minCellVol + 0.65) return 'orange';
-                      if (cellVol > maxCellVol - 0.3) return 'orange';
-                      return 'lightgreen';
-                    ]]]
-              card:
-                - font-size: 12px
-      - type: horizontal-stack
-        cards:
-          - type: custom:button-card
-            name: |
-              [[[
-                const activeBalancingCells = Array.from({length: 16}, (_, i) => i + 1)
-                  .filter(i => states[`binary_sensor.seplos_bms_pack_0_balancer_cell_${i}`].state == "ON");
-                return activeBalancingCells.length > 0
-                  ? `Passive Balancer active for Cells ${activeBalancingCells.join(', ')}`
-                  : "Passive Balancer inactive";
-              ]]]
-            styles:
-              card:
-                - font-size: 12px
-                - height: 40px
+    primary: Pack 02
+    multiline_secondary: true
+    secondary: >
+      {{ states('sensor.seplos_bms_pack_2_system_status') }}: {{
+      states('sensor.seplos_bms_pack_2_dis_charge_power') | float(0) | round(2)
+      }} W
+
+      Δ Cell {{ states('sensor.seplos_bms_pack_2_delta_cell_voltage') }} V / {{
+      states('sensor.seplos_bms_pack_2_delta_cell_temperature') }} °C
+
+      {% set temps = [
+        states('sensor.seplos_bms_pack_2_cell_temperature_1') | float(0),
+        states('sensor.seplos_bms_pack_2_cell_temperature_2') | float(0),
+        states('sensor.seplos_bms_pack_2_cell_temperature_3') | float(0),
+        states('sensor.seplos_bms_pack_2_cell_temperature_4') | float(0)
+      ] %} {%- set tmax = temps | max -%} Highest Cell: {{ tmax | round(1) }} °C
+
+      BMS: {{ states('sensor.seplos_bms_pack_2_components_temperature') }} °C /
+      Ambient: {{ states('sensor.seplos_bms_pack_2_ambient_temperature') }} °C
+    icon: |
+      {% set ns = namespace(alarm=0, failure=0) %}
+      {% set sensors = [
+        'sensor.seplos_bms_pack_2_ambient_temperature_alarm',
+        'sensor.seplos_bms_pack_2_component_temperature_alarm',
+        'sensor.seplos_bms_pack_2_dis_charging_current_alarm',
+        'sensor.seplos_bms_pack_2_pack_voltage_alarm',
+        'sensor.seplos_bms_pack_2_cell_overvoltage',
+        'sensor.seplos_bms_pack_2_cell_voltage_low',
+        'sensor.seplos_bms_pack_2_pack_overvoltage',
+        'sensor.seplos_bms_pack_2_pack_voltage_low',
+        'sensor.seplos_bms_pack_2_charging_temperature_high',
+        'sensor.seplos_bms_pack_2_charging_temperature_low',
+        'sensor.seplos_bms_pack_2_discharging_temperature_high',
+        'sensor.seplos_bms_pack_2_discharging_temperature_low',
+        'sensor.seplos_bms_pack_2_ambient_temperature_high',
+        'sensor.seplos_bms_pack_2_ambient_temperature_low',
+        'sensor.seplos_bms_pack_2_component_temperature_high',
+        'sensor.seplos_bms_pack_2_charging_overcurrent',
+        'sensor.seplos_bms_pack_2_discharging_overcurrent',
+        'sensor.seplos_bms_pack_2_transient_overcurrent',
+        'sensor.seplos_bms_pack_2_output_short_circuit',
+        'sensor.seplos_bms_pack_2_soc_low',
+        'binary_sensor.seplos_bms_pack_2_low_temperature_heating',
+        'binary_sensor.seplos_bms_pack_2_charging_high_voltage_protection',
+        'binary_sensor.seplos_bms_pack_2_intermittent_power_supplement',
+        'binary_sensor.seplos_bms_pack_2_cell_low_voltage_forbidden_charging',
+        'binary_sensor.seplos_bms_pack_2_output_reverse_polarity_protection',
+        'binary_sensor.seplos_bms_pack_2_auto_charging_wait',
+        'binary_sensor.seplos_bms_pack_2_manual_charging_wait',
+        'binary_sensor.seplos_bms_pack_2_no_calibration_of_voltage',
+        'binary_sensor.seplos_bms_pack_2_no_calibration_of_current',
+        'binary_sensor.seplos_bms_pack_2_no_calibration_of_null_point',
+        'binary_sensor.seplos_bms_pack_2_voltage_sensing_failure',
+        'binary_sensor.seplos_bms_pack_2_temperature_sensing_failure',
+        'binary_sensor.seplos_bms_pack_2_current_sensing_failure',
+        'binary_sensor.seplos_bms_pack_2_power_switch_failure',
+        'binary_sensor.seplos_bms_pack_2_cell_voltage_difference_sensing_failure',
+        'binary_sensor.seplos_bms_pack_2_charging_switch_failure',
+        'binary_sensor.seplos_bms_pack_2_discharging_switch_failure',
+        'binary_sensor.seplos_bms_pack_2_current_limit_switch_failure',
+        'binary_sensor.seplos_bms_pack_2_output_connection_failure',
+        'binary_sensor.seplos_bms_pack_2_eep_storage_failure',
+        'binary_sensor.seplos_bms_pack_2_rtc_clock_failure'
+      ] %}
+      {% for i in range(1, 17) %}
+        {% if i <= 4 %}
+          {% set sensors = sensors + ['sensor.seplos_bms_pack_2_cell_temperature_alarm_' ~ i] %}
+        {% endif %}
+        {% set sensors = sensors + ['sensor.seplos_bms_pack_2_cell_voltage_alarm_' ~ i] %}
+        {% set sensors = sensors + ['binary_sensor.seplos_bms_pack_2_disconnection_cell_' ~ i] %}
+      {% endfor %}
+
+      {% set ns = namespace(has_failure=false, has_alarm=false) %}
+      {% for sensor in sensors %}
+        {% if states(sensor) not in ['OK', 'off'] %}
+          {% if 'failure' in sensor %}
+            {% set ns.has_failure = true %}
+          {% else %}
+            {% set ns.has_alarm = true %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% if ns.has_failure %}
+        mdi:alert-octagon-outline
+      {% elif ns.has_alarm %}
+        mdi:alert-circle-outline
+      {% else %}
+        mdi:check-circle-outline
+      {% endif %}
+    color: |
+      {% set ns = namespace(alarm=0, failure=0) %}
+      {% set sensors = [
+        'sensor.seplos_bms_pack_2_ambient_temperature_alarm',
+        'sensor.seplos_bms_pack_2_component_temperature_alarm',
+        'sensor.seplos_bms_pack_2_dis_charging_current_alarm',
+        'sensor.seplos_bms_pack_2_pack_voltage_alarm',
+        'sensor.seplos_bms_pack_2_cell_overvoltage',
+        'sensor.seplos_bms_pack_2_cell_voltage_low',
+        'sensor.seplos_bms_pack_2_pack_overvoltage',
+        'sensor.seplos_bms_pack_2_pack_voltage_low',
+        'sensor.seplos_bms_pack_2_charging_temperature_high',
+        'sensor.seplos_bms_pack_2_charging_temperature_low',
+        'sensor.seplos_bms_pack_2_discharging_temperature_high',
+        'sensor.seplos_bms_pack_2_discharging_temperature_low',
+        'sensor.seplos_bms_pack_2_ambient_temperature_high',
+        'sensor.seplos_bms_pack_2_ambient_temperature_low',
+        'sensor.seplos_bms_pack_2_component_temperature_high',
+        'sensor.seplos_bms_pack_2_charging_overcurrent',
+        'sensor.seplos_bms_pack_2_discharging_overcurrent',
+        'sensor.seplos_bms_pack_2_transient_overcurrent',
+        'sensor.seplos_bms_pack_2_output_short_circuit',
+        'sensor.seplos_bms_pack_2_soc_low',
+        'binary_sensor.seplos_bms_pack_2_low_temperature_heating',
+        'binary_sensor.seplos_bms_pack_2_charging_high_voltage_protection',
+        'binary_sensor.seplos_bms_pack_2_intermittent_power_supplement',
+        'binary_sensor.seplos_bms_pack_2_cell_low_voltage_forbidden_charging',
+        'binary_sensor.seplos_bms_pack_2_output_reverse_polarity_protection',
+        'binary_sensor.seplos_bms_pack_2_auto_charging_wait',
+        'binary_sensor.seplos_bms_pack_2_manual_charging_wait',
+        'binary_sensor.seplos_bms_pack_2_no_calibration_of_voltage',
+        'binary_sensor.seplos_bms_pack_2_no_calibration_of_current',
+        'binary_sensor.seplos_bms_pack_2_no_calibration_of_null_point',
+        'binary_sensor.seplos_bms_pack_2_voltage_sensing_failure',
+        'binary_sensor.seplos_bms_pack_2_temperature_sensing_failure',
+        'binary_sensor.seplos_bms_pack_2_current_sensing_failure',
+        'binary_sensor.seplos_bms_pack_2_power_switch_failure',
+        'binary_sensor.seplos_bms_pack_2_cell_voltage_difference_sensing_failure',
+        'binary_sensor.seplos_bms_pack_2_charging_switch_failure',
+        'binary_sensor.seplos_bms_pack_2_discharging_switch_failure',
+        'binary_sensor.seplos_bms_pack_2_current_limit_switch_failure',
+        'binary_sensor.seplos_bms_pack_2_output_connection_failure',
+        'binary_sensor.seplos_bms_pack_2_eep_storage_failure',
+        'binary_sensor.seplos_bms_pack_2_rtc_clock_failure'
+      ] %}
+      {% for i in range(1, 17) %}
+        {% if i <= 4 %}
+          {% set sensors = sensors + ['sensor.seplos_bms_pack_2_cell_temperature_alarm_' ~ i] %}
+        {% endif %}
+        {% set sensors = sensors + ['sensor.seplos_bms_pack_2_cell_voltage_alarm_' ~ i] %}
+        {% set sensors = sensors + ['binary_sensor.seplos_bms_pack_2_disconnection_cell_' ~ i] %}
+      {% endfor %}
+
+      {% set ns = namespace(has_failure=false, has_alarm=false) %}
+      {% for sensor in sensors %}
+        {% if states(sensor) not in ['OK', 'off'] %}
+          {% if 'failure' in sensor %}
+            {% set ns.has_failure = true %}
+          {% else %}
+            {% set ns.has_alarm = true %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% if ns.has_failure %}
+        orange
+      {% elif ns.has_alarm %}
+        yellow
+      {% else %}
+        green
+      {% endif %}
+    icon_tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Pack 02 – Status
+          content:
+            type: markdown
+            content: |
+              ## 🔴 Failures
+              {% set failures = [
+                'binary_sensor.seplos_bms_pack_2_voltage_sensing_failure',
+                'binary_sensor.seplos_bms_pack_2_temperature_sensing_failure',
+                'binary_sensor.seplos_bms_pack_2_current_sensing_failure',
+                'binary_sensor.seplos_bms_pack_2_power_switch_failure',
+                'binary_sensor.seplos_bms_pack_2_cell_voltage_difference_sensing_failure',
+                'binary_sensor.seplos_bms_pack_2_charging_switch_failure',
+                'binary_sensor.seplos_bms_pack_2_discharging_switch_failure',
+                'binary_sensor.seplos_bms_pack_2_current_limit_switch_failure',
+                'binary_sensor.seplos_bms_pack_2_output_connection_failure',
+                'binary_sensor.seplos_bms_pack_2_eep_storage_failure',
+                'binary_sensor.seplos_bms_pack_2_rtc_clock_failure'
+              ] %}
+              {% set has_failure = namespace(value=false) %}
+              {% for sensor in failures %}
+                {% if not is_state(sensor, 'off') %}
+                  {%- set has_failure.value = true -%}
+                  - {{ state_attr(sensor, 'friendly_name')|replace('Seplos BMS Pack-0 (Master) ', '') }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_failure.value %}
+              *No active failures*
+              {% endif %}
+
+              ## 🟠 Alarms
+              {% set alarms = [
+                'sensor.seplos_bms_pack_2_ambient_temperature_alarm',
+                'sensor.seplos_bms_pack_2_component_temperature_alarm',
+                'sensor.seplos_bms_pack_2_dis_charging_current_alarm',
+                'sensor.seplos_bms_pack_2_pack_voltage_alarm',
+                'sensor.seplos_bms_pack_2_cell_overvoltage',
+                'sensor.seplos_bms_pack_2_cell_voltage_low',
+                'sensor.seplos_bms_pack_2_pack_overvoltage',
+                'sensor.seplos_bms_pack_2_pack_voltage_low',
+                'sensor.seplos_bms_pack_2_charging_temperature_high',
+                'sensor.seplos_bms_pack_2_charging_temperature_low',
+                'sensor.seplos_bms_pack_2_discharging_temperature_high',
+                'sensor.seplos_bms_pack_2_discharging_temperature_low',
+                'sensor.seplos_bms_pack_2_ambient_temperature_high',
+                'sensor.seplos_bms_pack_2_ambient_temperature_low',
+                'sensor.seplos_bms_pack_2_component_temperature_high',
+                'sensor.seplos_bms_pack_2_charging_overcurrent',
+                'sensor.seplos_bms_pack_2_discharging_overcurrent',
+                'sensor.seplos_bms_pack_2_transient_overcurrent',
+                'sensor.seplos_bms_pack_2_output_short_circuit',
+                'sensor.seplos_bms_pack_2_soc_low',
+                'binary_sensor.seplos_bms_pack_2_low_temperature_heating',
+                'binary_sensor.seplos_bms_pack_2_charging_high_voltage_protection',
+                'binary_sensor.seplos_bms_pack_2_intermittent_power_supplement',
+                'binary_sensor.seplos_bms_pack_2_cell_low_voltage_forbidden_charging',
+                'binary_sensor.seplos_bms_pack_2_output_reverse_polarity_protection',
+                'binary_sensor.seplos_bms_pack_2_auto_charging_wait',
+                'binary_sensor.seplos_bms_pack_2_manual_charging_wait',
+                'binary_sensor.seplos_bms_pack_2_no_calibration_of_voltage',
+                'binary_sensor.seplos_bms_pack_2_no_calibration_of_current',
+                'binary_sensor.seplos_bms_pack_2_no_calibration_of_null_point'
+              ] %}
+              {% set has_alarm = namespace(value=false) %}
+              {% for sensor in alarms %}
+                {% if states(sensor) not in ['OK', 'off'] %}
+                  {%- set has_alarm.value = true -%}
+                  - {{ state_attr(sensor, 'friendly_name')|replace('Seplos BMS Pack-0 (Master) ', '') }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_alarm.value %}
+              *No active alarms*
+              {% endif %}
+
+              ## 📊 Cell-Status
+              ### Voltage warnings
+              {% set has_voltage_warning = namespace(value=false) %}
+              {% for i in range(1, 17) %}
+                {% set sensor = 'sensor.seplos_bms_pack_2_cell_voltage_alarm_' ~ i %}
+                {% if not is_state(sensor, 'OK') %}
+                  {%- set has_voltage_warning.value = true -%}
+                  - Cell {{ i }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_voltage_warning.value %}
+              *No active voltage warnings*
+              {% endif %}
+
+              ### Temperature warnings
+              {% set has_temp_warning = namespace(value=false) %}
+              {% for i in range(1, 5) %}
+                {% set sensor = 'sensor.seplos_bms_pack_2_cell_temperature_alarm_' ~ i %}
+                {% if not is_state(sensor, 'OK') %}
+                  {%- set has_temp_warning.value = true -%}
+                  - Temperature Sensor {{ i }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_temp_warning.value %}
+              *No active temperature warnings*
+              {% endif %}
+
+              ### Connection warnings
+              {% set has_disconnection = namespace(value=false) %}
+              {% for i in range(1, 17) %}
+                {% set sensor = 'binary_sensor.seplos_bms_pack_2_disconnection_cell_' ~ i %}
+                {% if not is_state(sensor, 'on') %}
+                  {%- set has_disconnection.value = true -%}
+                  - Cell {{ i }}: **{{ 'disconnected' if is_state(sensor, 'off') else states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_disconnection.value %}
+              *No active connection warnings*
+              {% endif %}
+
+              ---
+              *Last update: {{ now().strftime('%H:%M:%S') }}*
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Pack 02 – Info
+          content:
+            type: vertical-stack
+            cards:
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Port
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_2_port_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const portVol = entity.state;
+                              const minPackVol = states['sensor.seplos_bms_pack_2_min_pack_voltage'].state;
+                              const maxPackVol = states['sensor.seplos_bms_pack_2_max_pack_voltage'].state;
+                              if (portVol < minPackVol + 8) return 'red';
+                              if (portVol > maxPackVol - 3.2) return 'red';
+                              if (portVol < minPackVol + 10.4) return 'orange';
+                              if (portVol > maxPackVol - 4.6) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Pack
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_2_total_pack_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const totalPackVol = entity.state;
+                              const minPackVol = states['sensor.seplos_bms_pack_2_min_pack_voltage'].state;
+                              const maxPackVol = states['sensor.seplos_bms_pack_2_max_pack_voltage'].state;
+                              if (totalPackVol < minPackVol + 8) return 'red';
+                              if (totalPackVol > maxPackVol - 3.2) return 'red';
+                              if (totalPackVol < minPackVol + 10.4) return 'orange';
+                              if (totalPackVol > maxPackVol - 4.6) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Cycles
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_2_charging_cycles
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const cycles = entity.state;
+                              if (cycles > 5000) return 'red';
+                              if (cycles > 3000) return 'orange';
+                              if (cycles > 1000) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: SoH
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_2_state_of_health
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const soh = entity.state;
+                              if (soh > 99) return 'lightgreen';
+                              if (soh > 95) return 'yellow';
+                              if (soh > 90) return 'orange';
+                              return 'red';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Average Cell
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_2_average_cell_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const cellVol = entity.state;
+                              const minCellVol = states['sensor.seplos_bms_pack_2_min_cell_voltage'].state;
+                              const maxCellVol = states['sensor.seplos_bms_pack_2_max_cell_voltage'].state;
+                              if (cellVol < minCellVol + 0.5) return 'red';
+                              if (cellVol > maxCellVol - 0.2) return 'red';
+                              if (cellVol < minCellVol + 0.65) return 'orange';
+                              if (cellVol > maxCellVol - 0.3) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Ambient Temp.
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_2_ambient_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 9 || temp > 30) return 'orange';
+                              if (temp < 13 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: BMS Temp.
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_2_components_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 9 || temp > 30) return 'orange';
+                              if (temp < 13 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Delta Cell
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_2_delta_cell_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp > 3) return 'red';
+                              if (temp > 2) return 'orange';
+                              if (temp > 1) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: |
+                      [[[
+                        const activeBalancingCells = Array.from({length: 16}, (_, i) => i + 1)
+                          .filter(i => states[`binary_sensor.seplos_bms_pack_2_balancer_cell_${i}`].state == "on");
+                        return activeBalancingCells.length > 0
+                          ? `Passive Balancer active for Cells ${activeBalancingCells.join(', ')}`
+                          : "Passive Balancer inactive";
+                      ]]]
+                    styles:
+                      name:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 40px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Temp. Cell 2
+                    entity: sensor.seplos_bms_pack_2_cell_temperature_1
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+                  - type: custom:button-card
+                    name: Temp. Cell 7
+                    entity: sensor.seplos_bms_pack_2_cell_temperature_2
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:bar-card
+                    direction: up
+                    columns: 8
+                    decimal: 3
+                    max: 3.65
+                    min: 2.5
+                    height: 70px
+                    entity_config: true
+                    severity:
+                      - color: red
+                        from: 3.45
+                        to: 3.65
+                      - color: orange
+                        from: 3.363
+                        to: 3.45
+                      - color: lightgreen
+                        from: 3.2
+                        to: 3.363
+                      - color: orange
+                        from: 3.15
+                        to: 3.2
+                      - color: red
+                        from: 2.5
+                        to: 3.15
+                    positions:
+                      icon: "off"
+                      indicator: inside
+                      name: outside
+                    card_mod:
+                      style: >-
+                        :host {
+                          --bar-card-border-radius: 4px;
+                        } ha-card {
+                          margin: 0 !important;
+                          padding: 0 !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                        } ha-card > #states {
+                          padding: 0 !important;
+                        }
+
+                        {% set high =
+                        states('sensor.seplos_bms_pack_2_highest_cell') | int %}
+
+                        {% set low  =
+                        states('sensor.seplos_bms_pack_2_lowest_cell') | int %}
+
+                        {% if 1 <= high <= 8 %}
+
+                        bar-card-card:nth-child({{ high }}) {
+                          box-shadow: 0px 0px 3px 1px red !important;
+                          border: 1px solid red !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        {% if 1 <= low <= 8 %}
+
+                        bar-card-card:nth-child({{ low }}) {
+                          box-shadow: 0px 0px 3px 1px blue !important;
+                          border: 1px solid blue !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        bar-card-value {
+                          margin-right: auto;
+                          margin-left: auto;
+                          margin-bottom: 35px;
+                          padding: 1px;
+                          font-size: 9px;
+                          font-weight: 500;
+                          line-height: 9px;
+                          color: black;
+                          background-color: white; 
+                        }
+
+                        bar-card-name {
+                          margin: 0;
+                          font-size: 8px;
+                          font-weight: normal;
+                        }
+                    entities:
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_1
+                        name: Cell 1
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_2
+                        name: Cell 2
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_3
+                        name: Cell 3
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_4
+                        name: Cell 4
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_5
+                        name: Cell 5
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_6
+                        name: Cell 6
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_7
+                        name: Cell 7
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_8
+                        name: Cell 8
+              - type: horizontal-stack
+                cards:
+                  - type: custom:bar-card
+                    direction: up
+                    columns: 8
+                    decimal: 3
+                    max: 3.65
+                    min: 2.5
+                    height: 70px
+                    entity_config: true
+                    severity:
+                      - color: red
+                        from: 3.45
+                        to: 3.65
+                      - color: orange
+                        from: 3.363
+                        to: 3.45
+                      - color: lightgreen
+                        from: 3.2
+                        to: 3.363
+                      - color: orange
+                        from: 3.15
+                        to: 3.2
+                      - color: red
+                        from: 2.5
+                        to: 3.15
+                    positions:
+                      icon: "off"
+                      indicator: inside
+                      name: outside
+                    card_mod:
+                      style: >-
+                        :host {
+                          --bar-card-border-radius: 4px;
+                        }
+
+                        ha-card {
+                          margin: 0 !important;
+                          padding: 0 !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                        }
+
+                        ha-card > #states {
+                          padding: 0 !important;
+                        }
+
+                        {% set high = 17 -
+                        (states('sensor.seplos_bms_pack_2_highest_cell') | int)
+                        %}
+
+                        {% set low  = 17 -
+                        (states('sensor.seplos_bms_pack_2_lowest_cell') | int)
+                        %}
+
+                        {% if 1 <= high <= 8 %}
+
+                        bar-card-card:nth-child({{ high }}) {
+                          box-shadow: 0px 0px 3px 1px red !important;
+                          border: 1px solid red !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        {% if 1 <= low <= 8 %}
+
+                        bar-card-card:nth-child({{ low }}) {
+                          box-shadow: 0px 0px 3px 1px blue !important;
+                          border: 1px solid blue !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        bar-card-value {
+                          margin-right: auto;
+                          margin-left: auto;
+                          margin-bottom: 35px;
+                          padding: 1px;
+                          font-size: 9px;
+                          font-weight: 500;
+                          color: black;
+                          background-color: white; 
+                        }
+
+                        bar-card-name {
+                          margin: 0;
+                          font-size: 8px;
+                          font-weight: normal;
+                        }
+                    entities:
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_16
+                        name: Cell 16
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_15
+                        name: Cell 15
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_14
+                        name: Cell 14
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_13
+                        name: Cell 13
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_12
+                        name: Cell 12
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_11
+                        name: Cell 11
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_10
+                        name: Cell 10
+                      - entity: sensor.seplos_bms_pack_2_voltage_cell_9
+                        name: Cell 9
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Temp. Cell 15
+                    entity: sensor.seplos_bms_pack_2_cell_temperature_3
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+                  - type: custom:button-card
+                    name: Temp. Cell 10
+                    entity: sensor.seplos_bms_pack_2_cell_temperature_4
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+    grid_options:
+      columns: 9
+      rows: 2
+  - type: custom:entity-progress-card
+    entity: sensor.seplos_bms_pack_2_state_of_charge
+    name: State of Charge
+    theme: optimal_when_high
+    bar_size: small
+    layout: vertical
+    hide:
+      - name
+    icon: mdi:battery-charging
+    grid_options:
+      columns: 3
+      rows: 2
+  - type: custom:mushroom-template-card
+    features_position: bottom
+    primary: Pack 03
+    multiline_secondary: true
+    secondary: >
+      {{ states('sensor.seplos_bms_pack_3_system_status') }}: {{
+      states('sensor.seplos_bms_pack_3_dis_charge_power') | float(0) | round(2)
+      }} W
+
+      Δ Cell {{ states('sensor.seplos_bms_pack_3_delta_cell_voltage') }} V / {{
+      states('sensor.seplos_bms_pack_3_delta_cell_temperature') }} °C
+
+      {% set temps = [
+        states('sensor.seplos_bms_pack_3_cell_temperature_1') | float(0),
+        states('sensor.seplos_bms_pack_3_cell_temperature_2') | float(0),
+        states('sensor.seplos_bms_pack_3_cell_temperature_3') | float(0),
+        states('sensor.seplos_bms_pack_3_cell_temperature_4') | float(0)
+      ] %} {%- set tmax = temps | max -%} Highest Cell: {{ tmax | round(1) }} °C
+
+      BMS: {{ states('sensor.seplos_bms_pack_3_components_temperature') }} °C /
+      Ambient: {{ states('sensor.seplos_bms_pack_3_ambient_temperature') }} °C
+    icon: |
+      {% set ns = namespace(alarm=0, failure=0) %}
+      {% set sensors = [
+        'sensor.seplos_bms_pack_3_ambient_temperature_alarm',
+        'sensor.seplos_bms_pack_3_component_temperature_alarm',
+        'sensor.seplos_bms_pack_3_dis_charging_current_alarm',
+        'sensor.seplos_bms_pack_3_pack_voltage_alarm',
+        'sensor.seplos_bms_pack_3_cell_overvoltage',
+        'sensor.seplos_bms_pack_3_cell_voltage_low',
+        'sensor.seplos_bms_pack_3_pack_overvoltage',
+        'sensor.seplos_bms_pack_3_pack_voltage_low',
+        'sensor.seplos_bms_pack_3_charging_temperature_high',
+        'sensor.seplos_bms_pack_3_charging_temperature_low',
+        'sensor.seplos_bms_pack_3_discharging_temperature_high',
+        'sensor.seplos_bms_pack_3_discharging_temperature_low',
+        'sensor.seplos_bms_pack_3_ambient_temperature_high',
+        'sensor.seplos_bms_pack_3_ambient_temperature_low',
+        'sensor.seplos_bms_pack_3_component_temperature_high',
+        'sensor.seplos_bms_pack_3_charging_overcurrent',
+        'sensor.seplos_bms_pack_3_discharging_overcurrent',
+        'sensor.seplos_bms_pack_3_transient_overcurrent',
+        'sensor.seplos_bms_pack_3_output_short_circuit',
+        'sensor.seplos_bms_pack_3_soc_low',
+        'binary_sensor.seplos_bms_pack_3_low_temperature_heating',
+        'binary_sensor.seplos_bms_pack_3_charging_high_voltage_protection',
+        'binary_sensor.seplos_bms_pack_3_intermittent_power_supplement',
+        'binary_sensor.seplos_bms_pack_3_cell_low_voltage_forbidden_charging',
+        'binary_sensor.seplos_bms_pack_3_output_reverse_polarity_protection',
+        'binary_sensor.seplos_bms_pack_3_auto_charging_wait',
+        'binary_sensor.seplos_bms_pack_3_manual_charging_wait',
+        'binary_sensor.seplos_bms_pack_3_no_calibration_of_voltage',
+        'binary_sensor.seplos_bms_pack_3_no_calibration_of_current',
+        'binary_sensor.seplos_bms_pack_3_no_calibration_of_null_point',
+        'binary_sensor.seplos_bms_pack_3_voltage_sensing_failure',
+        'binary_sensor.seplos_bms_pack_3_temperature_sensing_failure',
+        'binary_sensor.seplos_bms_pack_3_current_sensing_failure',
+        'binary_sensor.seplos_bms_pack_3_power_switch_failure',
+        'binary_sensor.seplos_bms_pack_3_cell_voltage_difference_sensing_failure',
+        'binary_sensor.seplos_bms_pack_3_charging_switch_failure',
+        'binary_sensor.seplos_bms_pack_3_discharging_switch_failure',
+        'binary_sensor.seplos_bms_pack_3_current_limit_switch_failure',
+        'binary_sensor.seplos_bms_pack_3_output_connection_failure',
+        'binary_sensor.seplos_bms_pack_3_eep_storage_failure',
+        'binary_sensor.seplos_bms_pack_3_rtc_clock_failure'
+      ] %}
+      {% for i in range(1, 17) %}
+        {% if i <= 4 %}
+          {% set sensors = sensors + ['sensor.seplos_bms_pack_3_cell_temperature_alarm_' ~ i] %}
+        {% endif %}
+        {% set sensors = sensors + ['sensor.seplos_bms_pack_3_cell_voltage_alarm_' ~ i] %}
+        {% set sensors = sensors + ['binary_sensor.seplos_bms_pack_3_disconnection_cell_' ~ i] %}
+      {% endfor %}
+
+      {% set ns = namespace(has_failure=false, has_alarm=false) %}
+      {% for sensor in sensors %}
+        {% if states(sensor) not in ['OK', 'off'] %}
+          {% if 'failure' in sensor %}
+            {% set ns.has_failure = true %}
+          {% else %}
+            {% set ns.has_alarm = true %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% if ns.has_failure %}
+        mdi:alert-octagon-outline
+      {% elif ns.has_alarm %}
+        mdi:alert-circle-outline
+      {% else %}
+        mdi:check-circle-outline
+      {% endif %}
+    color: |
+      {% set ns = namespace(alarm=0, failure=0) %}
+      {% set sensors = [
+        'sensor.seplos_bms_pack_3_ambient_temperature_alarm',
+        'sensor.seplos_bms_pack_3_component_temperature_alarm',
+        'sensor.seplos_bms_pack_3_dis_charging_current_alarm',
+        'sensor.seplos_bms_pack_3_pack_voltage_alarm',
+        'sensor.seplos_bms_pack_3_cell_overvoltage',
+        'sensor.seplos_bms_pack_3_cell_voltage_low',
+        'sensor.seplos_bms_pack_3_pack_overvoltage',
+        'sensor.seplos_bms_pack_3_pack_voltage_low',
+        'sensor.seplos_bms_pack_3_charging_temperature_high',
+        'sensor.seplos_bms_pack_3_charging_temperature_low',
+        'sensor.seplos_bms_pack_3_discharging_temperature_high',
+        'sensor.seplos_bms_pack_3_discharging_temperature_low',
+        'sensor.seplos_bms_pack_3_ambient_temperature_high',
+        'sensor.seplos_bms_pack_3_ambient_temperature_low',
+        'sensor.seplos_bms_pack_3_component_temperature_high',
+        'sensor.seplos_bms_pack_3_charging_overcurrent',
+        'sensor.seplos_bms_pack_3_discharging_overcurrent',
+        'sensor.seplos_bms_pack_3_transient_overcurrent',
+        'sensor.seplos_bms_pack_3_output_short_circuit',
+        'sensor.seplos_bms_pack_3_soc_low',
+        'binary_sensor.seplos_bms_pack_3_low_temperature_heating',
+        'binary_sensor.seplos_bms_pack_3_charging_high_voltage_protection',
+        'binary_sensor.seplos_bms_pack_3_intermittent_power_supplement',
+        'binary_sensor.seplos_bms_pack_3_cell_low_voltage_forbidden_charging',
+        'binary_sensor.seplos_bms_pack_3_output_reverse_polarity_protection',
+        'binary_sensor.seplos_bms_pack_3_auto_charging_wait',
+        'binary_sensor.seplos_bms_pack_3_manual_charging_wait',
+        'binary_sensor.seplos_bms_pack_3_no_calibration_of_voltage',
+        'binary_sensor.seplos_bms_pack_3_no_calibration_of_current',
+        'binary_sensor.seplos_bms_pack_3_no_calibration_of_null_point',
+        'binary_sensor.seplos_bms_pack_3_voltage_sensing_failure',
+        'binary_sensor.seplos_bms_pack_3_temperature_sensing_failure',
+        'binary_sensor.seplos_bms_pack_3_current_sensing_failure',
+        'binary_sensor.seplos_bms_pack_3_power_switch_failure',
+        'binary_sensor.seplos_bms_pack_3_cell_voltage_difference_sensing_failure',
+        'binary_sensor.seplos_bms_pack_3_charging_switch_failure',
+        'binary_sensor.seplos_bms_pack_3_discharging_switch_failure',
+        'binary_sensor.seplos_bms_pack_3_current_limit_switch_failure',
+        'binary_sensor.seplos_bms_pack_3_output_connection_failure',
+        'binary_sensor.seplos_bms_pack_3_eep_storage_failure',
+        'binary_sensor.seplos_bms_pack_3_rtc_clock_failure'
+      ] %}
+      {% for i in range(1, 17) %}
+        {% if i <= 4 %}
+          {% set sensors = sensors + ['sensor.seplos_bms_pack_3_cell_temperature_alarm_' ~ i] %}
+        {% endif %}
+        {% set sensors = sensors + ['sensor.seplos_bms_pack_3_cell_voltage_alarm_' ~ i] %}
+        {% set sensors = sensors + ['binary_sensor.seplos_bms_pack_3_disconnection_cell_' ~ i] %}
+      {% endfor %}
+
+      {% set ns = namespace(has_failure=false, has_alarm=false) %}
+      {% for sensor in sensors %}
+        {% if states(sensor) not in ['OK', 'off'] %}
+          {% if 'failure' in sensor %}
+            {% set ns.has_failure = true %}
+          {% else %}
+            {% set ns.has_alarm = true %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% if ns.has_failure %}
+        orange
+      {% elif ns.has_alarm %}
+        yellow
+      {% else %}
+        green
+      {% endif %}
+    icon_tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Pack 03 – Status
+          content:
+            type: markdown
+            content: |
+              ## 🔴 Failures
+              {% set failures = [
+                'binary_sensor.seplos_bms_pack_3_voltage_sensing_failure',
+                'binary_sensor.seplos_bms_pack_3_temperature_sensing_failure',
+                'binary_sensor.seplos_bms_pack_3_current_sensing_failure',
+                'binary_sensor.seplos_bms_pack_3_power_switch_failure',
+                'binary_sensor.seplos_bms_pack_3_cell_voltage_difference_sensing_failure',
+                'binary_sensor.seplos_bms_pack_3_charging_switch_failure',
+                'binary_sensor.seplos_bms_pack_3_discharging_switch_failure',
+                'binary_sensor.seplos_bms_pack_3_current_limit_switch_failure',
+                'binary_sensor.seplos_bms_pack_3_output_connection_failure',
+                'binary_sensor.seplos_bms_pack_3_eep_storage_failure',
+                'binary_sensor.seplos_bms_pack_3_rtc_clock_failure'
+              ] %}
+              {% set has_failure = namespace(value=false) %}
+              {% for sensor in failures %}
+                {% if not is_state(sensor, 'off') %}
+                  {%- set has_failure.value = true -%}
+                  - {{ state_attr(sensor, 'friendly_name')|replace('Seplos BMS Pack-0 (Master) ', '') }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_failure.value %}
+              *No active failures*
+              {% endif %}
+
+              ## 🟠 Alarms
+              {% set alarms = [
+                'sensor.seplos_bms_pack_3_ambient_temperature_alarm',
+                'sensor.seplos_bms_pack_3_component_temperature_alarm',
+                'sensor.seplos_bms_pack_3_dis_charging_current_alarm',
+                'sensor.seplos_bms_pack_3_pack_voltage_alarm',
+                'sensor.seplos_bms_pack_3_cell_overvoltage',
+                'sensor.seplos_bms_pack_3_cell_voltage_low',
+                'sensor.seplos_bms_pack_3_pack_overvoltage',
+                'sensor.seplos_bms_pack_3_pack_voltage_low',
+                'sensor.seplos_bms_pack_3_charging_temperature_high',
+                'sensor.seplos_bms_pack_3_charging_temperature_low',
+                'sensor.seplos_bms_pack_3_discharging_temperature_high',
+                'sensor.seplos_bms_pack_3_discharging_temperature_low',
+                'sensor.seplos_bms_pack_3_ambient_temperature_high',
+                'sensor.seplos_bms_pack_3_ambient_temperature_low',
+                'sensor.seplos_bms_pack_3_component_temperature_high',
+                'sensor.seplos_bms_pack_3_charging_overcurrent',
+                'sensor.seplos_bms_pack_3_discharging_overcurrent',
+                'sensor.seplos_bms_pack_3_transient_overcurrent',
+                'sensor.seplos_bms_pack_3_output_short_circuit',
+                'sensor.seplos_bms_pack_3_soc_low',
+                'binary_sensor.seplos_bms_pack_3_low_temperature_heating',
+                'binary_sensor.seplos_bms_pack_3_charging_high_voltage_protection',
+                'binary_sensor.seplos_bms_pack_3_intermittent_power_supplement',
+                'binary_sensor.seplos_bms_pack_3_cell_low_voltage_forbidden_charging',
+                'binary_sensor.seplos_bms_pack_3_output_reverse_polarity_protection',
+                'binary_sensor.seplos_bms_pack_3_auto_charging_wait',
+                'binary_sensor.seplos_bms_pack_3_manual_charging_wait',
+                'binary_sensor.seplos_bms_pack_3_no_calibration_of_voltage',
+                'binary_sensor.seplos_bms_pack_3_no_calibration_of_current',
+                'binary_sensor.seplos_bms_pack_3_no_calibration_of_null_point'
+              ] %}
+              {% set has_alarm = namespace(value=false) %}
+              {% for sensor in alarms %}
+                {% if states(sensor) not in ['OK', 'off'] %}
+                  {%- set has_alarm.value = true -%}
+                  - {{ state_attr(sensor, 'friendly_name')|replace('Seplos BMS Pack-0 (Master) ', '') }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_alarm.value %}
+              *No active alarms*
+              {% endif %}
+
+              ## 📊 Cell-Status
+              ### Voltage warnings
+              {% set has_voltage_warning = namespace(value=false) %}
+              {% for i in range(1, 17) %}
+                {% set sensor = 'sensor.seplos_bms_pack_3_cell_voltage_alarm_' ~ i %}
+                {% if not is_state(sensor, 'OK') %}
+                  {%- set has_voltage_warning.value = true -%}
+                  - Cell {{ i }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_voltage_warning.value %}
+              *No active voltage warnings*
+              {% endif %}
+
+              ### Temperature warnings
+              {% set has_temp_warning = namespace(value=false) %}
+              {% for i in range(1, 5) %}
+                {% set sensor = 'sensor.seplos_bms_pack_3_cell_temperature_alarm_' ~ i %}
+                {% if not is_state(sensor, 'OK') %}
+                  {%- set has_temp_warning.value = true -%}
+                  - Temperature Sensor {{ i }}: **{{ states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_temp_warning.value %}
+              *No active temperature warnings*
+              {% endif %}
+
+              ### Connection warnings
+              {% set has_disconnection = namespace(value=false) %}
+              {% for i in range(1, 17) %}
+                {% set sensor = 'binary_sensor.seplos_bms_pack_3_disconnection_cell_' ~ i %}
+                {% if not is_state(sensor, 'on') %}
+                  {%- set has_disconnection.value = true -%}
+                  - Cell {{ i }}: **{{ 'disconnected' if is_state(sensor, 'off') else states(sensor) }}**
+                {% endif %}
+              {% endfor %}
+              {% if not has_disconnection.value %}
+              *No active connection warnings*
+              {% endif %}
+
+              ---
+              *Last update: {{ now().strftime('%H:%M:%S') }}*
+    tap_action:
+      action: fire-dom-event
+      browser_mod:
+        service: browser_mod.popup
+        data:
+          title: Pack 03 – Info
+          content:
+            type: vertical-stack
+            cards:
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Port
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_3_port_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const portVol = entity.state;
+                              const minPackVol = states['sensor.seplos_bms_pack_3_min_pack_voltage'].state;
+                              const maxPackVol = states['sensor.seplos_bms_pack_3_max_pack_voltage'].state;
+                              if (portVol < minPackVol + 8) return 'red';
+                              if (portVol > maxPackVol - 3.2) return 'red';
+                              if (portVol < minPackVol + 10.4) return 'orange';
+                              if (portVol > maxPackVol - 4.6) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Pack
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_3_total_pack_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const totalPackVol = entity.state;
+                              const minPackVol = states['sensor.seplos_bms_pack_3_min_pack_voltage'].state;
+                              const maxPackVol = states['sensor.seplos_bms_pack_3_max_pack_voltage'].state;
+                              if (totalPackVol < minPackVol + 8) return 'red';
+                              if (totalPackVol > maxPackVol - 3.2) return 'red';
+                              if (totalPackVol < minPackVol + 10.4) return 'orange';
+                              if (totalPackVol > maxPackVol - 4.6) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Cycles
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_3_charging_cycles
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const cycles = entity.state;
+                              if (cycles > 5000) return 'red';
+                              if (cycles > 3000) return 'orange';
+                              if (cycles > 1000) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: SoH
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_3_state_of_health
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const soh = entity.state;
+                              if (soh > 99) return 'lightgreen';
+                              if (soh > 95) return 'yellow';
+                              if (soh > 90) return 'orange';
+                              return 'red';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Average Cell
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_3_average_cell_voltage
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const cellVol = entity.state;
+                              const minCellVol = states['sensor.seplos_bms_pack_3_min_cell_voltage'].state;
+                              const maxCellVol = states['sensor.seplos_bms_pack_3_max_cell_voltage'].state;
+                              if (cellVol < minCellVol + 0.5) return 'red';
+                              if (cellVol > maxCellVol - 0.2) return 'red';
+                              if (cellVol < minCellVol + 0.65) return 'orange';
+                              if (cellVol > maxCellVol - 0.3) return 'orange';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Ambient Temp.
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_3_ambient_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 9 || temp > 30) return 'orange';
+                              if (temp < 13 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: BMS Temp.
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_3_components_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 9 || temp > 30) return 'orange';
+                              if (temp < 13 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: Delta Cell
+                    size: 15%
+                    entity: sensor.seplos_bms_pack_3_delta_cell_temperature
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      icon:
+                        - color: |
+                            [[[
+                              const temp = entity.state;
+                              if (temp > 3) return 'red';
+                              if (temp > 2) return 'orange';
+                              if (temp > 1) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - font-size: 10px
+                      state:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - font-size: 12px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: |
+                      [[[
+                        const activeBalancingCells = Array.from({length: 16}, (_, i) => i + 1)
+                          .filter(i => states[`binary_sensor.seplos_bms_pack_3_balancer_cell_${i}`].state == "on");
+                        return activeBalancingCells.length > 0
+                          ? `Passive Balancer active for Cells ${activeBalancingCells.join(', ')}`
+                          : "Passive Balancer inactive";
+                      ]]]
+                    styles:
+                      name:
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 40px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Temp. Cell 2
+                    entity: sensor.seplos_bms_pack_3_cell_temperature_1
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+                  - type: custom:button-card
+                    name: Temp. Cell 7
+                    entity: sensor.seplos_bms_pack_3_cell_temperature_2
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+              - type: horizontal-stack
+                cards:
+                  - type: custom:bar-card
+                    direction: up
+                    columns: 8
+                    decimal: 3
+                    max: 3.65
+                    min: 2.5
+                    height: 70px
+                    entity_config: true
+                    severity:
+                      - color: red
+                        from: 3.45
+                        to: 3.65
+                      - color: orange
+                        from: 3.363
+                        to: 3.45
+                      - color: lightgreen
+                        from: 3.2
+                        to: 3.363
+                      - color: orange
+                        from: 3.15
+                        to: 3.2
+                      - color: red
+                        from: 2.5
+                        to: 3.15
+                    positions:
+                      icon: "off"
+                      indicator: inside
+                      name: outside
+                    card_mod:
+                      style: >-
+                        :host {
+                          --bar-card-border-radius: 4px;
+                        } ha-card {
+                          margin: 0 !important;
+                          padding: 0 !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                        } ha-card > #states {
+                          padding: 0 !important;
+                        }
+
+                        {% set high =
+                        states('sensor.seplos_bms_pack_3_highest_cell') | int %}
+
+                        {% set low  =
+                        states('sensor.seplos_bms_pack_3_lowest_cell') | int %}
+
+                        {% if 1 <= high <= 8 %}
+
+                        bar-card-card:nth-child({{ high }}) {
+                          box-shadow: 0px 0px 3px 1px red !important;
+                          border: 1px solid red !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        {% if 1 <= low <= 8 %}
+
+                        bar-card-card:nth-child({{ low }}) {
+                          box-shadow: 0px 0px 3px 1px blue !important;
+                          border: 1px solid blue !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        bar-card-value {
+                          margin-right: auto;
+                          margin-left: auto;
+                          margin-bottom: 35px;
+                          padding: 1px;
+                          font-size: 9px;
+                          font-weight: 500;
+                          line-height: 9px;
+                          color: black;
+                          background-color: white; 
+                        }
+
+                        bar-card-name {
+                          margin: 0;
+                          font-size: 8px;
+                          font-weight: normal;
+                        }
+                    entities:
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_1
+                        name: Cell 1
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_2
+                        name: Cell 2
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_3
+                        name: Cell 3
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_4
+                        name: Cell 4
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_5
+                        name: Cell 5
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_6
+                        name: Cell 6
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_7
+                        name: Cell 7
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_8
+                        name: Cell 8
+              - type: horizontal-stack
+                cards:
+                  - type: custom:bar-card
+                    direction: up
+                    columns: 8
+                    decimal: 3
+                    max: 3.65
+                    min: 2.5
+                    height: 70px
+                    entity_config: true
+                    severity:
+                      - color: red
+                        from: 3.45
+                        to: 3.65
+                      - color: orange
+                        from: 3.363
+                        to: 3.45
+                      - color: lightgreen
+                        from: 3.2
+                        to: 3.363
+                      - color: orange
+                        from: 3.15
+                        to: 3.2
+                      - color: red
+                        from: 2.5
+                        to: 3.15
+                    positions:
+                      icon: "off"
+                      indicator: inside
+                      name: outside
+                    card_mod:
+                      style: >-
+                        :host {
+                          --bar-card-border-radius: 4px;
+                        }
+
+                        ha-card {
+                          margin: 0 !important;
+                          padding: 0 !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                        }
+
+                        ha-card > #states {
+                          padding: 0 !important;
+                        }
+
+                        {% set high = 17 -
+                        (states('sensor.seplos_bms_pack_3_highest_cell') | int)
+                        %}
+
+                        {% set low  = 17 -
+                        (states('sensor.seplos_bms_pack_3_lowest_cell') | int)
+                        %}
+
+                        {% if 1 <= high <= 8 %}
+
+                        bar-card-card:nth-child({{ high }}) {
+                          box-shadow: 0px 0px 3px 1px red !important;
+                          border: 1px solid red !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        {% if 1 <= low <= 8 %}
+
+                        bar-card-card:nth-child({{ low }}) {
+                          box-shadow: 0px 0px 3px 1px blue !important;
+                          border: 1px solid blue !important;
+                          border-radius: 4px;
+                          z-index: 3;
+                        }
+
+                        {% endif %}
+
+                        bar-card-value {
+                          margin-right: auto;
+                          margin-left: auto;
+                          margin-bottom: 35px;
+                          padding: 1px;
+                          font-size: 9px;
+                          font-weight: 500;
+                          color: black;
+                          background-color: white; 
+                        }
+
+                        bar-card-name {
+                          margin: 0;
+                          font-size: 8px;
+                          font-weight: normal;
+                        }
+                    entities:
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_16
+                        name: Cell 16
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_15
+                        name: Cell 15
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_14
+                        name: Cell 14
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_13
+                        name: Cell 13
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_12
+                        name: Cell 12
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_11
+                        name: Cell 11
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_10
+                        name: Cell 10
+                      - entity: sensor.seplos_bms_pack_3_voltage_cell_9
+                        name: Cell 9
+              - type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Temp. Cell 15
+                    entity: sensor.seplos_bms_pack_3_cell_temperature_3
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+                  - type: custom:button-card
+                    name: Temp. Cell 10
+                    entity: sensor.seplos_bms_pack_3_cell_temperature_4
+                    show_icon: true
+                    show_name: true
+                    show_state: true
+                    styles:
+                      grid:
+                        - grid-template-areas: "\"i n s\""
+                        - grid-template-columns: 21px 1fr auto
+                        - grid-template-rows: 1fr
+                        - column-gap: 8px
+                      icon:
+                        - width: 21px
+                        - height: 21px
+                        - color: |
+                            [[[
+                              const temp = parseFloat(entity.state);
+                              if (temp < 5 || temp > 40) return 'red';
+                              if (temp < 8 || temp > 30) return 'orange';
+                              if (temp < 11 || temp > 20) return 'yellow';
+                              return 'lightgreen';
+                            ]]]
+                      name:
+                        - justify-self: start
+                        - align-self: center
+                        - font-size: 10px
+                      state:
+                        - justify-self: end
+                        - align-self: center
+                        - font-size: 12px
+                        - font-weight: 500
+                      card:
+                        - height: 30px
+                        - padding: 5px
+    grid_options:
+      columns: 9
+      rows: 2
+  - type: custom:entity-progress-card
+    entity: sensor.seplos_bms_pack_3_state_of_charge
+    name: State of Charge
+    theme: optimal_when_high
+    bar_size: small
+    layout: vertical
+    hide:
+      - name
+    icon: mdi:battery-charging
+    grid_options:
+      columns: 3
+      rows: 2
+column_span: 1

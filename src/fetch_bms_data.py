@@ -115,6 +115,7 @@ class Config:
     # Home Assistant Discovery
     ENABLE_HA_DISCOVERY_CONFIG = get_env_value("ENABLE_HA_DISCOVERY_CONFIG", True, bool)
     HA_DISCOVERY_PREFIX = get_env_value("HA_DISCOVERY_PREFIX", "homeassistant", str)
+    INVERT_HA_DIS_CHARGE_MEASUREMENTS = get_env_value("INVERT_HA_DIS_CHARGE_MEASUREMENTS", True, bool)
 
     # Logging
     LOGGING_LEVEL = get_env_value("LOGGING_LEVEL", "info", str).upper()
@@ -268,6 +269,20 @@ class Telemetry:
 class SeplosBatteryPack:
     """Handles all methods for fetching, validating and parsing BMS data."""
 
+    FRAME_READ_RETRIES = 5
+    FRAME_MIN_LENGTH = 81
+    STATUS_MAP_24 = {
+        0: "OK",
+        1: "Alarm (low)",
+        2: "Alarm (high)"
+    }
+    SIMPLE_MODE_MAP = {
+        "on_off": ("ON", "OFF"),
+        "fault_normal": ("Fault", "OK"),
+        "warning_normal": ("Warning", "OK"),
+        "protection_normal": ("Protection", "OK"),
+    }
+
     def __init__(self, pack_address: int):
         self.pack_address = pack_address
         self.last_status: Optional[BatteryData] = None
@@ -325,12 +340,7 @@ class SeplosBatteryPack:
     def status_from_24_byte_alarm(data: bytes, offset: int) -> str:
         """Return status string from 24 byte alarm data."""
         alarm_type = bytes.fromhex(data.decode("ascii"))[offset]
-        status_map = {
-            0: "OK",
-            1: "Alarm (low)",
-            2: "Alarm (high)"
-        }
-        return status_map.get(alarm_type, "Alarm (other)")
+        return SeplosBatteryPack.STATUS_MAP_24.get(alarm_type, "Alarm (other)")
 
     @staticmethod
     def status_from_20_bit_alarm(
@@ -350,19 +360,9 @@ class SeplosBatteryPack:
             return bool(data_byte & (1 << bit))
 
         # one bit mode
-        simple_modes = {
-            "on_off":        ("ON", "OFF"),
-            "fault_normal":  ("Fault", "OK"),
-            "warning_normal": ("Warning", "OK"),
-            "protection_normal": ("Protection", "OK"),
-        }
-
-        if mode in simple_modes:
-            active, inactive = simple_modes[mode]
+        if mode in SeplosBatteryPack.SIMPLE_MODE_MAP:
+            active, inactive = SeplosBatteryPack.SIMPLE_MODE_MAP[mode]
             return active if bit_set(first_bit) else inactive
-
-        #if mode in ["on_off", "fault_normal", "warning_normal", "protection_normal"]:
-        #    return "ON" if bit_set(first_bit) else "OFF"
 
         # two bit mode
         if mode == "protection_alarm_normal":
@@ -372,7 +372,7 @@ class SeplosBatteryPack:
                 return "Protection"
             return "OK"
 
-        elif mode == "lockout_protection_normal":
+        if mode == "lockout_protection_normal":
             if bit_set(first_bit):
                 return "Protection"
             if second_bit is not None and bit_set(second_bit):
@@ -454,8 +454,7 @@ class SeplosBatteryPack:
 
     def decode_telemetry_feedback_frame(self, data: bytes) -> Dict[str, Any]:
         """Decode battery pack telemetry feedback frame."""
-        telemetry_feedback = {}
-        telemetry_feedback["normal"] = {}
+        telemetry_feedback = {"normal": {}}
 
         # Number of cells
         number_of_cells = self.int_from_1byte_hex_ascii(data, offset=4)
@@ -564,9 +563,7 @@ class SeplosBatteryPack:
 
     def decode_telesignalization_feedback_frame(self, data: bytes) -> Dict[str, Any]:
         """Decode battery pack telesignalization feedback frame."""
-        telesignalization_feedback = {}
-        telesignalization_feedback["normal"] = {}
-        telesignalization_feedback["binary"] = {}
+        telesignalization_feedback = {"normal": {}, "binary": {}}
 
         # Number of cells
         number_of_cells = bytes.fromhex(data.decode("ascii"))[2]
@@ -759,6 +756,49 @@ class SeplosBatteryPack:
 
         return telesignalization_feedback
 
+    def _request_feedback_frame(
+        self,
+        cid2: int,
+        expected_length: int,
+        decoder: callable,
+        frame_label: str
+    ) -> Optional[Dict[str, Any]]:
+        """Request a feedback frame (telemetry or telesignalization) with retry/validation."""
+        if not SERIAL_INSTANCE:
+            logger.error("Serial instance not initialized")
+            return None
+
+        command = self.encode_cmd(address=self.pack_address, cid2=cid2)
+        logger.debug(f"Pack{self.pack_address}:{frame_label}_command: {command}")
+
+        for attempt in range(self.FRAME_READ_RETRIES):
+            SERIAL_INSTANCE.write(command)
+            raw_data = SERIAL_INSTANCE.read_until(b'\r')
+
+            if len(raw_data) < self.FRAME_MIN_LENGTH:
+                logger.debug(f"Pack{self.pack_address}:{frame_label} attempt {attempt + 1}: insufficient length")
+                continue
+
+            pack_no_data = raw_data[3:-77]
+            info_frame_data = raw_data[13:-5]
+
+            if (
+                self.is_valid_hex_string(pack_no_data) and
+                self.int_from_1byte_hex_ascii(pack_no_data, 0) == self.pack_address and
+                self.is_valid_length(info_frame_data, expected_length=expected_length) and
+                self.is_valid_hex_string(info_frame_data) and
+                self.is_valid_frame(raw_data)
+            ):
+                feedback = decoder(info_frame_data)
+                logger.info(f"Pack{self.pack_address}:{frame_label} received")
+                logger.debug(f"Pack{self.pack_address}:{frame_label}: {json.dumps(feedback, indent=2)}")
+                return feedback
+
+            logger.debug(f"Pack{self.pack_address}:{frame_label} attempt {attempt + 1}: validation failed")
+
+        logger.error(f"Pack{self.pack_address}:Failed to read {frame_label.lower()} after {self.FRAME_READ_RETRIES} retries")
+        return None
+
     def read_serial_data(self) -> Optional[BatteryData]:
         """Read data for battery pack from serial interface."""
         logger.info(f"Pack{self.pack_address}:Requesting data...")
@@ -778,79 +818,36 @@ class SeplosBatteryPack:
             SERIAL_INSTANCE.flushInput()
 
             # Request telemetry data
-            telemetry_command = self.encode_cmd(address=self.pack_address, cid2=0x42)
-            logger.debug(f"Pack{self.pack_address}:telemetry_command: {telemetry_command}")
-
-            # Read telemetry with retry logic
-            max_retries = 5
-            for retry in range(max_retries):
-                SERIAL_INSTANCE.write(telemetry_command)
-                raw_data = SERIAL_INSTANCE.read_until(b'\r')
-
-                if len(raw_data) < 81:
-                    continue
-
-                pack_no_data = raw_data[3:-77]
-                info_frame_data = raw_data[13:-5]
-
-                if (self.is_valid_hex_string(pack_no_data) and
-                    self.int_from_1byte_hex_ascii(pack_no_data, 0) == self.pack_address and
-                    self.is_valid_length(info_frame_data, expected_length=150) and
-                    self.is_valid_hex_string(info_frame_data) and
-                    self.is_valid_frame(raw_data)):
-
-                    telemetry_feedback = self.decode_telemetry_feedback_frame(info_frame_data)
-                    battery_pack_data["telemetry"] = telemetry_feedback
-                    logger.info(f"Pack{self.pack_address}:Telemetry received")
-                    logger.debug(f"Pack{self.pack_address}:Telemetry: {json.dumps(telemetry_feedback, indent=2)}")
-                    break
-            else:
-                logger.error(f"Pack{self.pack_address}:Failed to read telemetry after {max_retries} retries")
+            telemetry_feedback = self._request_feedback_frame(
+                cid2=0x42,
+                expected_length=150,
+                decoder=self.decode_telemetry_feedback_frame,
+                frame_label="Telemetry"
+            )
+            if telemetry_feedback is None:
                 return None
+            battery_pack_data["telemetry"] = telemetry_feedback
 
             # Small delay between requests
             time.sleep(1)
-
+            
             # Request telesignalization data
-            telesignalization_command = self.encode_cmd(address=self.pack_address, cid2=0x44)
-            logger.debug(f"Pack{self.pack_address}:telesignalization_command: {telesignalization_command}")
-
-            # Read telesignalization with retry logic
-            for retry in range(max_retries):
-                SERIAL_INSTANCE.write(telesignalization_command)
-                raw_data = SERIAL_INSTANCE.read_until(b'\r')
-
-                if len(raw_data) < 81:
-                    continue
-
-                pack_no_data = raw_data[3:-77]
-                info_frame_data = raw_data[13:-5]
-
-                if (self.is_valid_hex_string(pack_no_data) and
-                    self.int_from_1byte_hex_ascii(pack_no_data, 0) == self.pack_address and
-                    self.is_valid_length(info_frame_data, expected_length=98) and
-                    self.is_valid_hex_string(info_frame_data) and
-                    self.is_valid_frame(raw_data)):
-
-                    telesignalization_feedback = self.decode_telesignalization_feedback_frame(info_frame_data)
-                    battery_pack_data["telesignalization"] = telesignalization_feedback
-                    logger.info(f"Pack{self.pack_address}:Telesignalization received")
-                    logger.debug(f"Pack{self.pack_address}:Telesignalization: {json.dumps(telesignalization_feedback, indent=2)}")
-                    break
-            else:
-                logger.error(f"Pack{self.pack_address}:Failed to read telesignalization after {max_retries} retries")
+            telesignalization_feedback = self._request_feedback_frame(
+                cid2=0x44,
+                expected_length=98,
+                decoder=self.decode_telesignalization_feedback_frame,
+                frame_label="Telesignalization"
+            )
+            if telesignalization_feedback is None:
                 return None
+            battery_pack_data["telesignalization"] = telesignalization_feedback
 
             # Check if data has changed
-            if not self.last_status:
-                self.last_status = battery_pack_data
-                return battery_pack_data
-            elif self.last_status == battery_pack_data:
-                return None
-            else:
+            if self.last_status is None or self.last_status != battery_pack_data:
                 self.last_status = battery_pack_data
                 return battery_pack_data
 
+            return None
         except Exception as e:
             logger.error(f"Pack{self.pack_address}:Error reading serial data: {e}")
             return None
@@ -876,6 +873,7 @@ def on_ha_online(client: mqtt.Client, userdata: Any, message: mqtt.MQTTMessage) 
             auto_discovery = AutoDiscoveryConfig(
                 mqtt_topic=Config.MQTT_TOPIC,
                 discovery_prefix=Config.HA_DISCOVERY_PREFIX,
+                invert_ha_dis_charge_measurements=Config.INVERT_HA_DIS_CHARGE_MEASUREMENTS,
                 mqtt_client=client
             )
             for pack in battery_packs:
@@ -966,9 +964,7 @@ def main():
                     # Publish updated data to MQTT
                     logger.info(f"Pack{pack_address}:Publishing updated data to MQTT")
                     topic = f"{Config.MQTT_TOPIC}/pack-{pack_address}/sensors"
-                    payload = {
-                        **pack_data
-                    }
+                    payload = {**pack_data}
                     mqtt_client.publish(topic, json.dumps(payload, indent=2))
                 else:
                     logger.info(f"Pack{pack_address}:No changes detected")
