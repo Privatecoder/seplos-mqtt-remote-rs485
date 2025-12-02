@@ -64,7 +64,7 @@ docker run -itd \
   -e HA_DISCOVERY_PREFIX=homeassistant \
   -e LOGGING_LEVEL=info \
   --name seplos-mqtt-rs485 \
-  ghcr.io/privatecoder/seplos-mqtt-remote-rs485:v4.0.1
+  ghcr.io/privatecoder/seplos-mqtt-remote-rs485:v4.0.2
 ```
 
 - To run the script without socat / remote RS485 but local connections, don't set the `RS485_REMOTE_IP` and `RS485_REMOTE_PORT` ENV-vars, i.e:
@@ -87,7 +87,7 @@ docker run -itd \
   -e HA_DISCOVERY_PREFIX=homeassistant \
   -e LOGGING_LEVEL=info \
   --name seplos-mqtt-rs485 \
-  ghcr.io/privatecoder/seplos-mqtt-remote-rs485:v4.0.1
+  ghcr.io/privatecoder/seplos-mqtt-remote-rs485:v4.0.2
 ```
 
 Available ENV-vars are:
