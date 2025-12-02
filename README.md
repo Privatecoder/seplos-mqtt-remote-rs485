@@ -8,14 +8,23 @@ Home Assistant Sensor auto discovery can be enabled (optional)
 
 ## Hardware requirements
 
-1. A remote or local RS485 device ([the Waveshare 2-CH RS485 to ETH gateway has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
-2. A self-crimped cable or a (modified) splitter ([this one works for me, when cutting the RS485 part from one of the two outlets and the CAN part from the other one) to split the CAN port into CAN+RS485](https://www.amazon.de/gp/product/B00D3KIQXC)
-3. One or multiple [Seplos BMS V2 / V16](https://www.seplos.com/bms-2.0.html)
-4. A configured and running MQTT broker
+- A remote or local RS485 device ([the Waveshare 2-CH RS485 to ETH gateway has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
+- **For MULTIPLE packs**: A self-crimped cable or a (modified) splitter ([this one works for me, when cutting the RS485 part from one of the two outlets and the CAN part from the other one) to split the CAN port into CAN+RS485](https://www.amazon.de/gp/product/B00D3KIQXC)
+- **For a SINGLE pack**: A regular patch-cable from one of the two RS485-ports of the pack to the terminals of your RS485 device
+- One or multiple [Seplos BMS V2 / V16](https://www.seplos.com/bms-2.0.html)
+- A configured and running MQTT broker
 
-## Wiring the RS485 device to one or multiple battery packs
+## Wiring the RS485 device to MULTIPLE battery packs
 
 <img alt="wiring sample" src="https://github.com/user-attachments/assets/dc72fa68-df39-41e8-8033-4776d622d618" width="500">
+
+- `orange` => `RS485-A`
+- `orange-white` => `RS485-B`
+- `green-white` => `PE`
+
+<img alt="waveshare gateway pinout" src="https://github.com/user-attachments/assets/442e0fee-5ec7-495b-81d7-013c56f1f304" width="100">
+
+## Wiring the RS485 device to ONE SINGLE battery pack
 
 When using a regular patch-cable, cut one of its connectors and take the `orange`, `orange-white` and `green-white` wires to crimp a terminal onto each of them. Then connect it to the waveshare device like so:
 
@@ -28,7 +37,7 @@ When using a regular patch-cable, cut one of its connectors and take the `orange
 ## Installation and configuration
 
 1. Configure and setup an MQTT broker with a user and password
-2. Configure your RS485 device. For the Waveshare 2-CH RS485 to ETH gateway this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600`
+2. Configure your RS485 device. For the Waveshare 2-CH RS485 to ETH gateway this would most importantly be `IP Mode: Static` (must be a reachable IP within your network), `Port: 4196` (default), `Work Mode: TCP Server`, `Transfer Protocol: None`, `Baud Rate: 9600` (for **MULTIPLE** packs) **or** `Baud Rate: 19200` (for a **SINGLE** pack).
 3. Configure and setup something that can run a container (when using the container-image) or python script (when just using the script)
 4. Set the required ENV-vars
 5. Run the Docker Image, for example like this:
