@@ -943,6 +943,7 @@ def main():
             auto_discovery = AutoDiscoveryConfig(
                 mqtt_topic=Config.MQTT_TOPIC,
                 discovery_prefix=Config.HA_DISCOVERY_PREFIX,
+                invert_ha_dis_charge_measurements=Config.INVERT_HA_DIS_CHARGE_MEASUREMENTS,
                 mqtt_client=mqtt_client
             )
             for pack in battery_packs:
