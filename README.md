@@ -156,10 +156,6 @@ Setting `RS485_REMOTE_IP` and `RS485_REMOTE_PORT` starts the docker image with s
 
 Not defining those will just start the script, however `SERIAL_INTERFACE` must match your existing serial-device – either passed to the container directly or using the privileged-flag (not recommended).
 
-```text
-
-```
-
 ## Manual execution
 
 1. Clone the project
