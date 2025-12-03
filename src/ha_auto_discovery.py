@@ -675,9 +675,14 @@ class AutoDiscoveryConfig:
                 retain=True,
                 qos=1
             )
-            logger.debug(f"Published discovery config for pack {pack_no}, {entity_type}: {name}")
+            logger.debug(
+                "Published discovery config for pack %s, %s: %s",
+                pack_no,
+                entity_type,
+                name,
+            )
         except Exception as e:
-            logger.error(f"Failed to publish discovery config: {e}")
+            logger.error("Failed to publish discovery config: %s", e)
 
     # -------------------------------------------------------------------------
     # Build-Funktionen
@@ -738,7 +743,7 @@ class AutoDiscoveryConfig:
         """
 
         value_template_expr = f"value_json.{value_template_group}.normal.{value_template_key}"
-            
+
         sensor = self._build_base_entity(
             pack_no=pack_no,
             name=name,
@@ -819,7 +824,10 @@ class AutoDiscoveryConfig:
         Create and publish unique binary sensor configuration.
         """
 
-        logger.debug(f"Creating auto-discovery binary sensors for pack {pack_no}")
+        logger.debug(
+            "Creating auto-discovery binary sensors for pack %s",
+            pack_no,
+        )
 
         binary_sensor_config = self._build_binary_sensor_config(
             pack_no=pack_no,
@@ -836,7 +844,10 @@ class AutoDiscoveryConfig:
 
         self._publish_binary_sensor_config(pack_no, name, value_template_key, binary_sensor_config)
 
-        logger.debug(f"Auto-discovery binary sensors published for pack {pack_no}")
+        logger.debug(
+            "Auto-discovery binary sensors published for pack %s",
+            pack_no,
+        )
 
     def create_sensor_config(
         self,
@@ -856,7 +867,11 @@ class AutoDiscoveryConfig:
         Create and publish unique sensor configuration.
         """
 
-        logger.debug(f"Creating auto-discovery sensors for pack {pack_no}")
+        logger.debug(
+            "Creating auto-discovery sensors for pack %s",
+            pack_no,
+        )
+
 
         sensor_config = self._build_sensor_config(
             pack_no=pack_no,
@@ -874,7 +889,10 @@ class AutoDiscoveryConfig:
 
         self._publish_sensor_config(pack_no, name, value_template_key, sensor_config)
 
-        logger.debug(f"Auto-discovery sensors published for pack {pack_no}")
+        logger.debug(
+            "Auto-discovery sensors published for pack %s",
+            pack_no,
+        )
 
     def create_similar_binary_sensor_config(
         self,
