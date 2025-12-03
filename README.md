@@ -9,18 +9,55 @@ Home Assistant Sensor auto discovery can be enabled (optional)
 ## Hardware requirements
 
 - A remote or local RS485 device ([the Waveshare 2-CH RS485 to ETH gateway has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
-- **For MULTIPLE packs**: A self-crimped cable or a (modified) splitter ([this one works for me, when cutting the RS485 part from one of the two outlets and the CAN part from the other one) to split the CAN port into CAN+RS485](https://www.amazon.de/gp/product/B00D3KIQXC)
+- **For MULTIPLE packs**: A self-crimped cable with multiple plugs or two or more splitters ([this one works for me](https://www.amazon.de/gp/product/B00D3KIQXC) – one of which always needs to be modified (more information [below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on#wiring-the-rs485-device-to-multiple-battery-packs))
 - **For a SINGLE pack**: A regular patch-cable from one of the two RS485-ports of the pack to the terminals of your RS485 device
 - One or multiple [Seplos BMS V2 / V16](https://www.seplos.com/bms-2.0.html)
 - A configured and running MQTT broker
 
 ## Wiring the RS485 device to MULTIPLE battery packs
 
+Carefully check the provided wiring scheme [below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on/edit/main/README.md#wiring-sample) (the PINK lines). There are two ways to approach the same result:
+1. A single, self-crimped cable with multiple plugs, crimped as shown in the picture below (recommended).
+2. Two or more splitters, one of which need to be modified (easier if you don't like crimping) – if you have two packs, you need two splitters, three packs require three splitters and so on.
+
+When using splitters, the **first** splitter (the one that connects to the Master's CAN-port) needs to be modified like so:
+- On one of the two outlets cut all but the three pins of the RS485-part (check the PINK lines in the [image below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on/edit/main/README.md#wiring-sample))
+- On the other outlet cut all but the two pins of the CAN-part (check the PINK lines in the [image below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on/edit/main/README.md#wiring-sample))
+
+Example for four packs:
+
+- Connect the first, **modified** splitter to the **CAN-Port (NOT one of the RS485!) of the Master**
+  - The outlet with only the two CAN-pins connect to your inverter using a regular patch-cable.
+  - The outlet with only the three RS485-pins connect to the first slave using a regular patch-cable.
+- Connect the second, **unmodified** splitter to the **CAN-Port (NOT one of the RS485!) of the first Slave**
+  - Use one outlet to connect the regular patch-cable, coming from the Master
+  - Use the other outlet to connect a regular patch-cable to the second Slave
+- Connect the third, **unmodified** splitter to the **CAN-Port (NOT one of the RS485!) of the second Slave**
+  - Use one outlet to connect the regular patch-cable, coming from the first Slave
+  - Use the other outlet to connect a regular patch-cable to the third Slave
+- Connect the fourth, **unmodified** splitter to the **CAN-Port (NOT one of the RS485!) of the third Slave**
+  - Use one outlet to connect the regular patch-cable, coming from the second Slave
+  - Use the other outlet to connect a regular patch-cable to your RS485-device (the one that is used to read the data, i.e. the Waveshare 2-CH RS485 to ETH gateway or similar)
+
+### Wiring sample:
+
 <img alt="wiring sample" src="https://github.com/user-attachments/assets/dc72fa68-df39-41e8-8033-4776d622d618" width="500">
+
+### Seplos pin assignment (CAN-port)
+
+- `1/8` => `RS485-B`
+- `2/7` => `RS485-A`
+- `4` => `CAN-H`
+- `5` => `CAN-L`
+- `3/6` => `GND`
+
+<img width="400" alt="seplos pin assignment" src="https://github.com/user-attachments/assets/af477cbd-9cba-422f-9e0f-880e4e17fc45" />
+
+### Waveshare pin assignment (RS485-port)
 
 - `orange` => `RS485-A`
 - `orange-white` => `RS485-B`
-- `green-white` => `PE`
+- `green-white` => `GND`
 
 <img alt="waveshare gateway pinout" src="https://github.com/user-attachments/assets/442e0fee-5ec7-495b-81d7-013c56f1f304" width="100">
 
