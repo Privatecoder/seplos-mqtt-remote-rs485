@@ -9,7 +9,7 @@ Home Assistant Sensor auto discovery can be enabled (optional)
 ## Hardware requirements
 
 - A remote or local RS485 device ([the Waveshare 2-CH RS485 to ETH gateway has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
-- **For MULTIPLE packs**: A self-crimped cable with multiple plugs or two or more splitters ([this one works for me](https://www.amazon.de/gp/product/B00D3KIQXC) – one of which always needs to be modified (more information [below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on#wiring-the-rs485-device-to-multiple-battery-packs))
+- **For MULTIPLE packs**: A self-crimped cable with multiple plugs or two or more splitters ([this one works for me](https://www.amazon.de/gp/product/B00D3KIQXC)) – one of which always needs to be modified (more information [below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on#wiring-the-rs485-device-to-multiple-battery-packs))
 - **For a SINGLE pack**: A regular patch-cable from one of the two RS485-ports of the pack to the terminals of your RS485 device
 - One or multiple [Seplos BMS V2 / V16](https://www.seplos.com/bms-2.0.html)
 - A configured and running MQTT broker
