@@ -9,20 +9,20 @@ Home Assistant Sensor auto discovery can be enabled (optional)
 ## Hardware requirements
 
 - A remote or local RS485 device ([the Waveshare 2-CH RS485 to ETH gateway has been tested](https://www.waveshare.com/2-ch-rs485-to-eth-b.htm))
-- **For MULTIPLE packs**: A self-crimped cable with multiple plugs or two or more splitters ([this one works for me](https://www.amazon.de/gp/product/B00D3KIQXC)) – one of which always needs to be modified (more information [below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on#wiring-the-rs485-device-to-multiple-battery-packs))
+- **For MULTIPLE packs**: A self-crimped cable with multiple plugs or two or more splitters ([this one works for me](https://www.amazon.de/gp/product/B00D3KIQXC)) – one of which always needs to be modified (more information [below](#wiring-the-rs485-device-to-multiple-battery-packs))
 - **For a SINGLE pack**: A regular patch-cable from one of the two RS485-ports of the pack to the terminals of your RS485 device
 - One or multiple [Seplos BMS V2 / V16](https://www.seplos.com/bms-2.0.html)
 - A configured and running MQTT broker
 
 ## Wiring the RS485 device to MULTIPLE battery packs
 
-Carefully check the provided wiring scheme [below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on#wiring-sample) (the PINK lines). There are two ways to approach the same result:
+Carefully check the provided wiring scheme [below](#wiring-sample) (the PINK lines). There are two ways to approach the same result:
 1. A single, self-crimped cable with multiple plugs, crimped as shown in the picture below (recommended).
 2. Two or more splitters, one of which need to be modified (easier if you don't like crimping) – if you have two packs, you need two splitters, three packs require three splitters and so on.
 
 When using splitters, the **first** splitter (the one that connects to the Master's CAN-port) needs to be modified like so:
-- On one of the two outlets cut all but the three pins of the RS485-part (check the PINK lines in the [image below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on#wiring-sample))
-- On the other outlet cut all but the two pins of the CAN-part (check the PINK lines in the [image below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on#wiring-sample))
+- On one of the two outlets cut all but the three pins of the RS485-part (check the PINK lines in the [image below](#wiring-sample))
+- On the other outlet cut all but the two pins of the CAN-part (check the PINK lines in the [image below](#wiring-sample))
 
 Example for four packs:
 
@@ -175,7 +175,7 @@ Not defining those will just start the script, however `SERIAL_INTERFACE` must m
 
 ### Add Sensors to lovelace
 
-- The provided `ha-lovelace/lovelace.yaml` is using custom add-ons like `mushroom-template-card`, `entity-progress-card`, `expander-card`, `button-card`, `bar-card`, `card_mod` and `browser_mod` (can be installed via HACS) and allows for a first start (value-based colors are based on EVE LF280K datasheets and measurements and personal preferences).
+- The provided `ha-lovelace/lovelace.yaml` is using custom add-ons like `mushroom-template-card`, `entity-progress-card`, `button-card`, `bar-card`, `card_mod` and `browser_mod` (can be installed via HACS) and allows for a first start (value-based colors are based on EVE LF280K datasheets and measurements and personal preferences).
 
 <img width="400" alt="lovelace sample multiple packs card" src="https://github.com/user-attachments/assets/814f7540-57a1-40db-9ac1-5d1a3e9a19a3" />
 <img width="400" alt="lovelace sample pack info" src="https://github.com/user-attachments/assets/829acb11-d50c-43a0-b818-96fbe28907aa" />
