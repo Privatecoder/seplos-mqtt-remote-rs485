@@ -16,13 +16,13 @@ Home Assistant Sensor auto discovery can be enabled (optional)
 
 ## Wiring the RS485 device to MULTIPLE battery packs
 
-Carefully check the provided wiring scheme [below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on/edit/main/README.md#wiring-sample) (the PINK lines). There are two ways to approach the same result:
+Carefully check the provided wiring scheme [below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on#wiring-sample) (the PINK lines). There are two ways to approach the same result:
 1. A single, self-crimped cable with multiple plugs, crimped as shown in the picture below (recommended).
 2. Two or more splitters, one of which need to be modified (easier if you don't like crimping) – if you have two packs, you need two splitters, three packs require three splitters and so on.
 
 When using splitters, the **first** splitter (the one that connects to the Master's CAN-port) needs to be modified like so:
-- On one of the two outlets cut all but the three pins of the RS485-part (check the PINK lines in the [image below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on/edit/main/README.md#wiring-sample))
-- On the other outlet cut all but the two pins of the CAN-part (check the PINK lines in the [image below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on/edit/main/README.md#wiring-sample))
+- On one of the two outlets cut all but the three pins of the RS485-part (check the PINK lines in the [image below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on#wiring-sample))
+- On the other outlet cut all but the two pins of the CAN-part (check the PINK lines in the [image below](https://github.com/Privatecoder/seplos-mqtt-rs485-add-on#wiring-sample))
 
 Example for four packs:
 
