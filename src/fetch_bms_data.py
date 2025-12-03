@@ -810,7 +810,7 @@ class SeplosBatteryPack:
                         )
                         idx = start + i
                         arr[idx] = value
-                        
+
                         ### Add to telesignalization_feedback
                         feedback_binary[f"{name}_{idx + 1}"] = value
                 #### Normal- and binary-sensors
@@ -825,13 +825,13 @@ class SeplosBatteryPack:
                     if group == "system_status": # Special handling of system-status
                         if value == "ON":
                             setattr(self.telesignalization, group, name)
+
+                            ### Add to telesignalization_feedback
+                            feedback_normal[group] = name
                     else:
                         setattr(self.telesignalization, name, value)
 
-                    ### Add to telesignalization_feedback
-                    if group == "system_status": # Special handling of system-status
-                        feedback_normal[group] = name
-                    else:
+                        ### Add to telesignalization_feedback
                         if mode in ("protection_alarm_normal", "lockout_protection_normal"):
                             feedback_normal[name] = value
                         else:
@@ -867,7 +867,7 @@ class SeplosBatteryPack:
                 )
                 continue
 
-            
+
             pack_address_data = raw_data[3:-77]
             info_frame_data = raw_data[13:-5]
 
