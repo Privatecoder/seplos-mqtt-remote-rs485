@@ -153,7 +153,7 @@ class Telemetry:
 
     def __init__(self):
         # From pack
-        self.cell_voltage: List[Optional[float]] = [None] * 16
+        self.voltage_cell: List[Optional[float]] = [None] * 16
         self.cell_temperature: List[Optional[float]] = [None] * 4
         self.ambient_temperature: Optional[float] = None
         self.components_temperature: Optional[float] = None
@@ -451,22 +451,22 @@ class SeplosBatteryPack:
 
     def get_lowest_cell(self) -> Dict[str, Any]:
         """Get lowest cell number and voltage."""
-        valid_cells = [v for v in self.telemetry.cell_voltage if v is not None]
+        valid_cells = [v for v in self.telemetry.voltage_cell if v is not None]
         if not valid_cells:
             return {"lowest_cell": 0, "lowest_cell_voltage": 0}
 
         lowest_voltage = min(valid_cells)
-        lowest_cell = self.telemetry.cell_voltage.index(lowest_voltage)
+        lowest_cell = self.telemetry.voltage_cell.index(lowest_voltage)
         return {"lowest_cell": lowest_cell, "lowest_cell_voltage": lowest_voltage}
 
     def get_highest_cell(self) -> Dict[str, Any]:
         """Get highest cell number and voltage."""
-        valid_cells = [v for v in self.telemetry.cell_voltage if v is not None]
+        valid_cells = [v for v in self.telemetry.voltage_cell if v is not None]
         if not valid_cells:
             return {"highest_cell": 0, "highest_cell_voltage": 0}
 
         highest_voltage = max(valid_cells)
-        highest_cell = self.telemetry.cell_voltage.index(highest_voltage)
+        highest_cell = self.telemetry.voltage_cell.index(highest_voltage)
         return {"highest_cell": highest_cell, "highest_cell_voltage": highest_voltage}
 
     def decode_telemetry_feedback_frame(self, data: bytes) -> Dict[str, Any]:
@@ -496,7 +496,7 @@ class SeplosBatteryPack:
         # Dynamic values from the BMS
 
         telemetry_fields = {
-            'cell_voltage':             { 'offset': 6,   'scale': 1/1000, 'round': 3, 'amount': number_of_cells },
+            'voltage_cell':             { 'offset': 6,   'scale': 1/1000, 'round': 3, 'amount': number_of_cells },
             'cell_temperature':         { 'offset': 72,  'scale': 1/10, 'round': 1,  'bias': -2731, 'amount': 4 },
             'ambient_temperature':      { 'offset': 88,  'scale': 1/10, 'round': 1,  'bias': -2731 },
             'components_temperature':   { 'offset': 92,  'scale': 1/10, 'round': 1,  'bias': -2731 },
@@ -553,7 +553,7 @@ class SeplosBatteryPack:
         # Get values from previous readings
         dis_charge_current  = self.telemetry.dis_charge_current
         total_pack_voltage  = self.telemetry.total_pack_voltage
-        cell_voltages       = self.telemetry.cell_voltage
+        cell_voltages       = self.telemetry.voltage_cell
         cell_temps          = self.telemetry.cell_temperature
 
         ## Dis-/charge power

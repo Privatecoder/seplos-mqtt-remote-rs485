@@ -979,7 +979,7 @@ class AutoDiscoveryConfig:
             num_sensors=16,
             pack_no=pack_no,
             value_template_group="telemetry",
-            base_value_template_key="cell_voltage",
+            base_value_template_key="voltage_cell",
             base_name="Voltage Cell",
             device_class="voltage",
             state_class="measurement",
